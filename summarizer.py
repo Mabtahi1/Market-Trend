@@ -6,7 +6,7 @@ import requests
 from bs4 import BeautifulSoup
 
 # Use Claude 3 Haiku for faster and cheaper results (you can change to Sonnet or Opus if needed)
-MODEL_ID = "anthropic.claude-3-haiku-20240307"
+MODEL_ID = "anthropic.claude-3-sonnet-20240229-v1:0"
 REGION = "us-east-1"
 
 # Claude 3 models require the Messages API
