@@ -1,29 +1,33 @@
-import anthropic
+import boto3
+import json
 
-client = anthropic.Anthropic(
-    api_key="YOUR_ANTHROPIC_API_KEY"
-)
+# Claude model ID (Claude 3 Sonnet)
+MODEL_ID = "anthropic.claude-3-sonnet-20240229"
+bedrock = boto3.client("bedrock-runtime", region_name="us-east-1")  # change region if needed
 
 def summarize_trends(text):
-    prompt = f"""Analyze the following content and extract:
-1. Top trends or topics
-2. Summary of each trend (1-2 lines)
-3. Any competitor mentions
-4. Overall brand perception
+    prompt = f"""
+    Human: Please provide a concise summary of the following news article or content. Focus on market trends, key events, and entities if available.
 
-Content:
-{text}
+    {text}
 
-Return in bullet-point format."""
-    
-    response = client.messages.create(
-        model="claude-3-sonnet-20240229",
-        max_tokens=1000,
-        temperature=0.7,
-        messages=[
-            {"role": "user", "content": prompt}
-        ]
-    )
-    
-    return response.content[0].text
+    Assistant:"""
 
+    try:
+        response = bedrock.invoke_model(
+            modelId=MODEL_ID,
+            body=json.dumps({
+                "prompt": prompt,
+                "max_tokens": 500,
+                "temperature": 0.7,
+                "stop_sequences": ["\n\nHuman:"]
+            }),
+            contentType="application/json",
+            accept="application/json"
+        )
+
+        result = json.loads(response['body'].read().decode())
+        return result.get("completion", "").strip()
+
+    except Exception as e:
+        return f"Error summarizing content: {e}"
