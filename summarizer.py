@@ -41,14 +41,15 @@ def summarize_trends(text, brands=None):
             prompt += f"\nSpecifically track these brands: {', '.join(brands)}."
 
         body = {
-            "messages": [
-                {
-                    "role": "user",
-                    "content": prompt
-                }
-            ],
-            "max_tokens": 1000,
-            "temperature": 0.7
+           "anthropic_version": "bedrock-2023-05-31",
+           "max_tokens": 1000,
+           "messages": [
+               {
+                  "role": "user",
+                  "content": prompt
+               }
+          ],
+          "temperature": 0.7
         }
 
         response = bedrock_runtime.invoke_model(
