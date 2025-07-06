@@ -4,7 +4,7 @@ import json
 # Correct Claude model ID for AWS Bedrock (Claude 3 Sonnet)
 MODEL_ID = "anthropic.claude-3-sonnet-20240229-v1:0"
 
-bedrock = boto3.client("bedrock-runtime", region_name="us-east-1")  # change region if needed
+bedrock = boto3.client("bedrock-runtime", region_name="us-east-2")  # change region if needed
 
 def summarize_trends(text):
     # Updated prompt format for Claude 3 on Bedrock
