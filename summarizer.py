@@ -11,7 +11,7 @@ def summarize_trends(text, brand_names=None):
 
     try:
         # Claude model in Bedrock — update the model ID if needed
-        model_id = "anthropic.claude-3-sonnet-20240229"  # or claude-3-haiku, etc.
+        model_id = "anthropic.claude-3-sonnet-20240229-v1:0"  # or claude-3-haiku, etc.
         
         # Initialize the Bedrock runtime client
         bedrock = boto3.client("bedrock-runtime", region_name="us-east-1")  # Change region if needed
