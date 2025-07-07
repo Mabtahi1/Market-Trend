@@ -1,68 +1,69 @@
 import streamlit as st
-from summarizer import summarize_trends
-from sentiment import analyze_sentiment
-from keywords import extract_keywords
-from utils import fetch_text_from_url
-from visualizations import plot_brand_mentions, sentiment_chart
+from summarizer import summarize_trends, analyze_question
 from auth import show_login, is_logged_in
 
-st.set_page_config(page_title="Market Trend Summarizer", layout="wide")
-
-show_login()
+st.set_page_config(page_title="📈 Market Trend Summarizer")
 
 if not is_logged_in():
+    show_login()
     st.stop()
 
 st.title("📈 Market Trend Summarizer")
 
-input_method = st.radio("Choose Input Type:", ["Paste URL", "Paste Text"])
+input_type = st.radio("Choose Input Type:", ["Paste URL", "Paste Text", "Upload File", "Ask a Question"])
 
-brands = st.text_input("Optional: Enter brands to track (comma-separated):", "")
+text = ""
+uploaded_file = None
+question = ""
+custom_keywords = ""
 
-if input_method == "Paste URL":
+if input_type == "Paste URL":
     url = st.text_input("Enter URL:")
-    if st.button("Summarize from URL"):
-        text = fetch_text_from_url(url)
-        summary = summarize_trends(text)
-        sentiment, score = analyze_sentiment(text)
-        hashtags = extract_keywords(text)
-        brand_list = [b.strip() for b in brands.split(",") if b.strip()]
-        brand_counts = {} if not brand_list else dict(plot_brand_mentions.compare_brand_mentions(text, brand_list))
+    if url:
+        import requests
+        from bs4 import BeautifulSoup
+        try:
+            response = requests.get(url)
+            soup = BeautifulSoup(response.text, "html.parser")
+            paragraphs = soup.find_all("p")
+            text = " ".join([p.text for p in paragraphs])
+        except Exception as e:
+            st.error(f"Failed to fetch URL: {e}")
 
-        st.subheader("📋 Summary of Trends")
-        st.markdown(summary)
+elif input_type == "Paste Text":
+    text = st.text_area("Paste text here:")
 
-        st.subheader("💬 Sentiment")
-        st.markdown(f"**Sentiment:** {sentiment}")
-        st.altair_chart(sentiment_chart(score))
+elif input_type == "Upload File":
+    uploaded_file = st.file_uploader("Choose a file", type=["txt", "pdf", "docx"])
+    if uploaded_file:
+        import textract
+        try:
+            text = textract.process(uploaded_file).decode("utf-8")
+        except Exception as e:
+            st.error(f"Failed to process file: {e}")
 
-        st.subheader("🏷 Suggested Hashtags")
-        st.markdown(" ".join(hashtags))
+elif input_type == "Ask a Question":
+    question = st.text_input("Ask your question:")
+    custom_keywords = st.text_input("Optional: Add keywords (comma-separated)")
 
-        if brand_counts:
-            st.subheader("🏢 Brand Mentions")
-            st.plotly_chart(plot_brand_mentions.plot_brand_mentions(brand_counts))
-
-else:
-    raw_text = st.text_area("Paste the content here:")
-    if st.button("Summarize Text"):
-        summary = summarize_trends(raw_text)
-        sentiment, score = analyze_sentiment(raw_text)
-        hashtags = extract_keywords(raw_text)
-        brand_list = [b.strip() for b in brands.split(",") if b.strip()]
-        brand_counts = {} if not brand_list else dict(plot_brand_mentions.compare_brand_mentions(raw_text, brand_list))
-
-        st.subheader("📋 Summary of Trends")
-        st.markdown(summary)
-
-        st.subheader("💬 Sentiment")
-        st.markdown(f"**Sentiment:** {sentiment}")
-        st.altair_chart(sentiment_chart(score))
-
-        st.subheader("🏷 Suggested Hashtags")
-        st.markdown(" ".join(hashtags))
-
-        if brand_counts:
-            st.subheader("🏢 Brand Mentions")
-            st.plotly_chart(plot_brand_mentions.plot_brand_mentions(brand_counts))
-
+if st.button("Submit"):
+    if input_type == "Ask a Question" and question:
+        with st.spinner("Analyzing..."):
+            try:
+                result = analyze_question(question, custom_keywords)
+                st.subheader("🔑 Extracted Keywords")
+                st.write(result["keywords"])
+                st.subheader("💡 Actionable Insight")
+                st.write(result["insight"])
+            except Exception as e:
+                st.error(f"Error: {e}")
+    elif text:
+        with st.spinner("Summarizing..."):
+            try:
+                summary = summarize_trends(text)
+                st.subheader("📋 Summary of Trends")
+                st.write(summary)
+            except Exception as e:
+                st.error(f"Error summarizing content: {e}")
+    else:
+        st.warning("Please provide valid input.")
