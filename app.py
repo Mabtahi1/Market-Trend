@@ -4,12 +4,14 @@ from auth import show_login, is_logged_in
 
 st.set_page_config(page_title="📈 Market Trend Summarizer")
 
+# Auth check
 if not is_logged_in():
     show_login()
     st.stop()
 
 st.title("📈 Market Trend Summarizer")
 
+# Input type selection
 input_type = st.radio("Choose Input Type:", ["Paste URL", "Paste Text", "Upload File", "Ask a Question"])
 
 text = ""
@@ -17,6 +19,7 @@ uploaded_file = None
 question = ""
 custom_keywords = ""
 
+# Handle input
 if input_type == "Paste URL":
     url = st.text_input("Enter URL:")
     if url:
@@ -46,17 +49,36 @@ elif input_type == "Ask a Question":
     question = st.text_input("Ask your question:")
     custom_keywords = st.text_input("Optional: Add keywords (comma-separated)")
 
+# Submit button
 if st.button("Submit"):
     if input_type == "Ask a Question" and question:
         with st.spinner("Analyzing..."):
             try:
                 result = analyze_question(question, custom_keywords)
-                st.subheader("🔑 Extracted Keywords")
-                st.write(result["keywords"])
-                st.subheader("💡 Actionable Insight")
-                st.write(result["insight"])
+
+                if result.get("error"):
+                    st.error(result["error"])
+                else:
+                    st.subheader("🔑 Extracted Keywords")
+                    st.write(result.get("keywords", []))
+
+                    st.subheader("💡 Actionable Insights by Keyword")
+                    insights = result.get("insights", {})
+                    if insights:
+                        for keyword, data in insights.items():
+                            with st.expander(f"🔑 {keyword}"):
+                                titles = data.get("titles", [])
+                                actions = data.get("insights", [])
+
+                                for i, (title, action) in enumerate(zip(titles, actions), start=1):
+                                    st.markdown(f"**{i}. {title}**")
+                                    st.write(action)
+                    else:
+                        st.warning("No insights returned.")
+
             except Exception as e:
                 st.error(f"Error: {e}")
+
     elif text:
         with st.spinner("Summarizing..."):
             try:
