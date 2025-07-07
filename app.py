@@ -63,18 +63,31 @@ if st.button("Submit"):
                     st.write(result.get("keywords", []))
 
                     st.subheader("💡 Actionable Insights by Keyword")
+
                     insights = result.get("insights", {})
+                    st.caption("🔍 Debug: Parsed Insights Object")
+                    st.json(insights)
+
                     if insights:
                         for keyword, data in insights.items():
                             with st.expander(f"🔑 {keyword}"):
                                 titles = data.get("titles", [])
                                 actions = data.get("insights", [])
 
-                                for i, (title, action) in enumerate(zip(titles, actions), start=1):
-                                    st.markdown(f"**{i}. {title}**")
+                                if not titles and not actions:
+                                    st.info("No insights found for this keyword.")
+                                    continue
+
+                                for i in range(max(len(titles), len(actions))):
+                                    title = titles[i] if i < len(titles) else "(No title)"
+                                    action = actions[i] if i < len(actions) else "(No insight)"
+                                    st.markdown(f"**{i + 1}. {title}**")
                                     st.write(action)
                     else:
                         st.warning("No insights returned.")
+
+                    st.subheader("🧠 Raw Claude Response")
+                    st.code(result.get("full_response", ""), language="markdown")
 
             except Exception as e:
                 st.error(f"Error: {e}")
