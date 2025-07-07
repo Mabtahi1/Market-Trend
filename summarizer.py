@@ -86,17 +86,60 @@ def claude_messages(prompt):
         return f"Error calling Claude: {e}"
 
 def analyze_question(question, custom_keywords=""):
-    full_prompt = f"""You're a market analyst. A client asked this question:
+    full_prompt = f"""You're a senior market analyst with 15+ years of experience. A client asked this question:
 {question}
-Step 1: Extract relevant keywords from the question.
-Step 2: Add these custom keywords if provided: {custom_keywords}
-Step 3: Generate 3–4 actionable insights or strategic suggestions based on the keywords.
-Return response in this format:
-- Keywords: [...]
-- Insights:
-1. ...
-2. ...
-3. ...
+
+Custom keywords to consider: {custom_keywords}
+
+Please provide a comprehensive analysis following these steps:
+
+Step 1: Extract 5-7 relevant keywords from the question and custom keywords.
+Step 2: For each keyword, provide 3-5 SPECIFIC, NON-GENERIC actionable insights with clear titles.
+Step 3: Order insights by importance and relevance to the client's question.
+Step 4: Include a brief methodology note about your analysis approach.
+
+IMPORTANT: Make insights highly specific and actionable. Avoid generic advice like "conduct market research" or "analyze competitors." Instead provide concrete, specific recommendations with:
+- Exact numbers, percentages, or timeframes when possible
+- Specific tools, platforms, or methodologies to use
+- Particular market segments or customer groups to target
+- Concrete steps with measurable outcomes
+- Industry-specific tactics and strategies
+
+Return response in this EXACT format:
+
+**KEYWORDS IDENTIFIED:**
+- Keyword 1, Keyword 2, Keyword 3, [etc.]
+
+**ACTIONABLE INSIGHTS** (Ordered by Priority):
+
+**KEYWORD: [Keyword Name]**
+1. **[Specific Insight Title]**: [Highly specific actionable insight with concrete recommendations, numbers, tools, or exact steps to take]
+2. **[Specific Insight Title]**: [Highly specific actionable insight with concrete recommendations, numbers, tools, or exact steps to take]
+3. **[Specific Insight Title]**: [Highly specific actionable insight with concrete recommendations, numbers, tools, or exact steps to take]
+
+**KEYWORD: [Next Keyword]**
+1. **[Insight Title]**: [Detailed actionable insight with specific recommendations]
+[Continue for all keywords...]
+
+**ANALYSIS METHODOLOGY:**
+This analysis is based on:
+- Market trend analysis and pattern recognition
+- Strategic business frameworks and best practices
+- Industry benchmarking and competitive intelligence
+- Economic indicators and market dynamics
+- Historical data patterns and emerging trends
+
+**RELIABILITY & SOURCES:**
+- Analysis confidence level: [High/Medium/Low] based on available data
+- Recommendations should be validated with current market research
+- Consider consulting industry-specific databases and reports
+- Verify insights with recent financial reports and market studies
+- Cross-reference with competitor analysis and customer feedback
+
+**NEXT STEPS:**
+1. Validate these insights with real-time market data
+2. Conduct deeper research on the top 3 priority areas
+3. Develop implementation timeline and resource requirements
 """
     response = claude_messages(full_prompt)
     lines = response.strip().split("\n")
