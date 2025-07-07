@@ -13,6 +13,26 @@ if not is_logged_in():
     show_login()
     st.stop()
 
+# Define helper functions BEFORE they're used
+def display_keyword_insights(keyword, data):
+    """Helper function to display insights for a keyword"""
+    titles = data.get("titles", [])
+    actions = data.get("insights", [])
+    
+    if not titles and not actions:
+        st.info("No insights found for this keyword.")
+        return
+    
+    # Display insights in a simple format
+    for i in range(max(len(titles), len(actions))):
+        title = titles[i] if i < len(titles) else "Untitled Insight"
+        action = actions[i] if i < len(actions) else "No insight available"
+        
+        st.markdown(f"**{i + 1}. {title}**")
+        st.write(action)
+        if i < max(len(titles), len(actions)) - 1:
+            st.markdown("---")
+
 # Initialize session state
 if 'last_analysis_hash' not in st.session_state:
     st.session_state.last_analysis_hash = None
@@ -175,25 +195,6 @@ if st.button("📊 Analyze", type="primary"):
     
     else:
         st.warning("⚠️ Please provide valid input before analyzing.")
-
-def display_keyword_insights(keyword, data):
-    """Helper function to display insights for a keyword"""
-    titles = data.get("titles", [])
-    actions = data.get("insights", [])
-    
-    if not titles and not actions:
-        st.info("No insights found for this keyword.")
-        return
-    
-    # Display insights in a simple format
-    for i in range(max(len(titles), len(actions))):
-        title = titles[i] if i < len(titles) else "Untitled Insight"
-        action = actions[i] if i < len(actions) else "No insight available"
-        
-        st.markdown(f"**{i + 1}. {title}**")
-        st.write(action)
-        if i < max(len(titles), len(actions)) - 1:
-            st.markdown("---")
 
 # Add footer with tips
 st.markdown("---")
