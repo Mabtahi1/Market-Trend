@@ -177,33 +177,30 @@ def parse_analysis_response(response):
                 mode = "keywords"
                 continue
 
-            elif mode == "keywords" and line and not line.startswith("**"):
+            elif mode == "keywords" and not line.startswith("**"):
                 keywords = [k.strip() for k in line.split(",")]
                 mode = None
                 continue
 
             elif line.startswith("**KEYWORD") and ":" in line:
-                # Example line: **KEYWORD 1: Battery Technology**
                 parts = line.split(":", 1)
                 if len(parts) == 2:
                     current_keyword = parts[1].strip().replace("**", "")
                     structured_insights[current_keyword] = {"titles": [], "insights": []}
                 continue
 
-            elif line.strip() == "**TITLES:**":
+            elif line == "**TITLES:**":
                 mode = "titles"
                 continue
 
-            elif line.strip() == "**ACTIONS:**":
+            elif line == "**ACTIONS:**":
                 mode = "insights"
                 continue
 
             elif mode in {"titles", "insights"} and current_keyword:
-                if line[0].isdigit() and '.' in line:
+                if line[0].isdigit() and "." in line:
                     content = line.split(".", 1)[1].strip()
                     structured_insights[current_keyword][mode].append(content)
-
-        print("DEBUG Parsed structured_insights:\n", json.dumps(structured_insights, indent=2))
 
         return {
             "keywords": keywords,
@@ -217,7 +214,6 @@ def parse_analysis_response(response):
             "structured_insights": {}
         }
 
-
 def safe_get_insight(analysis_result, keyword, insight_type="insights", index=0):
     try:
         if not analysis_result:
@@ -230,13 +226,14 @@ def safe_get_insight(analysis_result, keyword, insight_type="insights", index=0)
         if not insights:
             return "Error: No insights found in the analysis result"
 
-        if keyword not in insights:
+        keyword_data = insights.get(keyword)
+        if not keyword_data:
             available_keywords = ", ".join(insights.keys())
             return f"Error: Keyword '{keyword}' not found. Available keywords: {available_keywords}"
 
-        items = insights[keyword].get(insight_type, [])
-        if not items:
-            return f"Error: No '{insight_type}' entries found for keyword '{keyword}'"
+        items = keyword_data.get(insight_type)
+        if not isinstance(items, list):
+            return f"Error: Missing or malformed '{insight_type}' data for keyword '{keyword}'"
 
         if index >= len(items):
             return f"Error: Index {index} out of range for '{insight_type}' in keyword '{keyword}' (total available: {len(items)})"
@@ -248,24 +245,28 @@ def safe_get_insight(analysis_result, keyword, insight_type="insights", index=0)
         return f"Error retrieving insight: {str(e)}"
 
 def test_functions():
-    print("\u2705 summarize_trends function loaded")
-    print("\u2705 analyze_question function loaded")
-    print("\u2705 extract_text_from_file function loaded")
-    print("\u2705 claude_messages function loaded")
-    print("\u2705 All functions imported successfully!")
+    print("✅ summarize_trends function loaded")
+    print("✅ analyze_question function loaded")
+    print("✅ extract_text_from_file function loaded")
+    print("✅ claude_messages function loaded")
+    print("✅ safe_get_insight function loaded")
 
-    # Optional demo test
-    test_question = "What are the current market trends in the electric vehicle industry for 2025?"
+    # Example test run (remove/comment this if using in production)
+    test_question = "What are the latest trends in the renewable energy market in 2025?"
     result = analyze_question(test_question)
 
     if result["error"]:
-        print("❌ Error from Claude:", result["error"])
-    else:
-        print("\n✅ Keywords:", result["keywords"])
-        for kw in result["keywords"]:
-            title = safe_get_insight(result, kw, "titles", 0)
-            insight = safe_get_insight(result, kw, "insights", 0)
-            print(f"\n🔹 Keyword: {kw}\n   Title: {title}\n   Insight: {insight}")
+        print("❌ Claude error:", result["error"])
+        return
+
+    print("\n🔑 Keywords identified:", result["keywords"])
+    print("\n📊 Structured insights:")
+    print(json.dumps(result["insights"], indent=2))
+
+    for kw in result["keywords"]:
+        title = safe_get_insight(result, kw, "titles", 0)
+        insight = safe_get_insight(result, kw, "insights", 0)
+        print(f"\n🔹 Keyword: {kw}\n   📝 Title: {title}\n   💡 Insight: {insight}")
 
 if __name__ == "__main__":
     test_functions()
