@@ -1,66 +1,50 @@
 import boto3
 import json
 import os
-import re
-import requests
-from bs4 import BeautifulSoup
 
-# Use Claude 3 Haiku for faster and cheaper results (you can change to Sonnet or Opus if needed)
-MODEL_ID = "anthropic.claude-3-sonnet-20240229-v1:0"
-REGION = "us-east-1"
+bedrock = boto3.client("bedrock-runtime", region_name="us-east-1")
 
-# Claude 3 models require the Messages API
-bedrock_runtime = boto3.client("bedrock-runtime", region_name=REGION)
+def claude_messages(prompt):
+    body = json.dumps({
+        "anthropic_version": "bedrock-2023-05-31",
+        "messages": [{"role": "user", "content": prompt}],
+        "max_tokens": 1024
+    })
+    response = bedrock.invoke_model(
+        modelId="anthropic.claude-3-sonnet-20240229",
+        body=body,
+        contentType="application/json",
+    )
+    result = json.loads(response['body'].read())
+    return result['content'][0]['text']
 
-def get_text_from_url(url):
-    try:
-        response = requests.get(url, timeout=10)
-        soup = BeautifulSoup(response.text, "html.parser")
-        paragraphs = soup.find_all("p")
-        return "\n".join(p.get_text() for p in paragraphs)
-    except Exception as e:
-        return f"Error fetching URL content: {e}"
+def summarize_trends(text):
+    prompt = f"Summarize the following market-related content:\n\n{text}\n\nProvide a short and clear summary of key trends."
+    return claude_messages(prompt)
 
-def clean_text(text):
-    text = re.sub(r"\s+", " ", text)
-    return text.strip()
+def analyze_question(question, custom_keywords=""):
+    full_prompt = f"""You're a market analyst. A client asked this question:
 
-def summarize_trends(text, brands=None):
-    try:
-        prompt = f"""
-        You are a market trend analyst. Read the following article and provide:
-        1. A brief summary in bullet points
-        2. Key trends mentioned
-        3. Any brand names referenced
+{question}
 
-        Text:
-        \"\"\"{text}\"\"\"
-        """
+Step 1: Extract relevant keywords from the question.
+Step 2: Add these custom keywords if provided: {custom_keywords}
+Step 3: Generate 3–4 actionable insights or strategic suggestions based on the keywords.
 
-        if brands:
-            prompt += f"\nSpecifically track these brands: {', '.join(brands)}."
-
-        body = {
-           "anthropic_version": "bedrock-2023-05-31",
-           "max_tokens": 1000,
-           "messages": [
-               {
-                  "role": "user",
-                  "content": prompt
-               }
-          ],
-          "temperature": 0.7
-        }
-
-        response = bedrock_runtime.invoke_model(
-            modelId=MODEL_ID,
-            contentType="application/json",
-            accept="application/json",
-            body=json.dumps(body)
-        )
-
-        result = json.loads(response["body"].read())
-        return result["content"][0]["text"]
-
-    except Exception as e:
-        return f"Error summarizing content: {e}"
+Return response in this format:
+- Keywords: [...]
+- Insights:
+1. ...
+2. ...
+3. ...
+"""
+    response = claude_messages(full_prompt)
+    lines = response.strip().split("\n")
+    keywords = []
+    insights = []
+    for line in lines:
+        if line.lower().startswith("- keywords"):
+            keywords = line.split(":")[1].strip()
+        elif line.strip().startswith(("1.", "2.", "3.")):
+            insights.append(line.strip())
+    return {"keywords": keywords, "insight": "\n".join(insights)}
