@@ -10,13 +10,10 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 def summarize_trends(text=None, question=None, keyword=None):
-    """
-    Summarize trends from text content
-    """
     try:
         if not any([text, question, keyword]):
             return "Error: At least one parameter (text, question, or keyword) must be provided"
-        
+
         prompt_parts = []
         if question:
             prompt_parts.append(f"User Question: {question}\n")
@@ -24,7 +21,7 @@ def summarize_trends(text=None, question=None, keyword=None):
             prompt_parts.append(f"User Keyword: {keyword}\n")
         if text:
             prompt_parts.append(f"Content to Analyze:\n{text}\n")
-        
+
         prompt_parts.append("""
 From the above content:
 1. Extract hot keywords.
@@ -32,35 +29,31 @@ From the above content:
 Return the results in a readable format with two sections: Keywords and Insights.
 """)
         prompt = "\n".join(prompt_parts)
-        
+
         response = claude_messages(prompt)
         return response
-        
+
     except Exception as e:
         logger.error(f"Error in summarize_trends: {str(e)}")
         return f"Error summarizing content: {str(e)}"
 
 def extract_text_from_file(uploaded_file):
-    """
-    Extract text from uploaded file
-    """
     tmp_path = None
     try:
         if not uploaded_file:
             return "Error: No file provided"
-        
+
         with tempfile.NamedTemporaryFile(delete=False) as tmp:
             tmp.write(uploaded_file.read())
             tmp_path = tmp.name
-        
+
         text = textract.process(tmp_path).decode("utf-8")
         return text
-        
+
     except Exception as e:
         logger.error(f"Error extracting text from file: {str(e)}")
         return f"Error extracting text: {str(e)}"
     finally:
-        # Clean up temp file
         if tmp_path and os.path.exists(tmp_path):
             try:
                 os.unlink(tmp_path)
@@ -68,13 +61,10 @@ def extract_text_from_file(uploaded_file):
                 logger.warning(f"Could not clean up temp file: {cleanup_error}")
 
 def claude_messages(prompt):
-    """
-    Helper function to call Claude 3 with proper formatting
-    """
     try:
         if not prompt or not prompt.strip():
             return "Error: Empty prompt provided"
-        
+
         bedrock = boto3.client("bedrock-runtime", region_name="us-east-1")
         payload = {
             "anthropic_version": "bedrock-2023-05-31",
@@ -86,25 +76,24 @@ def claude_messages(prompt):
             "top_k": 250,
             "top_p": 1,
         }
-        
+
         response = bedrock.invoke_model(
             modelId="anthropic.claude-3-sonnet-20240229-v1:0",
             contentType="application/json",
             accept="application/json",
             body=json.dumps(payload),
         )
-        
+
         result = json.loads(response["body"].read())
-        
-        # Validate response structure
+
         if not result or "content" not in result:
             return "Error: Invalid response structure from Claude"
-        
+
         if not result["content"] or len(result["content"]) == 0:
             return "Error: Empty response from Claude"
-        
+
         return result["content"][0]["text"]
-        
+
     except json.JSONDecodeError as e:
         logger.error(f"JSON decode error: {str(e)}")
         return f"Error decoding Claude response: {str(e)}"
@@ -113,9 +102,6 @@ def claude_messages(prompt):
         return f"Error calling Claude: {str(e)}"
 
 def analyze_question(question, custom_keywords=""):
-    """
-    Analyze question and return structured insights
-    """
     try:
         if not question or not question.strip():
             return {
@@ -124,7 +110,7 @@ def analyze_question(question, custom_keywords=""):
                 "insights": {},
                 "full_response": ""
             }
-        
+
         full_prompt = f"""You're a senior market analyst with 15+ years of experience. A client asked this question:
 {question}
 
@@ -163,44 +149,19 @@ Keyword 1, Keyword 2, Keyword 3, Keyword 4, Keyword 5
 2. [Highly specific actionable insight with concrete recommendations, numbers, tools, or exact steps for Title 2]
 3. [Highly specific actionable insight with concrete recommendations, numbers, tools, or exact steps for Title 3]
 
-**KEYWORD 2: [Second Most Important Keyword Name]**
-
-**TITLES:**
-1. [Most Important Title for This Keyword]
-2. [Second Most Important Title for This Keyword]
-3. [Third Most Important Title for This Keyword]
-
-**ACTIONS:**
-1. [Highly specific actionable insight for Title 1]
-2. [Highly specific actionable insight for Title 2]
-3. [Highly specific actionable insight for Title 3]
-
-[Continue this pattern for all keywords...]
+[Continue this pattern...]
 
 **ANALYSIS METHODOLOGY:**
-This analysis is based on:
-- Market trend analysis and pattern recognition
-- Strategic business frameworks and best practices
-- Industry benchmarking and competitive intelligence
-- Economic indicators and market dynamics
-- Historical data patterns and emerging trends
+...
 
 **RELIABILITY & SOURCES:**
-- Analysis confidence level: [High/Medium/Low] based on available data
-- Recommendations should be validated with current market research
-- Consider consulting industry-specific databases and reports
-- Verify insights with recent financial reports and market studies
-- Cross-reference with competitor analysis and customer feedback
+...
 
 **NEXT STEPS:**
-1. Validate these insights with real-time market data
-2. Conduct deeper research on the top 3 priority areas
-3. Develop implementation timeline and resource requirements
+...
 """
-        
         response = claude_messages(full_prompt)
-        
-        # Check if response contains an error
+
         if response.startswith("Error:"):
             return {
                 "error": response,
@@ -208,17 +169,16 @@ This analysis is based on:
                 "insights": {},
                 "full_response": response
             }
-        
-        # Parse the response to extract keywords and structured insights
+
         parsed_result = parse_analysis_response(response)
-        
+
         return {
             "keywords": parsed_result.get("keywords", []),
             "insights": parsed_result.get("structured_insights", {}),
             "full_response": response,
             "error": None
         }
-        
+
     except Exception as e:
         logger.error(f"Error in analyze_question: {str(e)}")
         return {
@@ -229,28 +189,22 @@ This analysis is based on:
         }
 
 def parse_analysis_response(response):
-    """
-    Parse the Claude response to extract structured data
-    """
     try:
         lines = response.strip().split("\n")
         keywords = []
         structured_insights = {}
         current_keyword = None
         current_section = None
-        
+
         for line in lines:
             line = line.strip()
-            
-            # Extract keywords from the KEYWORDS IDENTIFIED section
+
             if line.startswith("**KEYWORDS IDENTIFIED:**"):
                 continue
             elif line and not line.startswith("**") and ":" not in line and current_keyword is None:
-                # This is likely the keywords line
                 keywords = [k.strip() for k in line.split(",") if k.strip()]
                 continue
-            
-            # Identify keyword sections
+
             if line.startswith("**KEYWORD") and ":" in line:
                 try:
                     current_keyword = line.split(":")[1].strip().replace("**", "")
@@ -260,28 +214,26 @@ def parse_analysis_response(response):
                 except IndexError:
                     logger.warning(f"Could not parse keyword line: {line}")
                 continue
-            
-            # Identify subsections
+
             if line == "**TITLES:**":
                 current_section = "titles"
                 continue
             elif line == "**ACTIONS:**":
                 current_section = "actions"
                 continue
-            
-            # Extract titles and actions
+
             if current_keyword and current_section and line and line[0].isdigit():
                 try:
                     content = line.split(".", 1)[1].strip() if "." in line else line
                     structured_insights[current_keyword][current_section].append(content)
                 except IndexError:
                     logger.warning(f"Could not parse content line: {line}")
-        
+
         return {
             "keywords": keywords,
             "structured_insights": structured_insights
         }
-        
+
     except Exception as e:
         logger.error(f"Error parsing analysis response: {str(e)}")
         return {
@@ -295,7 +247,6 @@ def safe_get_insight(analysis_result, keyword, insight_type="actions", index=0):
     Valid insight_type: 'actions' or 'titles'.
     """
     try:
-        # Validate insight_type
         if insight_type not in {"actions", "titles"}:
             logger.warning(f"Invalid insight_type '{insight_type}' used. Defaulting to 'actions'.")
             insight_type = "actions"
@@ -303,7 +254,7 @@ def safe_get_insight(analysis_result, keyword, insight_type="actions", index=0):
         if not analysis_result or "insights" not in analysis_result:
             return "No analysis result available"
 
-        insights = analysis_result.get("insights", {})
+        insights = analysis_result["insights"]
 
         if keyword not in insights:
             available_keywords = list(insights.keys())
@@ -324,16 +275,7 @@ def safe_get_insight(analysis_result, keyword, insight_type="actions", index=0):
         logger.error(f"Error getting insight: {str(e)}")
         return f"Error retrieving insight: {str(e)}"
 
-        
-    except Exception as e:
-        logger.error(f"Error getting insight: {str(e)}")
-        return f"Error retrieving insight: {str(e)}"
-
-# Test function to make sure imports work
 def test_functions():
-    """
-    Test function to verify all functions are working
-    """
     print("✅ summarize_trends function loaded")
     print("✅ analyze_question function loaded")
     print("✅ extract_text_from_file function loaded")
