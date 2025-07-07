@@ -291,26 +291,39 @@ def parse_analysis_response(response):
 
 def safe_get_insight(analysis_result, keyword, insight_type="actions", index=0):
     """
-    Safely get an insight from the analysis result
+    Safely get an insight from the analysis result.
+    Valid insight_type: 'actions' or 'titles'.
     """
     try:
+        # Validate insight_type
+        if insight_type not in {"actions", "titles"}:
+            logger.warning(f"Invalid insight_type '{insight_type}' used. Defaulting to 'actions'.")
+            insight_type = "actions"
+
         if not analysis_result or "insights" not in analysis_result:
             return "No analysis result available"
-        
-        insights = analysis_result["insights"]
-        
+
+        insights = analysis_result.get("insights", {})
+
         if keyword not in insights:
-            return f"Keyword '{keyword}' not found in analysis"
-        
+            available_keywords = list(insights.keys())
+            return f"Keyword '{keyword}' not found. Available keywords: {available_keywords}"
+
         if insight_type not in insights[keyword]:
-            return f"Insight type '{insight_type}' not found for keyword '{keyword}'"
-        
+            available_types = list(insights[keyword].keys())
+            return f"Insight type '{insight_type}' not found for keyword '{keyword}'. Available types: {available_types}"
+
         insights_list = insights[keyword][insight_type]
-        
+
         if index >= len(insights_list):
             return f"Index {index} out of range for {insight_type} in keyword '{keyword}'"
-        
+
         return insights_list[index]
+
+    except Exception as e:
+        logger.error(f"Error getting insight: {str(e)}")
+        return f"Error retrieving insight: {str(e)}"
+
         
     except Exception as e:
         logger.error(f"Error getting insight: {str(e)}")
