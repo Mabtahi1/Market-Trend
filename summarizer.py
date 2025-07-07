@@ -133,8 +133,6 @@ Keyword 1, Keyword 2, ...
 **ACTIONS:**
 1. [Insight for Title 1]
 2. [Insight for Title 2]
-
-... (repeat for each keyword)
 """
         response = claude_messages(full_prompt)
         if response.startswith("Error:"):
@@ -210,19 +208,26 @@ def parse_analysis_response(response):
 
 def safe_get_insight(analysis_result, keyword, insight_type="insights", index=0):
     try:
+        if not analysis_result:
+            return "Error: analysis_result is empty or None"
+
         if insight_type not in {"titles", "insights"}:
-            return f"Invalid insight_type '{insight_type}'"
+            return f"Error: Invalid insight_type '{insight_type}'"
 
         insights = analysis_result.get("insights", {})
         if not insights:
-            return "No insights available"
+            return "Error: No insights found in the analysis result"
 
         if keyword not in insights:
-            return f"Keyword '{keyword}' not found in insights"
+            available_keywords = ", ".join(insights.keys())
+            return f"Error: Keyword '{keyword}' not found. Available keywords: {available_keywords}"
 
         items = insights[keyword].get(insight_type, [])
+        if not items:
+            return f"Error: No '{insight_type}' entries found for keyword '{keyword}'"
+
         if index >= len(items):
-            return f"Index {index} out of range for '{insight_type}' in keyword '{keyword}'"
+            return f"Error: Index {index} out of range for '{insight_type}' in keyword '{keyword}' (total available: {len(items)})"
 
         return items[index]
 
@@ -236,6 +241,19 @@ def test_functions():
     print("\u2705 extract_text_from_file function loaded")
     print("\u2705 claude_messages function loaded")
     print("\u2705 All functions imported successfully!")
+
+    # Optional demo test
+    test_question = "What are the current market trends in the electric vehicle industry for 2025?"
+    result = analyze_question(test_question)
+
+    if result["error"]:
+        print("❌ Error from Claude:", result["error"])
+    else:
+        print("\n✅ Keywords:", result["keywords"])
+        for kw in result["keywords"]:
+            title = safe_get_insight(result, kw, "titles", 0)
+            insight = safe_get_insight(result, kw, "insights", 0)
+            print(f"\n🔹 Keyword: {kw}\n   Title: {title}\n   Insight: {insight}")
 
 if __name__ == "__main__":
     test_functions()
