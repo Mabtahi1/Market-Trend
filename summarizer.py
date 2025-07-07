@@ -170,29 +170,40 @@ def parse_analysis_response(response):
 
         for line in lines:
             line = line.strip()
+            if not line:
+                continue
+
             if line.startswith("**KEYWORDS IDENTIFIED:**"):
                 mode = "keywords"
                 continue
+
             elif mode == "keywords" and line and not line.startswith("**"):
                 keywords = [k.strip() for k in line.split(",")]
                 mode = None
                 continue
 
-            if line.startswith("**KEYWORD") and ":" in line:
-                current_keyword = line.split(":")[1].strip().replace("**", "")
-                structured_insights[current_keyword] = {"titles": [], "insights": []}
+            elif line.startswith("**KEYWORD") and ":" in line:
+                # Example line: **KEYWORD 1: Battery Technology**
+                parts = line.split(":", 1)
+                if len(parts) == 2:
+                    current_keyword = parts[1].strip().replace("**", "")
+                    structured_insights[current_keyword] = {"titles": [], "insights": []}
                 continue
 
-            if line == "**TITLES:**":
+            elif line.strip() == "**TITLES:**":
                 mode = "titles"
                 continue
-            elif line == "**ACTIONS:**":
+
+            elif line.strip() == "**ACTIONS:**":
                 mode = "insights"
                 continue
 
-            if mode in {"titles", "insights"} and line and line[0].isdigit():
-                content = line.split(".", 1)[1].strip() if "." in line else line
-                structured_insights[current_keyword][mode].append(content)
+            elif mode in {"titles", "insights"} and current_keyword:
+                if line[0].isdigit() and '.' in line:
+                    content = line.split(".", 1)[1].strip()
+                    structured_insights[current_keyword][mode].append(content)
+
+        print("DEBUG Parsed structured_insights:\n", json.dumps(structured_insights, indent=2))
 
         return {
             "keywords": keywords,
@@ -205,6 +216,7 @@ def parse_analysis_response(response):
             "keywords": [],
             "structured_insights": {}
         }
+
 
 def safe_get_insight(analysis_result, keyword, insight_type="insights", index=0):
     try:
