@@ -85,10 +85,8 @@ def claude_messages(prompt):
         )
 
         result = json.loads(response["body"].read())
-
         if not result or "content" not in result:
             return "Error: Invalid response structure from Claude"
-
         if not result["content"] or len(result["content"]) == 0:
             return "Error: Empty response from Claude"
 
@@ -118,50 +116,27 @@ Custom keywords to consider: {custom_keywords}
 
 Please provide a comprehensive analysis following these steps:
 
-Step 1: Extract 5-7 relevant keywords from the question and custom keywords.
-Step 2: Order keywords by importance and relevance to the client's question (most important first).
-Step 3: For each keyword, provide 3-5 SPECIFIC, NON-GENERIC actionable insights with clear titles.
-Step 4: Order insights within each keyword by importance (most important first).
+Step 1: Extract 5-7 relevant keywords.
+Step 2: Order keywords by importance.
+Step 3: For each keyword, provide 3-5 highly specific insights with titles.
 
-IMPORTANT: Make insights highly specific and actionable. Avoid generic advice like "conduct market research" or "analyze competitors." Instead provide concrete, specific recommendations with:
-- Exact numbers, percentages, or timeframes when possible
-- Specific tools, platforms, or methodologies to use
-- Particular market segments or customer groups to target
-- Concrete steps with measurable outcomes
-- Industry-specific tactics and strategies
-
-Return response in this EXACT format (follow this structure precisely):
-
+Use this format:
 **KEYWORDS IDENTIFIED:**
-Keyword 1, Keyword 2, Keyword 3, Keyword 4, Keyword 5
+Keyword 1, Keyword 2, ...
 
 **ANALYSIS BY KEYWORD** (Ordered by Importance):
 
-**KEYWORD 1: [Most Important Keyword Name]**
-
+**KEYWORD 1: [Name]**
 **TITLES:**
-1. [Most Important Title for This Keyword]
-2. [Second Most Important Title for This Keyword]
-3. [Third Most Important Title for This Keyword]
-
+1. [Title]
+2. [Title]
 **ACTIONS:**
-1. [Highly specific actionable insight with concrete recommendations, numbers, tools, or exact steps for Title 1]
-2. [Highly specific actionable insight with concrete recommendations, numbers, tools, or exact steps for Title 2]
-3. [Highly specific actionable insight with concrete recommendations, numbers, tools, or exact steps for Title 3]
+1. [Insight for Title 1]
+2. [Insight for Title 2]
 
-[Continue this pattern...]
-
-**ANALYSIS METHODOLOGY:**
-...
-
-**RELIABILITY & SOURCES:**
-...
-
-**NEXT STEPS:**
-...
+... (repeat for each keyword)
 """
         response = claude_messages(full_prompt)
-
         if response.startswith("Error:"):
             return {
                 "error": response,
@@ -171,7 +146,6 @@ Keyword 1, Keyword 2, Keyword 3, Keyword 4, Keyword 5
             }
 
         parsed_result = parse_analysis_response(response)
-
         return {
             "keywords": parsed_result.get("keywords", []),
             "insights": parsed_result.get("structured_insights", {}),
@@ -194,40 +168,33 @@ def parse_analysis_response(response):
         keywords = []
         structured_insights = {}
         current_keyword = None
-        current_section = None
+        mode = None
 
         for line in lines:
             line = line.strip()
-
             if line.startswith("**KEYWORDS IDENTIFIED:**"):
+                mode = "keywords"
                 continue
-            elif line and not line.startswith("**") and ":" not in line and current_keyword is None:
-                keywords = [k.strip() for k in line.split(",") if k.strip()]
+            elif mode == "keywords" and line and not line.startswith("**"):
+                keywords = [k.strip() for k in line.split(",")]
+                mode = None
                 continue
 
             if line.startswith("**KEYWORD") and ":" in line:
-                try:
-                    current_keyword = line.split(":")[1].strip().replace("**", "")
-                    if current_keyword not in structured_insights:
-                        structured_insights[current_keyword] = {"titles": [], "actions": []}
-                    current_section = None
-                except IndexError:
-                    logger.warning(f"Could not parse keyword line: {line}")
+                current_keyword = line.split(":")[1].strip().replace("**", "")
+                structured_insights[current_keyword] = {"titles": [], "insights": []}
                 continue
 
             if line == "**TITLES:**":
-                current_section = "titles"
+                mode = "titles"
                 continue
             elif line == "**ACTIONS:**":
-                current_section = "actions"
+                mode = "insights"
                 continue
 
-            if current_keyword and current_section and line and line[0].isdigit():
-                try:
-                    content = line.split(".", 1)[1].strip() if "." in line else line
-                    structured_insights[current_keyword][current_section].append(content)
-                except IndexError:
-                    logger.warning(f"Could not parse content line: {line}")
+            if mode in {"titles", "insights"} and line and line[0].isdigit():
+                content = line.split(".", 1)[1].strip() if "." in line else line
+                structured_insights[current_keyword][mode].append(content)
 
         return {
             "keywords": keywords,
@@ -241,46 +208,34 @@ def parse_analysis_response(response):
             "structured_insights": {}
         }
 
-def safe_get_insight(analysis_result, keyword, insight_type="actions", index=0):
-    """
-    Safely get an insight from the analysis result.
-    Valid insight_type: 'actions' or 'titles'.
-    """
+def safe_get_insight(analysis_result, keyword, insight_type="insights", index=0):
     try:
-        if insight_type not in {"actions", "titles"}:
-            logger.warning(f"Invalid insight_type '{insight_type}' used. Defaulting to 'actions'.")
-            insight_type = "actions"
+        if insight_type not in {"titles", "insights"}:
+            return f"Invalid insight_type '{insight_type}'"
 
-        if not analysis_result or "insights" not in analysis_result:
-            return "No analysis result available"
-
-        insights = analysis_result["insights"]
+        insights = analysis_result.get("insights", {})
+        if not insights:
+            return "No insights available"
 
         if keyword not in insights:
-            available_keywords = list(insights.keys())
-            return f"Keyword '{keyword}' not found. Available keywords: {available_keywords}"
+            return f"Keyword '{keyword}' not found in insights"
 
-        if insight_type not in insights[keyword]:
-            available_types = list(insights[keyword].keys())
-            return f"Insight type '{insight_type}' not found for keyword '{keyword}'. Available types: {available_types}"
+        items = insights[keyword].get(insight_type, [])
+        if index >= len(items):
+            return f"Index {index} out of range for '{insight_type}' in keyword '{keyword}'"
 
-        insights_list = insights[keyword][insight_type]
-
-        if index >= len(insights_list):
-            return f"Index {index} out of range for {insight_type} in keyword '{keyword}'"
-
-        return insights_list[index]
+        return items[index]
 
     except Exception as e:
-        logger.error(f"Error getting insight: {str(e)}")
+        logger.error(f"Error in safe_get_insight: {str(e)}")
         return f"Error retrieving insight: {str(e)}"
 
 def test_functions():
-    print("✅ summarize_trends function loaded")
-    print("✅ analyze_question function loaded")
-    print("✅ extract_text_from_file function loaded")
-    print("✅ claude_messages function loaded")
-    print("✅ All functions imported successfully!")
+    print("\u2705 summarize_trends function loaded")
+    print("\u2705 analyze_question function loaded")
+    print("\u2705 extract_text_from_file function loaded")
+    print("\u2705 claude_messages function loaded")
+    print("\u2705 All functions imported successfully!")
 
 if __name__ == "__main__":
     test_functions()
