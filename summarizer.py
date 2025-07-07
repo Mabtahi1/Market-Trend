@@ -62,3 +62,32 @@ def extract_text_from_file(uploaded_file):
         return text
     except Exception as e:
         return f"Error extracting text: {e}"
+ 
+
+def analyze_question(question, custom_keywords=""):
+    full_prompt = f"""You're a market analyst. A client asked this question:
+
+{question}
+
+Step 1: Extract relevant keywords from the question.
+Step 2: Add these custom keywords if provided: {custom_keywords}
+Step 3: Generate 3–4 actionable insights or strategic suggestions based on the keywords.
+
+Return response in this format:
+- Keywords: [...]
+- Insights:
+1. ...
+2. ...
+3. ...
+"""
+    response = claude_messages(full_prompt)
+    lines = response.strip().split("\n")
+    keywords = []
+    insights = []
+    for line in lines:
+        if line.lower().startswith("- keywords"):
+            keywords = line.split(":")[1].strip()
+        elif line.strip().startswith(("1.", "2.", "3.")):
+            insights.append(line.strip())
+    return {"keywords": keywords, "insight": "\n".join(insights)}
+       
