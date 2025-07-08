@@ -290,7 +290,7 @@ def get_business_context_prompt(question, custom_keywords=""):
     if any(word in question_lower for word in ['2024', '2025', 'future', 'upcoming']):
         time_context = "Emphasize forward-looking insights and predictive analysis."
     
-    return f"""You are a senior strategic market research analyst providing executive-level insights for business leaders. Your responses must be comprehensive, actionable, and business-focused.
+    prompt = f"""You are a senior strategic market research analyst providing executive-level insights for business leaders. Your responses must be comprehensive, actionable, and business-focused.
 
 QUESTION: {question}
 CUSTOM KEYWORDS: {custom_keywords}
@@ -371,6 +371,8 @@ CRITICAL: Each Business Action must be exactly 150-250 words and include:
 - Potential challenges and solutions
 - Success measurement criteria
 - Real-world examples or case studies when relevant"""
+    
+    return prompt
 
 def get_business_context_prompt_with_content(question, custom_keywords="", content=""):
     """Enhanced prompt that includes content analysis"""
@@ -399,7 +401,7 @@ def get_business_context_prompt_with_content(question, custom_keywords="", conte
     if len(content) > max_content_length:
         content = content[:max_content_length] + "... [Content truncated for analysis]"
     
-    return f"""You are a senior strategic market research analyst providing executive-level insights for business leaders. Your responses must be comprehensive, actionable, and business-focused.
+    prompt = f"""You are a senior strategic market research analyst providing executive-level insights for business leaders. Your responses must be comprehensive, actionable, and business-focused.
 
 QUESTION: {question}
 CUSTOM KEYWORDS: {custom_keywords}
@@ -477,4 +479,292 @@ Respond using EXACTLY this format:
 2. [Comprehensive 150-250 word insight covering talent acquisition, skills development, organizational change, and workforce planning]
 3. [Comprehensive 150-250 word insight covering future market scenarios, strategic positioning, and long-term competitive advantages]
 
-CRITICAL: Each Business Action must be exactly
+CRITICAL: Each Business Action must be exactly 150-250 words and include:
+- Specific business strategies and tactics derived from the content
+- Quantifiable metrics and KPIs where possible
+- Implementation timelines and resource requirements
+- Potential challenges and solutions
+- Success measurement criteria
+- Real-world examples or case studies when relevant"""
+    
+    return prompt
+
+def analyze_question(question, custom_keywords=""):
+    try:
+        if not question or not question.strip():
+            return {
+                "error": "Question cannot be empty",
+                "keywords": [],
+                "insights": {},
+                "full_response": ""
+            }
+
+        # Create a unique identifier for this analysis
+        analysis_id = hashlib.md5(f"{question}_{custom_keywords}".encode()).hexdigest()[:8]
+        
+        # Use the enhanced business-focused prompt
+        full_prompt = get_business_context_prompt(question, custom_keywords)
+        
+        logger.info(f"Starting enhanced analysis {analysis_id} for question: {question[:50]}...")
+        
+        response = claude_messages(full_prompt)
+        if response.startswith("Error:"):
+            return {
+                "error": response,
+                "keywords": [],
+                "insights": {},
+                "full_response": response,
+                "analysis_id": analysis_id
+            }
+
+        parsed_result = parse_enhanced_analysis_response(response)
+        return {
+            "keywords": parsed_result.get("keywords", []),
+            "insights": parsed_result.get("structured_insights", {}),
+            "full_response": response,
+            "error": None,
+            "analysis_id": analysis_id
+        }
+
+    except Exception as e:
+        logger.error(f"Error in analyze_question: {str(e)}")
+        return {
+            "error": f"Error analyzing question: {str(e)}",
+            "keywords": [],
+            "insights": {},
+            "full_response": "",
+            "analysis_id": None
+        }
+
+def parse_enhanced_analysis_response(response):
+    try:
+        lines = response.strip().split("\n")
+        keywords = []
+        structured_insights = {}
+        current_keyword = None
+        mode = None
+        current_titles = []
+        current_insights = []
+
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+
+            # Extract keywords
+            if line.startswith("**KEYWORDS IDENTIFIED:**"):
+                mode = "keywords"
+                continue
+
+            elif mode == "keywords" and not line.startswith("**"):
+                # Clean up keywords - remove brackets and extra formatting
+                keyword_line = line.replace("[", "").replace("]", "")
+                keywords = [k.strip() for k in keyword_line.split(",") if k.strip()]
+                mode = None
+                continue
+
+            # Extract keyword sections
+            elif line.startswith("**KEYWORD") and ":" in line:
+                # Save previous keyword data if exists
+                if current_keyword and (current_titles or current_insights):
+                    structured_insights[current_keyword] = {
+                        "titles": current_titles,
+                        "insights": current_insights
+                    }
+                
+                # Extract keyword name more reliably
+                if ":" in line:
+                    keyword_part = line.split(":", 1)[1].strip()
+                    current_keyword = keyword_part.replace("**", "").replace("[", "").replace("]", "").strip()
+                    current_titles = []
+                    current_insights = []
+                continue
+
+            elif line.startswith("**STRATEGIC INSIGHTS:**"):
+                mode = "titles"
+                continue
+
+            elif line.startswith("**BUSINESS ACTIONS:**"):
+                mode = "insights"
+                continue
+
+            # Extract content
+            elif mode == "titles" and current_keyword:
+                if line and (line[0].isdigit() or line.startswith("- ")):
+                    # Handle both numbered and bulleted lists
+                    if line[0].isdigit() and "." in line:
+                        content = line.split(".", 1)[1].strip()
+                    elif line.startswith("- "):
+                        content = line[2:].strip()
+                    else:
+                        content = line.strip()
+                    
+                    # Remove any remaining formatting
+                    content = content.replace("[", "").replace("]", "").strip()
+                    
+                    if content:
+                        current_titles.append(content)
+
+            elif mode == "insights" and current_keyword:
+                if line and (line[0].isdigit() or line.startswith("- ")):
+                    # Start of a new insight
+                    if line[0].isdigit() and "." in line:
+                        content = line.split(".", 1)[1].strip()
+                    elif line.startswith("- "):
+                        content = line[2:].strip()
+                    else:
+                        content = line.strip()
+                    
+                    # Remove any remaining formatting
+                    content = content.replace("[", "").replace("]", "").strip()
+                    
+                    if content:
+                        current_insights.append(content)
+                elif current_insights and not line.startswith("**"):
+                    # Continue the current insight (multi-line)
+                    current_insights[-1] += " " + line.strip()
+
+        # Don't forget the last keyword
+        if current_keyword and (current_titles or current_insights):
+            structured_insights[current_keyword] = {
+                "titles": current_titles,
+                "insights": current_insights
+            }
+
+        # Validate that we have the expected structure
+        logger.info(f"Parsed {len(keywords)} keywords: {keywords}")
+        logger.info(f"Structured insights for {len(structured_insights)} keywords")
+        
+        # Log insight lengths for debugging
+        for kw, data in structured_insights.items():
+            avg_length = sum(len(insight) for insight in data.get("insights", [])) / max(len(data.get("insights", [])), 1)
+            logger.info(f"Keyword '{kw}': {len(data.get('insights', []))} insights, avg length: {avg_length:.0f} chars")
+        
+        return {
+            "keywords": keywords,
+            "structured_insights": structured_insights
+        }
+
+    except Exception as e:
+        logger.error(f"Error parsing enhanced analysis response: {str(e)}")
+        return {
+            "keywords": [],
+            "structured_insights": {}
+        }
+
+def parse_analysis_response(response):
+    """Legacy parser - kept for backward compatibility"""
+    return parse_enhanced_analysis_response(response)
+
+def safe_get_insight(analysis_result, keyword, insight_type="insights", index=0):
+    try:
+        if not analysis_result:
+            return "Error: analysis_result is empty or None"
+
+        if insight_type not in {"titles", "insights"}:
+            return f"Error: Invalid insight_type '{insight_type}'"
+
+        insights = analysis_result.get("insights", {})
+        if not insights:
+            return "Error: No insights found in the analysis result"
+
+        keyword_data = insights.get(keyword)
+        if not keyword_data:
+            available_keywords = ", ".join(insights.keys())
+            return f"Error: Keyword '{keyword}' not found. Available keywords: {available_keywords}"
+
+        items = keyword_data.get(insight_type)
+        if not isinstance(items, list):
+            return f"Error: Missing or malformed '{insight_type}' data for keyword '{keyword}'"
+
+        if index >= len(items):
+            return f"Error: Index {index} out of range for '{insight_type}' in keyword '{keyword}' (total available: {len(items)})"
+
+        return items[index]
+
+    except Exception as e:
+        logger.error(f"Error in safe_get_insight: {str(e)}")
+        return f"Error retrieving insight: {str(e)}"
+
+def clear_cache():
+    """Clear the response cache to force fresh responses"""
+    global _response_cache
+    _response_cache.clear()
+    logger.info("Response cache cleared")
+
+def get_insight_quality_score(insights_data):
+    """Calculate a quality score for the insights"""
+    if not insights_data:
+        return 0
+    
+    total_score = 0
+    total_insights = 0
+    
+    for keyword, data in insights_data.items():
+        insights = data.get("insights", [])
+        for insight in insights:
+            score = 0
+            length = len(insight)
+            
+            # Length scoring (prefer 150-250 words)
+            if 150 <= length <= 250:
+                score += 40
+            elif 100 <= length < 150:
+                score += 30
+            elif 75 <= length < 100:
+                score += 20
+            
+            # Content quality indicators
+            if any(word in insight.lower() for word in ['roi', 'revenue', 'growth', 'market share']):
+                score += 15
+            if any(word in insight.lower() for word in ['strategy', 'implementation', 'approach']):
+                score += 10
+            if any(word in insight.lower() for word in ['customers', 'clients', 'users']):
+                score += 10
+            if any(word in insight.lower() for word in ['competitive', 'advantage', 'positioning']):
+                score += 15
+            if any(word in insight.lower() for word in ['metrics', 'kpi', 'measurement']):
+                score += 10
+            
+            total_score += score
+            total_insights += 1
+    
+    return (total_score / total_insights) if total_insights > 0 else 0
+
+def test_functions():
+    print("✅ Enhanced summarize_trends function loaded")
+    print("✅ Enhanced analyze_question function loaded")
+    print("✅ Enhanced extract_text_from_file function loaded")
+    print("✅ Enhanced claude_messages function loaded")
+    print("✅ safe_get_insight function loaded")
+    print("✅ clear_cache function loaded")
+    print("✅ get_insight_quality_score function loaded")
+    print("✅ analyze_url_content function loaded")
+
+    # Test both question and text analysis
+    test_question = "What are the key market opportunities in sustainable packaging for food companies in 2024?"
+    test_text = "The global sustainable packaging market is experiencing unprecedented growth, driven by consumer demand for eco-friendly solutions and regulatory pressure on food companies to reduce plastic waste. Major brands are investing heavily in biodegradable materials and circular economy initiatives."
+    
+    print(f"\n🔍 Testing enhanced question analysis: {test_question}")
+    result1 = analyze_question(test_question)
+    
+    print(f"\n📄 Testing enhanced text analysis")
+    result2 = summarize_trends(text=test_text, question="What business opportunities exist in this market?")
+
+    for i, result in enumerate([result1, result2], 1):
+        print(f"\n--- RESULT {i} ---")
+        if result["error"]:
+            print("❌ Error:", result["error"])
+            continue
+
+        print(f"📊 Analysis ID: {result.get('analysis_id', 'N/A')}")
+        print("🔑 Keywords identified:", result["keywords"])
+        print(f"📈 Total insights structure: {len(result['insights'])} keywords")
+        
+        # Calculate quality score
+        quality_score = get_insight_quality_score(result['insights'])
+        print(f"🎯 Insight Quality Score: {quality_score:.1f}/100")
+
+        # Show first insight for first keyword
+        if result["keywords"]:
+            first_kw = result["keywords"][0]
