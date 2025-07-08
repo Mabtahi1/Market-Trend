@@ -242,85 +242,86 @@ def claude_messages(prompt):
         return f"Error calling Claude: {str(e)}"
 
 def get_business_context_prompt(question, custom_keywords=""):
-    """Generate enhanced business-focused prompt with stricter formatting requirements"""
+    """Generate enhanced business-focused prompt with comprehensive requirements"""
     
-    prompt = f"""You are a senior strategic market research analyst. You MUST provide detailed, comprehensive business insights.
+    prompt = f"""You are a senior strategic market research analyst providing executive-level insights. You MUST follow the exact format and provide comprehensive, detailed analysis.
 
 QUESTION: {question}
 KEYWORDS: {custom_keywords}
 
 CRITICAL REQUIREMENTS:
-- Each Business Action must be 200-300 words with specific data
-- Include dollar amounts, percentages, timeframes, ROI calculations
-- Mention market size, growth rates, competitive analysis
-- Provide implementation costs, revenue projections, KPIs
+- Each Business Action must be 250-350 words with specific quantitative data
+- Include dollar amounts, percentages, timeframes, ROI calculations, market sizes
+- Mention specific competitors, customer segments, implementation costs
+- Provide measurable KPIs, success metrics, and risk assessments
+- Use realistic but compelling business data and projections
 
 Use EXACTLY this format:
 
 **KEYWORDS IDENTIFIED:**
-Market Opportunities, Digital Transformation, Customer Experience, Revenue Growth, Competitive Strategy
+Market Analysis, Growth Strategy, Digital Innovation, Customer Engagement, Competitive Positioning
 
 **STRATEGIC MARKET ANALYSIS:**
 
-**KEYWORD 1: Market Opportunities**
+**KEYWORD 1: Market Analysis**
 **STRATEGIC INSIGHTS:**
-1. Market Opportunity Assessment: Analyze total addressable market size and growth potential
-2. Competitive Intelligence: Evaluate competitive landscape and positioning strategies  
-3. Implementation Strategy: Develop actionable implementation roadmap with timeline
+1. Market Opportunity Assessment: Total addressable market size and growth potential analysis
+2. Competitive Intelligence: Key player analysis and market positioning strategies  
+3. Implementation Strategy: Detailed roadmap with timeline and resource requirements
 **BUSINESS ACTIONS:**
-1. The market opportunity represents a significant revenue potential of $2.5 billion globally, growing at 15% annually through 2026. Target customer segments include enterprise clients (65% of market) and SMBs (35% of market), with average deal sizes of $150K and $25K respectively. Implementation requires 6-month development phase with $2M initial investment, projected 18-month payback period, and 35% gross margins. Key success metrics include 15% market share capture within 24 months, customer acquisition cost under $15K, and customer lifetime value exceeding $200K. Competitive differentiation focuses on proprietary technology stack providing 40% faster processing speeds than competitors. Risk mitigation includes diversified customer base across 5 industry verticals and strategic partnerships with 3 major technology vendors to ensure scalable delivery capabilities.
+1. The global market opportunity represents $4.2 billion in total addressable market, experiencing 18% compound annual growth rate through 2027. Primary customer segments include enterprise clients (accounting for 68% of market value at average contract value of $180,000) and mid-market companies (32% of market with $45,000 average deals). Geographic expansion targets North America ($1.8B), Europe ($1.4B), and Asia-Pacific ($1.0B) markets. Implementation requires $3.2 million initial investment over 18 months, including technology development ($1.8M), market entry costs ($800K), and team expansion ($600K). Revenue projections show $2.1M in year one, scaling to $12.5M by year three with 28% EBITDA margins. Key performance indicators include market penetration rate (target: 8% within 36 months), customer acquisition cost ($12,000), lifetime value ($240,000), and quarterly revenue growth (minimum 15%). Competitive differentiation focuses on proprietary AI algorithms delivering 35% faster processing than incumbent solutions. Risk mitigation includes diversified customer portfolio across six industry verticals and strategic partnerships with three major technology vendors ensuring scalable delivery infrastructure and market credibility.
 
-2. Competitive analysis reveals three major players controlling 60% market share, creating opportunity for disruptive innovation in underserved segments. Primary competitors include EstablishedCorp ($500M revenue, 25% market share), TechGiant ($400M revenue, 20% market share), and InnovativeCo ($300M revenue, 15% market share). Our differentiation strategy targets price-sensitive SMB segment with 30% cost reduction through automated delivery model. Customer acquisition approach includes digital marketing campaigns targeting CFOs and IT directors, trade show presence at 8 major industry events annually, and partner channel development with 25 system integrators. Brand positioning emphasizes reliability, affordability, and rapid deployment capabilities. Success metrics include 20% customer retention improvement, 50% reduction in sales cycle length, and 25% increase in average deal size through upselling strategies.
+2. Competitive landscape analysis reveals fragmented market with top three players controlling 45% market share, creating significant opportunity for disruptive innovation. Primary competitors include MarketLeader Corp ($180M annual revenue, 18% market share), TechGiant Solutions ($140M revenue, 15% share), and Innovation Partners ($110M revenue, 12% share). Our differentiation strategy targets underserved SMB segment with 40% cost reduction through automated delivery model and cloud-based architecture. Customer acquisition approach combines digital marketing campaigns targeting C-suite executives, strategic partnerships with industry associations, and direct sales team of 12 representatives covering key metropolitan areas. Brand positioning emphasizes reliability, innovation, and rapid deployment capabilities with case studies demonstrating 6-month implementation cycles versus industry average of 14 months. Success metrics include brand awareness improvement (target: 25% aided recall within 18 months), sales cycle reduction (target: 30% shorter than competitors), customer satisfaction scores (target: 4.6/5.0), and market share capture (target: 12% within five years). Pricing strategy employs value-based model with 20% premium justified by superior outcomes and faster time-to-value delivery.
 
-3. Implementation strategy requires cross-functional team of 15 professionals including 5 engineers, 3 sales representatives, 2 marketing specialists, 3 customer success managers, and 2 project managers. Technology infrastructure investment of $1.5M includes cloud platform development, security certifications, and integration capabilities. Operational processes encompass customer onboarding automation, support ticket management system, and performance monitoring dashboard. Key milestones include beta testing with 10 pilot customers (month 3), full product launch (month 6), 100 customers milestone (month 12), and profitability achievement (month 18). Risk assessment identifies technology development delays, competitive pricing pressure, and customer churn as primary concerns. Mitigation strategies include agile development methodology, flexible pricing models, and proactive customer success programs with quarterly business reviews.
+3. Implementation roadmap requires cross-functional team of 28 professionals including 12 engineers, 8 sales specialists, 4 marketing professionals, and 4 customer success managers. Technology infrastructure investment totals $2.1 million including cloud platform development ($900K), security certifications ($400K), integration capabilities ($500K), and analytics dashboard ($300K). Operational processes encompass automated customer onboarding reducing setup time by 60%, AI-powered support system achieving 85% first-contact resolution, and predictive analytics platform enabling proactive customer success interventions. Development milestones include beta testing with 15 pilot customers (months 3-6), limited market release (month 9), full product launch (month 12), and international expansion (month 18). Quality assurance protocols ensure 99.9% uptime, sub-second response times, and enterprise-grade security compliance. Risk assessment identifies technology development delays, competitive pricing pressure, and talent acquisition challenges as primary concerns. Mitigation strategies include agile development methodology with bi-weekly sprints, flexible pricing models with performance-based components, and comprehensive employee retention program including equity participation and professional development opportunities.
 
-**KEYWORD 2: Digital Transformation**
+**KEYWORD 2: Growth Strategy**
 **STRATEGIC INSIGHTS:**
-1. Revenue Impact Analysis: Calculate ROI from digital initiatives and automation
-2. Customer Behavior Trends: Understand digital engagement patterns and preferences
-3. Operational Excellence: Optimize processes through technology integration
+1. Revenue Diversification: Multiple revenue stream development and optimization
+2. Customer Expansion: Existing account growth and market penetration strategies
+3. Innovation Pipeline: Next-generation product development and market positioning
 **BUSINESS ACTIONS:**
-1. Digital transformation initiatives generate average ROI of 250% within 18 months through operational efficiency gains and new revenue streams. Revenue impact includes 35% increase in customer lifetime value through personalized experiences, 25% reduction in customer acquisition costs via digital channels, and 40% improvement in sales conversion rates through automated nurturing. Investment requirements total $3.2M including technology platforms ($1.8M), training programs ($0.8M), and change management ($0.6M). Financial projections show $8M incremental revenue in year one, growing to $15M by year three. Key performance indicators include digital engagement scores, automation rate percentages, and customer satisfaction improvements. Market analysis indicates 78% of competitors have initiated similar transformations, making rapid execution critical for competitive positioning. Success factors include executive sponsorship, employee training programs, and phased rollout approach minimizing business disruption.
+1. Revenue diversification strategy targets four distinct income streams generating combined $18.7 million annual recurring revenue by year three. Primary subscription model ($12.2M, 65% of total) focuses on SaaS platform with tiered pricing from $2,500/month (basic) to $15,000/month (enterprise). Professional services division ($3.8M, 20% of total) offers implementation consulting, customization projects, and ongoing optimization services at $275/hour average billing rate. Marketplace revenue ($1.9M, 10% of total) creates ecosystem partnerships enabling third-party integrations with 15% revenue sharing model. Training and certification programs ($800K, 5% of total) provide customer education and partner enablement through online courses, workshops, and certification pathways. Financial projections show 32% gross margins on subscription revenue, 65% on professional services, 45% on marketplace transactions, and 85% on training programs. Implementation requires dedicated teams for each revenue stream with combined investment of $1.4 million in personnel, technology platforms, and market development. Success metrics include revenue diversification index (target: no single stream exceeding 70%), customer lifetime value improvement (target: 40% increase), and cross-selling attachment rates (target: 2.3 products per customer). Risk mitigation addresses market saturation, pricing pressure, and execution complexity through phased rollout approach and continuous market feedback integration.
 
-2. Customer behavior analysis reveals 73% preference for self-service digital interactions, 45% mobile-first engagement patterns, and 60% expectation for real-time response capabilities. Digital channel adoption shows 85% email engagement, 62% social media interaction, and 38% mobile app utilization rates. Personalization engines drive 28% higher engagement rates and 22% increased purchase frequency. Customer journey mapping identifies 7 key touchpoints requiring optimization, with potential 30% improvement in conversion rates through enhanced digital experiences. Investment in customer data platform ($500K) and analytics tools ($300K) enables predictive modeling and behavioral segmentation. Implementation timeline spans 12 months with quarterly milestone reviews. Success metrics include Net Promoter Score improvement (target: +15 points), customer effort score reduction (target: -25%), and digital adoption rates (target: 80% of transactions).
+2. Customer expansion initiatives focus on existing account growth through upselling, cross-selling, and retention optimization programs. Account management framework segments customers into Strategic ($100K+ annual value, 15% of base), Growth ($25K-$100K, 35% of base), and Standard (<$25K, 50% of base) tiers with tailored engagement models. Upselling programs target feature upgrades, user expansion, and premium support services with average 38% annual contract value increase for successful conversions. Cross-selling strategy introduces complementary solutions including analytics modules, integration services, and industry-specific extensions with 28% attachment rate objective. Customer success platform leverages predictive analytics to identify expansion opportunities 90 days in advance, enabling proactive engagement and personalized recommendations. Retention initiatives include quarterly business reviews, success metric tracking, and early warning systems for at-risk accounts. Investment requirements total $900K including customer success team expansion (6 additional managers), technology platform enhancements, and customer advisory board establishment. Success indicators encompass net revenue retention (target: 125%), gross revenue retention (target: 95%), expansion revenue percentage (target: 35% of total), and customer health scores (target: average 8.5/10). Implementation timeline spans 12 months with monthly performance reviews and quarterly strategy adjustments based on customer feedback and market dynamics.
 
-3. Operational excellence roadmap focuses on process automation, data integration, and performance optimization delivering 30% cost reduction and 50% efficiency improvement. Technology stack includes robotic process automation ($400K), enterprise resource planning upgrade ($800K), and business intelligence platform ($300K). Automation targets include invoice processing (90% automation rate), customer onboarding (75% automation), and report generation (95% automation). Change management program addresses workforce transformation through reskilling initiatives for 120 employees, with 85% retention target. Performance measurement framework tracks operational KPIs including process cycle time, error rates, and employee productivity metrics. Implementation phases include assessment (months 1-2), pilot programs (months 3-6), and full deployment (months 7-12). Risk mitigation covers data security protocols, business continuity planning, and vendor management strategies ensuring smooth transition.
+3. Innovation pipeline development focuses on next-generation capabilities maintaining competitive advantage and market leadership position. Research and development investment of $2.3 million annually (12% of projected revenue) funds three primary initiatives: artificial intelligence integration, mobile-first user experience, and vertical-specific solutions. AI capabilities include predictive analytics, natural language processing, and automated decision-making features addressing customer workflow optimization needs. Mobile platform development targets field workers and remote teams with offline functionality, real-time synchronization, and enhanced user interface optimized for tablet and smartphone devices. Vertical solutions target healthcare ($500M addressable market), financial services ($380M market), and manufacturing ($420M market) with industry-specific compliance, integrations, and workflows. Product roadmap includes quarterly feature releases, annual major version updates, and continuous platform improvements based on customer usage analytics. Technology partnerships with cloud providers, AI vendors, and industry specialists accelerate development timelines and reduce technical risks. Success metrics include feature adoption rates (target: 65% of customers using new capabilities within 6 months), customer satisfaction with innovations (target: 4.4/5.0), and competitive differentiation scores from third-party analysts. Market validation includes beta testing programs with 25 customer participants and advisory board feedback from industry executives.
 
-**KEYWORD 3: Customer Experience**
+**KEYWORD 3: Digital Innovation**
 **STRATEGIC INSIGHTS:**
-1. Innovation Opportunities: Develop customer-centric solutions and service improvements
-2. Partnership & Ecosystem: Build strategic alliances for enhanced customer value
-3. Risk Management: Address customer satisfaction and retention challenges
+1. Technology Transformation: Platform modernization and capability enhancement
+2. Data Analytics: Business intelligence and predictive analytics implementation
+3. Automation: Process optimization and efficiency improvement initiatives
 **BUSINESS ACTIONS:**
-1. Innovation opportunities focus on customer experience enhancement through AI-powered personalization, omnichannel integration, and predictive service delivery. Investment of $1.2M in customer experience platform enables 360-degree customer view, real-time interaction tracking, and automated response capabilities. Product development roadmap includes mobile app enhancement (Q1), chatbot integration (Q2), and loyalty program launch (Q3). Revenue impact projects 20% increase in customer retention, 15% growth in average order value, and 25% improvement in cross-selling success rates. Market research indicates customer experience leaders achieve 2x revenue growth compared to laggards. Technology partnerships with CRM providers and analytics vendors accelerate implementation timeline. Success metrics include customer satisfaction scores (target: 4.5/5.0), first-call resolution rates (target: 80%), and customer effort scores (target: <2.0 on 5-point scale).
+1. Technology transformation initiative modernizes core platform architecture delivering 45% performance improvement and 60% reduction in operational costs. Cloud-native redesign migrates from legacy infrastructure to microservices architecture supporting 10x scalability and 99.99% availability targets. Investment of $1.8 million over 15 months includes platform re-engineering ($800K), cloud migration ($500K), security enhancements ($300K), and testing automation ($200K). Modern technology stack incorporates containerization, API-first design, and serverless computing reducing infrastructure costs by $180K annually while improving deployment speed by 80%. Enhanced capabilities include real-time data processing, advanced integrations with 50+ third-party systems, and mobile-responsive interface optimized for multiple device types. Performance improvements encompass 3-second average page load times (previously 8 seconds), 500ms API response times (previously 1.2 seconds), and support for 50,000 concurrent users (10x current capacity). Implementation follows agile methodology with bi-weekly sprints, continuous integration/deployment pipeline, and comprehensive testing protocols. Success metrics include system uptime (target: 99.95%), customer satisfaction with performance (target: 4.7/5.0), and operational cost reduction (target: 35% within 12 months). Risk mitigation addresses migration complexity, data integrity, and user training through phased rollout, comprehensive backup procedures, and extensive user acceptance testing with customer advisory groups.
 
-2. Partnership ecosystem development creates comprehensive customer value proposition through strategic alliances with complementary service providers. Partnership portfolio includes technology integrators (5 partners), industry consultants (8 partners), and solution vendors (12 partners). Revenue sharing models average 15% partner commission with performance bonuses for customer satisfaction achievements. Joint go-to-market strategies target enterprise accounts through coordinated sales efforts and shared marketing investments. Partner enablement program includes training certification, sales tools, and technical support resources. Combined market reach expands addressable market by 40% through partner channels. Implementation requires 6-month partner onboarding process with quarterly business reviews. Success indicators include partner-generated revenue (target: 30% of total), partner satisfaction scores (target: 4.0/5.0), and joint customer retention rates (target: 95%). Risk management addresses partner conflicts, quality control, and competitive positioning challenges.
+2. Data analytics platform implementation transforms business intelligence capabilities enabling data-driven decision making and predictive insights. Advanced analytics infrastructure processes 2.5 million data points daily from customer interactions, system performance metrics, and market indicators generating actionable insights for product development, customer success, and business optimization. Machine learning algorithms identify usage patterns, predict customer churn with 87% accuracy, and recommend personalized feature suggestions improving customer engagement by 42%. Investment of $1.1 million includes analytics platform licensing ($400K), data engineering team ($500K), and visualization tools ($200K). Custom dashboards provide real-time visibility into key performance indicators, customer health scores, and operational metrics accessible to executives, customer success teams, and product managers. Predictive analytics capabilities include revenue forecasting with 95% confidence intervals, customer lifetime value modeling, and market trend analysis supporting strategic planning processes. Data governance framework ensures privacy compliance, security protocols, and ethical AI practices meeting regulatory requirements and customer expectations. Success indicators encompass data quality scores (target: 98% accuracy), analytics adoption rates (target: 85% of users), decision-making speed improvement (target: 50% faster), and business outcome correlation (target: 25% improvement in KPI achievement). Implementation timeline spans 10 months including data infrastructure setup, model development, user training, and continuous optimization based on business feedback and performance monitoring.
 
-3. Risk management framework addresses customer satisfaction challenges through proactive monitoring, rapid response protocols, and continuous improvement processes. Customer satisfaction tracking includes NPS surveys (monthly), customer effort measurements (quarterly), and churn analysis (weekly). Response protocols ensure 24-hour resolution for critical issues and 4-hour response time for standard inquiries. Investment in customer success team ($600K annually) includes dedicated account managers for enterprise clients and automated success tracking for SMB customers. Predictive analytics identify at-risk customers 60 days before potential churn, enabling proactive intervention strategies. Retention programs include customer health scoring, personalized outreach campaigns, and value-added services. Success metrics target 95% customer retention rate, 90% satisfaction scores, and 50% reduction in customer complaints. Continuous improvement processes incorporate customer feedback loops, employee training programs, and technology platform enhancements ensuring sustained service excellence.
+3. Automation initiatives streamline operational processes reducing manual effort by 65% and improving consistency across customer-facing activities. Robotic process automation deployment targets invoice processing (95% automation rate), customer onboarding (80% automation), report generation (90% automation), and support ticket routing (85% automation). Investment totals $750K including automation software licensing ($300K), process reengineering ($250K), and employee training programs ($200K). Workflow optimization identifies 23 repetitive tasks suitable for automation with combined time savings of 1,200 hours monthly enabling staff reallocation to high-value activities. Customer onboarding automation reduces setup time from 14 days to 3 days while improving accuracy and consistency through standardized procedures and automated validation checks. Support automation includes chatbot implementation handling 70% of routine inquiries, automated ticket classification, and intelligent routing to appropriate specialists reducing response times by 55%. Process monitoring dashboard tracks automation performance, exception handling, and continuous improvement opportunities ensuring optimal efficiency and quality outcomes. Change management program addresses workforce transformation through skills development, role redefinition, and career advancement opportunities for affected employees. Success metrics include process efficiency improvement (target: 60% reduction in processing time), error rate reduction (target: 80% fewer manual errors), employee satisfaction with new tools (target: 4.2/5.0), and cost savings achievement (target: $400K annually). Implementation follows phased approach with pilot programs, user feedback integration, and gradual expansion across all operational areas.
 
-**KEYWORD 4: Revenue Growth**
+**KEYWORD 4: Customer Engagement**
 **STRATEGIC INSIGHTS:**
-1. Market Expansion: Identify geographic and demographic growth opportunities
-2. Digital Transformation: Leverage technology for revenue optimization
-3. Sustainability & ESG: Address environmental and social responsibility factors
+1. Experience Optimization: Customer journey enhancement and satisfaction improvement
+2. Retention Programs: Loyalty initiatives and churn reduction strategies
+3. Community Building: User engagement and advocacy development programs
 **BUSINESS ACTIONS:**
-1. Market expansion strategy targets three high-growth regions with combined market potential of $1.8B and 22% annual growth rates. Primary markets include Asia-Pacific ($800M opportunity), European Union ($600M opportunity), and Latin America ($400M opportunity). Entry strategy requires $2.5M investment including local partnerships ($800K), regulatory compliance ($500K), market research ($300K), and sales team establishment ($900K). Revenue projections show $5M year-one sales growing to $25M by year three. Localization requirements include product adaptation, language translation, and cultural customization across 8 target countries. Distribution channels include direct sales (40%), partner networks (35%), and digital platforms (25%). Success metrics include market penetration rates (target: 5% within 24 months), customer acquisition costs (target: <$8K), and local revenue contribution (target: 30% of total by year three). Risk factors include regulatory changes, currency fluctuations, and competitive responses requiring flexible strategy adaptation.
+1. Customer experience optimization program redesigns entire customer journey delivering 35% improvement in satisfaction scores and 28% reduction in churn rates. Journey mapping identifies 12 critical touchpoints from initial awareness through renewal cycles, implementing targeted improvements at each stage. Onboarding experience enhancement reduces time-to-value from 45 days to 18 days through guided setup wizards, automated configuration, and dedicated success manager assignment for first 90 days. Support experience transformation includes 24/7 chat availability, comprehensive knowledge base with 500+ articles, and AI-powered suggestion engine resolving 68% of inquiries without human intervention. Investment of $920K encompasses experience design consulting ($200K), technology platform upgrades ($400K), training programs ($180K), and performance measurement systems ($140K). Personalization engine delivers customized content, feature recommendations, and communication preferences based on usage patterns and business needs improving engagement by 45%. Feedback collection system captures satisfaction data at every touchpoint through surveys, interviews, and behavioral analytics enabling continuous improvement initiatives. Success indicators include Net Promoter Score improvement (target: increase from 42 to 58), Customer Effort Score reduction (target: 40% improvement), customer satisfaction ratings (target: 4.6/5.0), and support resolution times (target: 25% faster). Implementation spans 8 months with monthly progress reviews and quarterly customer advisory board meetings ensuring alignment with evolving customer expectations and market requirements.
 
-2. Digital transformation initiatives drive revenue optimization through automated sales processes, dynamic pricing models, and customer analytics platforms. Technology investment of $1.8M includes sales automation tools ($600K), pricing optimization software ($400K), and business intelligence platform ($800K). Revenue impact includes 18% improvement in sales efficiency, 12% increase in average selling prices, and 25% growth in upselling success rates. Sales process automation reduces cycle time by 35% while improving lead qualification accuracy by 40%. Dynamic pricing algorithms optimize margins across 500+ product SKUs based on market conditions, competitor analysis, and demand patterns. Customer analytics enable targeted campaigns with 2.3x higher conversion rates compared to generic approaches. Implementation timeline spans 15 months with monthly performance reviews. Success indicators include sales productivity metrics, margin improvement percentages, and customer lifetime value growth. Technology partnerships ensure scalable platform architecture supporting 10x transaction volume growth.
+2. Retention program development implements comprehensive loyalty initiatives reducing annual churn from 18% to 8% while increasing customer lifetime value by 42%. Customer success framework segments users based on engagement levels, business outcomes, and growth potential enabling personalized retention strategies. High-value customer program (500+ customers representing 70% of revenue) includes dedicated success managers, quarterly executive briefings, early access to new features, and customized training programs. Risk identification system monitors usage patterns, support ticket frequency, contract renewal timelines, and satisfaction scores triggering proactive interventions for at-risk accounts. Retention initiatives include win-back campaigns for lapsed users, loyalty rewards for long-term customers, and advocacy programs recognizing customer champions. Investment totals $680K including customer success team expansion ($400K), retention technology platform ($180K), and loyalty program development ($100K). Customer health scoring algorithm analyzes 47 variables predicting churn probability with 91% accuracy enabling early intervention 120 days before potential departure. Success recovery programs achieve 73% win-back rate through personalized outreach, service recovery, and value demonstration initiatives. Performance metrics encompass gross retention rate (target: 92%), net retention rate (target: 118%), customer lifetime value (target: $285K average), and advocacy participation (target: 25% of customer base). Continuous optimization includes quarterly cohort analysis, retention strategy refinement, and customer feedback integration ensuring program effectiveness and customer satisfaction alignment.
 
-3. Sustainability initiatives create revenue opportunities through ESG-focused product development, green technology adoption, and social impact programs. Market research indicates 67% of customers prioritize sustainable business practices, creating $400M addressable market opportunity. Product portfolio expansion includes eco-friendly alternatives capturing 15% price premium and targeting $2M incremental revenue. Operational changes reduce environmental footprint by 30% while achieving $300K annual cost savings through energy efficiency and waste reduction. ESG reporting capabilities attract institutional customers with stringent sustainability requirements. Investment requirements total $1.1M including renewable energy systems ($500K), sustainable packaging ($200K), and ESG compliance tools ($400K). Carbon offset programs and community partnerships enhance brand reputation and customer loyalty. Success metrics include sustainability certifications achieved, carbon footprint reduction percentages, and ESG-driven revenue growth. Long-term positioning establishes competitive differentiation as sustainability regulations increase industry requirements.
+3. Community building initiative creates engaged user ecosystem fostering peer learning, product advocacy, and collaborative innovation. Online community platform hosts 2,800+ active members participating in discussions, sharing best practices, and providing peer support reducing official support burden by 35%. User-generated content program encourages case study sharing, tutorial creation, and feature request submissions with recognition and rewards for top contributors. Annual user conference brings together 400 customers for networking, training, and product roadmap discussions generating $180K revenue while strengthening customer relationships. Investment of $520K includes community platform development ($200K), content creation ($150K), event planning ($120K), and community management staff ($50K). Customer advisory board comprising 15 strategic accounts provides product feedback, market insights, and strategic guidance influencing 65% of major product decisions. Advocacy program identifies customer champions participating in reference calls, case studies, and industry speaking opportunities with 89% agreement rate for reference requests. Knowledge sharing initiatives include monthly webinars (average 250 attendees), quarterly roundtables for specific industries, and annual awards recognizing innovation and success achievements. Success measurements include community engagement rates (target: 85% monthly active users), user-generated content volume (target: 50 posts weekly), customer advocacy participation (target: 30% of customer base), and community-driven support resolution (target: 40% of inquiries). Continuous community enhancement incorporates member feedback, industry best practices, and evolving engagement preferences ensuring sustained participation and value creation for all community members.
 
-**KEYWORD 5: Competitive Strategy**
+**KEYWORD 5: Competitive Positioning**
 **STRATEGIC INSIGHTS:**
-1. Financial Performance: Optimize investment allocation and financial planning
-2. Talent & Workforce: Develop human capital and organizational capabilities
-3. Future Outlook: Plan long-term strategic positioning and growth scenarios
+1. Market Differentiation: Unique value proposition and competitive advantage development
+2. Strategic Partnerships: Alliance building and ecosystem expansion initiatives
+3. Future Planning: Long-term positioning and market evolution strategies
 **BUSINESS ACTIONS:**
-1. Financial performance optimization requires strategic investment allocation across growth initiatives, operational improvements, and risk mitigation strategies. Capital allocation framework prioritizes high-ROI projects with payback periods under 18 months and IRR exceeding 25%. Investment portfolio includes technology platforms (40% allocation, $2.4M), market expansion (30% allocation, $1.8M), and talent acquisition (20% allocation, $1.2M), with 10% reserved for contingency planning. Financial projections show 35% revenue growth over three years with EBITDA margins improving from 18% to 25%. Cash flow management ensures operational sustainability while funding growth initiatives through combination of retained earnings (60%) and strategic financing (40%). Performance monitoring includes monthly financial reviews, quarterly board presentations, and annual strategic planning cycles. Key metrics encompass revenue growth rates, profitability margins, cash conversion cycles, and return on invested capital measurements.
+1. Market differentiation strategy establishes unique competitive positioning through proprietary technology, superior customer outcomes, and innovative business model capturing 15% market share within four years. Competitive analysis reveals gaps in current offerings including limited customization capabilities, poor mobile experience, and inadequate analytics functionality creating opportunity for differentiation. Unique value proposition emphasizes 60% faster implementation, 40% lower total cost of ownership, and 25% better customer satisfaction scores compared to leading competitors. Technology differentiation includes patented algorithms, AI-powered automation, and industry-specific configurations unavailable from alternative providers. Investment of $1.6 million funds competitive intelligence ($200K), product differentiation ($800K), marketing positioning ($350K), and sales enablement ($250K). Brand positioning targets innovative companies seeking competitive advantage through technology leadership and operational excellence. Messaging framework emphasizes speed, reliability, and measurable business outcomes supported by customer testimonials and third-party validation. Competitive battlecards equip sales teams with detailed comparisons, objection handling, and win/loss analysis improving competitive win rates by 35%. Success metrics include competitive displacement rate (target: 45% of competitive evaluations), brand differentiation scores (target: top 2 in analyst rankings), and premium pricing sustainability (target: 15% price premium maintenance). Market positioning reinforcement includes thought leadership content, industry speaking engagements, and strategic partnerships enhancing market credibility and competitive differentiation sustainability.
 
-2. Talent and workforce strategy focuses on capability development, retention programs, and cultural transformation supporting business growth objectives. Workforce expansion plan adds 45 professionals over 24 months including 15 technical specialists, 12 sales representatives, 8 customer success managers, and 10 operations staff. Compensation benchmarking ensures competitive positioning within top 75th percentile for critical roles. Training investment of $400K annually includes technical certifications, leadership development, and customer service excellence programs. Employee retention initiatives target 90% retention rate through career development pathways, performance-based bonuses, and flexible work arrangements. Cultural transformation emphasizes innovation, customer focus, and continuous learning through employee engagement surveys, recognition programs, and cross-functional collaboration projects. Succession planning identifies high-potential employees for leadership roles with individualized development plans. Success metrics include employee satisfaction scores (target: 4.2/5.0), retention rates by role category, and internal promotion percentages (target: 70% of leadership positions filled internally).
+2. Strategic partnership ecosystem expands market reach and capabilities through alliances with technology vendors, implementation consultants, and industry specialists. Partnership portfolio includes 8 technology integrations, 12 implementation partners, and 15 industry resellers generating 35% of total revenue through channel partnerships. System integrator relationships with major consulting firms provide implementation expertise and customer credibility while expanding addressable market by 60% through partner customer bases. Technology partnerships enable seamless integrations with CRM systems, ERP platforms, and industry-specific applications creating comprehensive solution ecosystem. Investment totals $840K including partner enablement ($300K), integration development ($350K), and channel management ($190K). Partner program includes certification requirements, training modules, sales tools, and performance incentives ensuring quality delivery and customer satisfaction. Revenue sharing models average 25% partner margin with performance bonuses for customer satisfaction and retention achievements. Co-marketing initiatives include joint webinars, conference exhibits, and content creation amplifying market presence and lead generation by 150%. Success indicators encompass partner-generated revenue (target: 40% of total), partner satisfaction scores (target: 4.4/5.0), integration quality ratings (target: 4.7/5.0), and market coverage expansion (target: 25 additional markets). Partnership governance includes quarterly business reviews, annual partner summit, and continuous feedback mechanisms ensuring mutual success and strategic alignment with evolving market requirements and customer needs.
 
-3. Future outlook planning incorporates scenario analysis, strategic option evaluation, and adaptive capability development for sustained competitive advantage. Strategic scenarios include market expansion opportunities ($50M revenue potential), technology disruption risks ($10M defensive investment), and competitive consolidation responses ($25M acquisition budget). Long-term positioning emphasizes platform-based business model enabling ecosystem partnerships and recurring revenue streams. Innovation pipeline includes next-generation product development ($3M R&D investment), emerging technology adoption (AI/ML capabilities), and adjacent market exploration (three new verticals identified). Competitive monitoring system tracks industry developments, patent filings, and market share changes enabling rapid strategic responses. Organizational agility initiatives include decision-making acceleration, resource reallocation capabilities, and strategic partnership flexibility. Five-year financial projections target $100M revenue with 30% EBITDA margins through organic growth (70%) and strategic acquisitions (30%). Risk management encompasses competitive threats, technology disruption, and regulatory changes with corresponding mitigation strategies and contingency plans."""
+3. Future planning and strategic positioning initiative prepares organization for market evolution and emerging opportunities over five-year horizon. Market trend analysis identifies artificial intelligence adoption, regulatory compliance requirements, and industry consolidation as primary drivers shaping competitive landscape. Strategic scenario planning evaluates multiple futures including technology disruption, new competitor entry, and market maturation developing responsive strategies for each possibility. Investment in emerging technologies totals $1.2 million annually including AI research, blockchain exploration, and IoT integration capabilities positioning company for next-generation market requirements. Long-term product roadmap extends 36 months incorporating customer feedback, technology trends, and competitive intelligence ensuring continued market leadership and innovation. Organizational capability development includes talent acquisition in emerging skill areas, strategic partnership cultivation, and intellectual property protection through patent applications and trade secret management. Financial planning supports sustainable growth with 25% annual revenue increases, 30% EBITDA margins, and strategic acquisition budget of $5 million for complementary technologies or market expansion opportunities. Success framework includes innovation pipeline metrics, market share trends, customer retention in evolving market, and financial performance against growth targets. Continuous environmental scanning monitors competitive moves, regulatory changes, technology developments, and customer behavior shifts enabling proactive strategy adjustments and market positioning optimization. Strategic flexibility maintains multiple options for growth including organic expansion, acquisition opportunities, and partnership development ensuring adaptability to changing market conditions and emerging opportunities."""
     
     return prompt
 
@@ -339,14 +340,7 @@ KEYWORDS: {custom_keywords}
 CONTENT TO ANALYZE:
 {content}
 
-REQUIREMENTS:
-- Each Business Action must be 200-300 words with specific data
-- Ground insights in the provided content
-- Include dollar amounts, percentages, timeframes, ROI calculations
-- Mention market size, growth rates, competitive analysis
-- Provide implementation costs, revenue projections, KPIs
-
-[Use the same format as the previous prompt with 5 keywords and detailed 200-300 word business actions]"""
+Use the same detailed format as specified above, ensuring each Business Action is 250-350 words with specific quantitative data grounded in the provided content."""
     
     return prompt
 
@@ -441,141 +435,4 @@ def parse_enhanced_analysis_response(response):
                 mode = "insights"
                 continue
 
-            elif mode == "titles" and current_keyword:
-                if line and (line[0].isdigit() or line.startswith("- ")):
-                    if line[0].isdigit() and "." in line:
-                        content = line.split(".", 1)[1].strip()
-                    elif line.startswith("- "):
-                        content = line[2:].strip()
-                    else:
-                        content = line.strip()
-                    
-                    content = content.replace("[", "").replace("]", "").strip()
-                    
-                    if content:
-                        current_titles.append(content)
-
-            elif mode == "insights" and current_keyword:
-                if line and (line[0].isdigit() or line.startswith("- ")):
-                    if line[0].isdigit() and "." in line:
-                        content = line.split(".", 1)[1].strip()
-                    elif line.startswith("- "):
-                        content = line[2:].strip()
-                    else:
-                        content = line.strip()
-                    
-                    content = content.replace("[", "").replace("]", "").strip()
-                    
-                    if content:
-                        current_insights.append(content)
-                elif current_insights and not line.startswith("**"):
-                    current_insights[-1] += " " + line.strip()
-
-        if current_keyword and (current_titles or current_insights):
-            structured_insights[current_keyword] = {
-                "titles": current_titles,
-                "insights": current_insights
-            }
-
-        logger.info(f"Parsed {len(keywords)} keywords: {keywords}")
-        logger.info(f"Structured insights for {len(structured_insights)} keywords")
-        
-        for kw, data in structured_insights.items():
-            avg_length = sum(len(insight) for insight in data.get("insights", [])) / max(len(data.get("insights", [])), 1)
-            logger.info(f"Keyword '{kw}': {len(data.get('insights', []))} insights, avg length: {avg_length:.0f} chars")
-        
-        return {
-            "keywords": keywords,
-            "structured_insights": structured_insights
-        }
-
-    except Exception as e:
-        logger.error(f"Error parsing enhanced analysis response: {str(e)}")
-        return {
-            "keywords": [],
-            "structured_insights": {}
-        }
-
-def parse_analysis_response(response):
-    """Legacy parser - kept for backward compatibility"""
-    return parse_enhanced_analysis_response(response)
-
-def safe_get_insight(analysis_result, keyword, insight_type="insights", index=0):
-    try:
-        if not analysis_result:
-            return "Error: analysis_result is empty or None"
-
-        if insight_type not in {"titles", "insights"}:
-            return f"Error: Invalid insight_type '{insight_type}'"
-
-        insights = analysis_result.get("insights", {})
-        if not insights:
-            return "Error: No insights found in the analysis result"
-
-        keyword_data = insights.get(keyword)
-        if not keyword_data:
-            available_keywords = ", ".join(insights.keys())
-            return f"Error: Keyword '{keyword}' not found. Available keywords: {available_keywords}"
-
-        items = keyword_data.get(insight_type)
-        if not isinstance(items, list):
-            return f"Error: Missing or malformed '{insight_type}' data for keyword '{keyword}'"
-
-        if index >= len(items):
-            return f"Error: Index {index} out of range for '{insight_type}' in keyword '{keyword}' (total available: {len(items)})"
-
-        return items[index]
-
-    except Exception as e:
-        logger.error(f"Error in safe_get_insight: {str(e)}")
-        return f"Error retrieving insight: {str(e)}"
-
-def clear_cache():
-    """Clear the response cache to force fresh responses"""
-    global _response_cache
-    _response_cache.clear()
-    logger.info("Response cache cleared")
-
-def get_insight_quality_score(insights_data):
-    """Calculate an improved quality score for the insights"""
-    if not insights_data:
-        return 0
-    
-    total_score = 0
-    total_insights = 0
-    
-    for keyword, data in insights_data.items():
-        insights = data.get("insights", [])
-        for insight in insights:
-            score = 0
-            length = len(insight)
-            words = insight.split()
-            word_count = len(words)
-            insight_lower = insight.lower()
-            
-            # Word count scoring (prefer 200-300 words)
-            if 200 <= word_count <= 300:
-                score += 50
-            elif 150 <= word_count < 200:
-                score += 35
-            elif 100 <= word_count < 150:
-                score += 25
-            elif word_count >= 300:
-                score += 40
-            else:
-                score += 10
-            
-            # Financial and business metrics (higher weight)
-            financial_terms = ['roi', 'revenue', 'profit', 'cost', 'investment', 'budget', 'margin', 'pricing', 'financial', 'earnings', '$', '%', 'million', 'billion']
-            financial_count = sum(1 for term in financial_terms if term in insight_lower)
-            score += min(financial_count * 3, 15)
-            
-            # Market and competitive analysis
-            market_terms = ['market', 'competitive', 'competitor', 'market share', 'positioning', 'segment', 'customer', 'growth', 'analysis']
-            market_count = sum(1 for term in market_terms if term in insight_lower)
-            score += min(market_count * 2, 12)
-            
-            # Implementation and strategy content
-            strategy_terms = ['strategy', 'implementation', 'approach', 'framework', 'methodology', 'roadmap', 'planning', 'timeline', 'phase']
-            strategy_count = sum(1 for term in strategy_terms if term in insight_lower)
-            score += min(strategy_count * 2,
+            elif mode == "titles"
