@@ -15,55 +15,130 @@ logger = logging.getLogger(__name__)
 _response_cache = {}
 
 def summarize_trends(text=None, question=None, keyword=None):
+    """Enhanced version that uses the same format as analyze_question"""
     try:
         if not any([text, question, keyword]):
-            return "Error: At least one parameter (text, question, or keyword) must be provided"
+            return {
+                "error": "At least one parameter (text, question, or keyword) must be provided",
+                "keywords": [],
+                "insights": {},
+                "full_response": ""
+            }
 
-        prompt_parts = []
-        if question:
-            prompt_parts.append(f"User Question: {question}\n")
-        if keyword:
-            prompt_parts.append(f"User Keyword: {keyword}\n")
+        # Create a comprehensive analysis question from the inputs
+        if text and question:
+            analysis_question = f"Based on the following content, {question}"
+            custom_keywords = keyword or ""
+        elif text and keyword:
+            analysis_question = f"Analyze the following content focusing on {keyword} and related business opportunities"
+            custom_keywords = keyword
+        elif text:
+            analysis_question = "Analyze the following content and identify key business opportunities, trends, and strategic insights"
+            custom_keywords = keyword or ""
+        elif question:
+            analysis_question = question
+            custom_keywords = keyword or ""
+        else:  # keyword only
+            analysis_question = f"Provide strategic market analysis and business insights related to {keyword}"
+            custom_keywords = keyword
+
+        # Use the enhanced business analysis with the content
         if text:
-            prompt_parts.append(f"Content to Analyze:\n{text}\n")
+            enhanced_prompt = get_business_context_prompt_with_content(analysis_question, custom_keywords, text)
+        else:
+            enhanced_prompt = get_business_context_prompt(analysis_question, custom_keywords)
 
-        prompt_parts.append("""
-From the above content:
-1. Extract hot keywords.
-2. Provide clear and concise actionable insights.
-Return the results in a readable format with two sections: Keywords and Insights.
-""")
-        prompt = "\n".join(prompt_parts)
+        response = claude_messages(enhanced_prompt)
+        
+        if response.startswith("Error:"):
+            return {
+                "error": response,
+                "keywords": [],
+                "insights": {},
+                "full_response": response
+            }
 
-        response = claude_messages(prompt)
-        return response
+        parsed_result = parse_enhanced_analysis_response(response)
+        return {
+            "keywords": parsed_result.get("keywords", []),
+            "insights": parsed_result.get("structured_insights", {}),
+            "full_response": response,
+            "error": None,
+            "analysis_id": hashlib.md5(f"{analysis_question}_{custom_keywords}".encode()).hexdigest()[:8]
+        }
 
     except Exception as e:
         logger.error(f"Error in summarize_trends: {str(e)}")
-        return f"Error summarizing content: {str(e)}"
+        return {
+            "error": f"Error summarizing content: {str(e)}",
+            "keywords": [],
+            "insights": {},
+            "full_response": ""
+        }
 
 def extract_text_from_file(uploaded_file):
+    """Enhanced version that returns structured analysis instead of just text"""
     tmp_path = None
     try:
         if not uploaded_file:
-            return "Error: No file provided"
+            return {
+                "error": "No file provided",
+                "keywords": [],
+                "insights": {},
+                "full_response": ""
+            }
 
         with tempfile.NamedTemporaryFile(delete=False) as tmp:
             tmp.write(uploaded_file.read())
             tmp_path = tmp.name
 
         text = textract.process(tmp_path).decode("utf-8")
-        return text
+        
+        # Now analyze the extracted text using the enhanced format
+        logger.info(f"Extracted {len(text)} characters from file, analyzing...")
+        
+        analysis_result = summarize_trends(
+            text=text,
+            question="Analyze this document and provide strategic business insights and market opportunities"
+        )
+        
+        return analysis_result
 
     except Exception as e:
         logger.error(f"Error extracting text from file: {str(e)}")
-        return f"Error extracting text: {str(e)}"
+        return {
+            "error": f"Error extracting text: {str(e)}",
+            "keywords": [],
+            "insights": {},
+            "full_response": ""
+        }
     finally:
         if tmp_path and os.path.exists(tmp_path):
             try:
                 os.unlink(tmp_path)
             except Exception as cleanup_error:
                 logger.warning(f"Could not clean up temp file: {cleanup_error}")
+
+def analyze_url_content(url, question=None, keyword=None):
+    """New function to analyze URL content with enhanced format"""
+    try:
+        # This would require a web scraping library like requests/beautifulsoup
+        # For now, return a template structure
+        return {
+            "error": "URL analysis requires web scraping implementation",
+            "keywords": [],
+            "insights": {},
+            "full_response": "",
+            "url": url
+        }
+    except Exception as e:
+        logger.error(f"Error analyzing URL: {str(e)}")
+        return {
+            "error": f"Error analyzing URL: {str(e)}",
+            "keywords": [],
+            "insights": {},
+            "full_response": ""
+        }
 
 def claude_messages(prompt):
     try:
@@ -217,6 +292,119 @@ Respond using EXACTLY this format:
 
 CRITICAL: Each Business Action must be exactly 150-250 words and include:
 - Specific business strategies and tactics
+- Quantifiable metrics and KPIs where possible
+- Implementation timelines and resource requirements
+- Potential challenges and solutions
+- Success measurement criteria
+- Real-world examples or case studies when relevant"""
+
+def get_business_context_prompt_with_content(question, custom_keywords="", content=""):
+    """Enhanced prompt that includes content analysis"""
+    
+    # Detect question type and customize approach
+    question_lower = question.lower()
+    
+    # Industry-specific prompts
+    industry_context = ""
+    if any(word in question_lower for word in ['retail', 'ecommerce', 'shopping', 'consumer']):
+        industry_context = "Focus on retail/ecommerce implications, customer behavior, and sales impact."
+    elif any(word in question_lower for word in ['tech', 'ai', 'digital', 'software']):
+        industry_context = "Focus on technology adoption, digital transformation, and innovation opportunities."
+    elif any(word in question_lower for word in ['healthcare', 'medical', 'pharma']):
+        industry_context = "Focus on healthcare implications, regulatory considerations, and patient outcomes."
+    elif any(word in question_lower for word in ['finance', 'fintech', 'banking']):
+        industry_context = "Focus on financial services impact, regulatory changes, and market dynamics."
+    
+    # Time-sensitive context
+    time_context = "Focus on 2024-2025 trends and emerging opportunities."
+    if any(word in question_lower for word in ['2024', '2025', 'future', 'upcoming']):
+        time_context = "Emphasize forward-looking insights and predictive analysis."
+    
+    # Truncate content if too long to fit in prompt
+    max_content_length = 3000
+    if len(content) > max_content_length:
+        content = content[:max_content_length] + "... [Content truncated for analysis]"
+    
+    return f"""You are a senior strategic market research analyst providing executive-level insights for business leaders. Your responses must be comprehensive, actionable, and business-focused.
+
+QUESTION: {question}
+CUSTOM KEYWORDS: {custom_keywords}
+
+CONTENT TO ANALYZE:
+{content}
+
+ANALYSIS CONTEXT:
+{industry_context}
+{time_context}
+
+RESPONSE REQUIREMENTS:
+- Each insight must be 150-250 words (substantial and detailed)
+- Include specific business implications and opportunities based on the provided content
+- Provide quantifiable metrics and trends when possible
+- Focus on actionable strategies and competitive positioning
+- Include customer behavior insights and market dynamics
+- Mention potential risks and mitigation strategies
+- Ground insights in the provided content while expanding with market context
+
+Respond using EXACTLY this format:
+
+**KEYWORDS IDENTIFIED:**
+[List exactly 5 highly relevant business keywords separated by commas, derived from the content and question]
+
+**STRATEGIC MARKET ANALYSIS:**
+
+**KEYWORD 1: [First Keyword]**
+**STRATEGIC INSIGHTS:**
+1. Market Opportunity Assessment: [Detailed market opportunity analysis with specific business implications]
+2. Competitive Intelligence: [Competitive landscape analysis with positioning strategies]
+3. Implementation Strategy: [Actionable steps for businesses to capitalize on this trend]
+**BUSINESS ACTIONS:**
+1. [Comprehensive 150-250 word insight covering market opportunity, specific strategies, potential ROI, implementation timeline, and success metrics for the first insight]
+2. [Comprehensive 150-250 word insight covering competitive analysis, market positioning, differentiation strategies, and customer acquisition approaches for the second insight]
+3. [Comprehensive 150-250 word insight covering tactical implementation, resource requirements, risk mitigation, and measurement frameworks for the third insight]
+
+**KEYWORD 2: [Second Keyword]**
+**STRATEGIC INSIGHTS:**
+1. Revenue Impact Analysis: [Detailed revenue and growth potential analysis]
+2. Customer Behavior Trends: [Deep dive into customer behavior changes and implications]
+3. Operational Excellence: [Operational improvements and efficiency gains]
+**BUSINESS ACTIONS:**
+1. [Comprehensive 150-250 word insight covering revenue opportunities, market sizing, customer segments, and monetization strategies]
+2. [Comprehensive 150-250 word insight covering customer behavior shifts, engagement strategies, and retention tactics]
+3. [Comprehensive 150-250 word insight covering operational optimization, cost reduction, and efficiency improvements]
+
+**KEYWORD 3: [Third Keyword]**
+**STRATEGIC INSIGHTS:**
+1. Innovation Opportunities: [Emerging innovation areas and R&D directions]
+2. Partnership & Ecosystem: [Strategic partnership opportunities and ecosystem development]
+3. Risk Management: [Potential risks and mitigation strategies]
+**BUSINESS ACTIONS:**
+1. [Comprehensive 150-250 word insight covering innovation opportunities, technology adoption, product development, and market disruption potential]
+2. [Comprehensive 150-250 word insight covering strategic partnerships, ecosystem development, and collaborative opportunities]
+3. [Comprehensive 150-250 word insight covering risk assessment, regulatory considerations, and mitigation strategies]
+
+**KEYWORD 4: [Fourth Keyword]**
+**STRATEGIC INSIGHTS:**
+1. Market Expansion: [Geographic and demographic expansion opportunities]
+2. Digital Transformation: [Technology adoption and digital strategy implications]
+3. Sustainability & ESG: [Environmental and social responsibility considerations]
+**BUSINESS ACTIONS:**
+1. [Comprehensive 150-250 word insight covering market expansion strategies, target demographics, and geographic opportunities]
+2. [Comprehensive 150-250 word insight covering digital transformation initiatives, technology stack, and automation opportunities]
+3. [Comprehensive 150-250 word insight covering sustainability initiatives, ESG compliance, and brand positioning advantages]
+
+**KEYWORD 5: [Fifth Keyword]**
+**STRATEGIC INSIGHTS:**
+1. Financial Performance: [Financial impact and investment considerations]
+2. Talent & Workforce: [Human capital and workforce development needs]
+3. Future Outlook: [Long-term strategic positioning and scenario planning]
+**BUSINESS ACTIONS:**
+1. [Comprehensive 150-250 word insight covering financial projections, investment requirements, ROI expectations, and budget allocation strategies]
+2. [Comprehensive 150-250 word insight covering talent acquisition, skills development, organizational change, and workforce planning]
+3. [Comprehensive 150-250 word insight covering future market scenarios, strategic positioning, and long-term competitive advantages]
+
+CRITICAL: Each Business Action must be exactly 150-250 words and include:
+- Specific business strategies and tactics derived from the content
 - Quantifiable metrics and KPIs where possible
 - Implementation timelines and resource requirements
 - Potential challenges and solutions
@@ -468,38 +656,43 @@ def get_insight_quality_score(insights_data):
 def test_functions():
     print("✅ Enhanced summarize_trends function loaded")
     print("✅ Enhanced analyze_question function loaded")
-    print("✅ extract_text_from_file function loaded")
+    print("✅ Enhanced extract_text_from_file function loaded")
     print("✅ Enhanced claude_messages function loaded")
     print("✅ safe_get_insight function loaded")
     print("✅ clear_cache function loaded")
     print("✅ get_insight_quality_score function loaded")
+    print("✅ analyze_url_content function loaded")
 
-    # Enhanced test run
+    # Test both question and text analysis
     test_question = "What are the key market opportunities in sustainable packaging for food companies in 2024?"
+    test_text = "The global sustainable packaging market is experiencing unprecedented growth, driven by consumer demand for eco-friendly solutions and regulatory pressure on food companies to reduce plastic waste. Major brands are investing heavily in biodegradable materials and circular economy initiatives."
     
-    print(f"\n🔍 Testing enhanced analysis with question: {test_question}")
-    result = analyze_question(test_question)
-
-    if result["error"]:
-        print("❌ Claude error:", result["error"])
-        return
-
-    print(f"\n📊 Analysis ID: {result.get('analysis_id', 'N/A')}")
-    print("🔑 Keywords identified:", result["keywords"])
-    print(f"📈 Total insights structure: {len(result['insights'])} keywords")
+    print(f"\n🔍 Testing enhanced question analysis: {test_question}")
+    result1 = analyze_question(test_question)
     
-    # Calculate quality score
-    quality_score = get_insight_quality_score(result['insights'])
-    print(f"🎯 Insight Quality Score: {quality_score:.1f}/100")
+    print(f"\n📄 Testing enhanced text analysis")
+    result2 = summarize_trends(text=test_text, question="What business opportunities exist in this market?")
 
-    # Show first insight for each keyword with length info
-    for kw in result["keywords"][:2]:  # Show first 2 keywords
-        title = safe_get_insight(result, kw, "titles", 0)
-        insight = safe_get_insight(result, kw, "insights", 0)
-        print(f"\n🔹 Keyword: {kw}")
-        print(f"   📝 Title: {title}")
-        print(f"   💡 Insight Length: {len(insight)} characters")
-        print(f"   💡 Insight Preview: {insight[:200]}...")
+    for i, result in enumerate([result1, result2], 1):
+        print(f"\n--- RESULT {i} ---")
+        if result["error"]:
+            print("❌ Error:", result["error"])
+            continue
+
+        print(f"📊 Analysis ID: {result.get('analysis_id', 'N/A')}")
+        print("🔑 Keywords identified:", result["keywords"])
+        print(f"📈 Total insights structure: {len(result['insights'])} keywords")
+        
+        # Calculate quality score
+        quality_score = get_insight_quality_score(result['insights'])
+        print(f"🎯 Insight Quality Score: {quality_score:.1f}/100")
+
+        # Show first insight for first keyword
+        if result["keywords"]:
+            first_kw = result["keywords"][0]
+            insight = safe_get_insight(result, first_kw, "insights", 0)
+            print(f"💡 Sample insight length: {len(insight)} characters")
+            print(f"💡 Sample insight preview: {insight[:200]}...")
 
 if __name__ == "__main__":
     test_functions()
