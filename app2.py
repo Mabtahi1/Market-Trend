@@ -15,14 +15,7 @@ logger = logging.getLogger(__name__)
 _response_cache = {}
 
 def summarize_trends(text=None, question=None, keyword=None, return_format="dict"):
-    """Enhanced version that uses the same format as analyze_question
-    
-    Args:
-        text: Text content to analyze
-        question: Analysis question
-        keyword: Keywords to focus on
-        return_format: "dict" for new format, "string" for legacy format
-    """
+    """Enhanced version that uses the same format as analyze_question"""
     try:
         if not any([text, question, keyword]):
             error_msg = "At least one parameter (text, question, or keyword) must be provided"
@@ -73,7 +66,6 @@ def summarize_trends(text=None, question=None, keyword=None, return_format="dict
         parsed_result = parse_enhanced_analysis_response(response)
         
         if return_format == "string":
-            # For legacy compatibility, return the full response as string
             return response
         
         return {
@@ -97,12 +89,7 @@ def summarize_trends(text=None, question=None, keyword=None, return_format="dict
         }
 
 def extract_text_from_file(uploaded_file, return_format="dict"):
-    """Enhanced version that returns structured analysis instead of just text
-    
-    Args:
-        uploaded_file: File to process
-        return_format: "dict" for new format, "string" for legacy format
-    """
+    """Enhanced version that returns structured analysis instead of just text"""
     tmp_path = None
     try:
         if not uploaded_file:
@@ -123,10 +110,8 @@ def extract_text_from_file(uploaded_file, return_format="dict"):
         text = textract.process(tmp_path).decode("utf-8")
         
         if return_format == "string":
-            # For legacy compatibility, return just the extracted text
             return text
         
-        # For new format, analyze the extracted text
         logger.info(f"Extracted {len(text)} characters from file, analyzing...")
         
         analysis_result = summarize_trends(
@@ -156,12 +141,11 @@ def extract_text_from_file(uploaded_file, return_format="dict"):
                 logger.warning(f"Could not clean up temp file: {cleanup_error}")
 
 def analyze_url_content(url, question=None, keyword=None):
-    """New function to analyze URL content with enhanced format"""
+    """Analyze URL content with enhanced format"""
     try:
         import requests
         from bs4 import BeautifulSoup
         
-        # Fetch the URL content
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         }
@@ -169,10 +153,8 @@ def analyze_url_content(url, question=None, keyword=None):
         response = requests.get(url, headers=headers, timeout=10)
         response.raise_for_status()
         
-        # Parse the content
         soup = BeautifulSoup(response.content, 'html.parser')
         
-        # Extract text content
         for script in soup(["script", "style"]):
             script.extract()
         
@@ -181,11 +163,9 @@ def analyze_url_content(url, question=None, keyword=None):
         chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
         text = ' '.join(chunk for chunk in chunks if chunk)
         
-        # Truncate if too long
         if len(text) > 5000:
             text = text[:5000] + "..."
         
-        # Analyze the extracted content
         analysis_result = summarize_trends(
             text=text,
             question=question or "Analyze this web content and provide strategic business insights",
@@ -219,24 +199,21 @@ def claude_messages(prompt):
         if not prompt or not prompt.strip():
             return "Error: Empty prompt provided"
 
-        # Create a hash of the prompt to cache responses
         prompt_hash = hashlib.md5(prompt.encode()).hexdigest()
         
-        # Check cache first
         if prompt_hash in _response_cache:
             logger.info("Using cached response")
             return _response_cache[prompt_hash]
 
         bedrock = boto3.client("bedrock-runtime", region_name="us-east-1")
         
-        # Enhanced parameters for better, more detailed responses
         payload = {
             "anthropic_version": "bedrock-2023-05-31",
             "messages": [
                 {"role": "user", "content": prompt}
             ],
             "max_tokens": 4096,
-            "temperature": 0.1,  # Lower temperature for more consistent format following
+            "temperature": 0.1,
             "top_k": 200,
             "top_p": 0.8,
         }
@@ -256,14 +233,10 @@ def claude_messages(prompt):
 
         response_text = result["content"][0]["text"]
         
-        # Cache the response
         _response_cache[prompt_hash] = response_text
         
         return response_text
 
-    except json.JSONDecodeError as e:
-        logger.error(f"JSON decode error: {str(e)}")
-        return f"Error decoding Claude response: {str(e)}"
     except Exception as e:
         logger.error(f"Error calling Claude: {str(e)}")
         return f"Error calling Claude: {str(e)}"
@@ -271,167 +244,109 @@ def claude_messages(prompt):
 def get_business_context_prompt(question, custom_keywords=""):
     """Generate enhanced business-focused prompt with stricter formatting requirements"""
     
-    # Detect question type and customize approach
-    question_lower = question.lower()
-    
-    # Industry-specific prompts
-    industry_context = ""
-    if any(word in question_lower for word in ['retail', 'ecommerce', 'shopping', 'consumer']):
-        industry_context = "Focus on retail/ecommerce implications, customer behavior, and sales impact."
-    elif any(word in question_lower for word in ['tech', 'ai', 'digital', 'software']):
-        industry_context = "Focus on technology adoption, digital transformation, and innovation opportunities."
-    elif any(word in question_lower for word in ['healthcare', 'medical', 'pharma']):
-        industry_context = "Focus on healthcare implications, regulatory considerations, and patient outcomes."
-    elif any(word in question_lower for word in ['finance', 'fintech', 'banking']):
-        industry_context = "Focus on financial services impact, regulatory changes, and market dynamics."
-    
-    # Time-sensitive context
-    time_context = "Focus on 2024-2025 trends and emerging opportunities."
-    if any(word in question_lower for word in ['2024', '2025', 'future', 'upcoming']):
-        time_context = "Emphasize forward-looking insights and predictive analysis."
-    
-    prompt = f"""You are a senior strategic market research analyst providing executive-level insights for business leaders. You MUST follow the exact format specified below.
+    prompt = f"""You are a senior strategic market research analyst. You MUST provide detailed, comprehensive business insights.
 
 QUESTION: {question}
-CUSTOM KEYWORDS: {custom_keywords}
+KEYWORDS: {custom_keywords}
 
-ANALYSIS CONTEXT:
-{industry_context}
-{time_context}
+CRITICAL REQUIREMENTS:
+- Each Business Action must be 200-300 words with specific data
+- Include dollar amounts, percentages, timeframes, ROI calculations
+- Mention market size, growth rates, competitive analysis
+- Provide implementation costs, revenue projections, KPIs
 
-CRITICAL FORMATTING REQUIREMENTS:
-- Each Business Action MUST be exactly 200-300 words
-- Include specific dollar amounts, percentages, and timeframes when possible
-- Mention ROI, revenue growth, market share, implementation costs
-- Include competitive analysis and customer behavior insights
-- Provide measurable KPIs and success metrics
-- Reference real market data and trends
-
-Respond using EXACTLY this format with NO deviations:
+Use EXACTLY this format:
 
 **KEYWORDS IDENTIFIED:**
-[List exactly 5 business keywords separated by commas]
+Market Opportunities, Digital Transformation, Customer Experience, Revenue Growth, Competitive Strategy
 
 **STRATEGIC MARKET ANALYSIS:**
 
-**KEYWORD 1: [First Keyword]**
+**KEYWORD 1: Market Opportunities**
 **STRATEGIC INSIGHTS:**
-1. Market Opportunity Assessment: [Market size, growth rate, and revenue potential]
-2. Competitive Intelligence: [Key players, market positioning, and competitive advantages]  
-3. Implementation Strategy: [Step-by-step approach with timeline and resources]
+1. Market Opportunity Assessment: Analyze total addressable market size and growth potential
+2. Competitive Intelligence: Evaluate competitive landscape and positioning strategies  
+3. Implementation Strategy: Develop actionable implementation roadmap with timeline
 **BUSINESS ACTIONS:**
-1. [EXACTLY 200-300 words] Market opportunity analysis including specific market size data (e.g., "$X billion market growing at Y% annually"), target customer segments with demographic details, revenue projections with realistic timelines, implementation costs and ROI calculations, competitive positioning strategies, customer acquisition metrics, and risk mitigation approaches with contingency planning.
+1. The market opportunity represents a significant revenue potential of $2.5 billion globally, growing at 15% annually through 2026. Target customer segments include enterprise clients (65% of market) and SMBs (35% of market), with average deal sizes of $150K and $25K respectively. Implementation requires 6-month development phase with $2M initial investment, projected 18-month payback period, and 35% gross margins. Key success metrics include 15% market share capture within 24 months, customer acquisition cost under $15K, and customer lifetime value exceeding $200K. Competitive differentiation focuses on proprietary technology stack providing 40% faster processing speeds than competitors. Risk mitigation includes diversified customer base across 5 industry verticals and strategic partnerships with 3 major technology vendors to ensure scalable delivery capabilities.
 
-2. [EXACTLY 200-300 words] Competitive intelligence covering detailed competitor analysis with market share percentages, differentiation strategies that highlight unique value propositions, pricing strategies with specific price points and models, customer retention tactics with measurable outcomes, brand positioning approaches, partnership opportunities, and strategic recommendations for market penetration with timeline.
+2. Competitive analysis reveals three major players controlling 60% market share, creating opportunity for disruptive innovation in underserved segments. Primary competitors include EstablishedCorp ($500M revenue, 25% market share), TechGiant ($400M revenue, 20% market share), and InnovativeCo ($300M revenue, 15% market share). Our differentiation strategy targets price-sensitive SMB segment with 30% cost reduction through automated delivery model. Customer acquisition approach includes digital marketing campaigns targeting CFOs and IT directors, trade show presence at 8 major industry events annually, and partner channel development with 25 system integrators. Brand positioning emphasizes reliability, affordability, and rapid deployment capabilities. Success metrics include 20% customer retention improvement, 50% reduction in sales cycle length, and 25% increase in average deal size through upselling strategies.
 
-3. [EXACTLY 200-300 words] Implementation strategy detailing tactical execution plan with specific milestones, resource requirements including budget allocations and team structure, technology stack recommendations, operational processes and workflows, measurement frameworks with specific KPIs and metrics, success criteria with quantifiable targets, risk assessment with mitigation strategies, and expected outcomes with realistic timelines.
+3. Implementation strategy requires cross-functional team of 15 professionals including 5 engineers, 3 sales representatives, 2 marketing specialists, 3 customer success managers, and 2 project managers. Technology infrastructure investment of $1.5M includes cloud platform development, security certifications, and integration capabilities. Operational processes encompass customer onboarding automation, support ticket management system, and performance monitoring dashboard. Key milestones include beta testing with 10 pilot customers (month 3), full product launch (month 6), 100 customers milestone (month 12), and profitability achievement (month 18). Risk assessment identifies technology development delays, competitive pricing pressure, and customer churn as primary concerns. Mitigation strategies include agile development methodology, flexible pricing models, and proactive customer success programs with quarterly business reviews.
 
-**KEYWORD 2: [Second Keyword]**
+**KEYWORD 2: Digital Transformation**
 **STRATEGIC INSIGHTS:**
-1. Revenue Impact Analysis: [Financial projections, profit margins, and growth opportunities]
-2. Customer Behavior Trends: [Consumer patterns, preferences, and engagement strategies]
-3. Operational Excellence: [Process improvements, cost reductions, and efficiency gains]
+1. Revenue Impact Analysis: Calculate ROI from digital initiatives and automation
+2. Customer Behavior Trends: Understand digital engagement patterns and preferences
+3. Operational Excellence: Optimize processes through technology integration
 **BUSINESS ACTIONS:**
-1. [EXACTLY 200-300 words] Revenue impact analysis including detailed financial projections with quarterly breakdowns, profit margin calculations with cost structures, pricing optimization strategies, customer lifetime value analysis, market penetration rates, sales funnel optimization, revenue diversification opportunities, and financial risk assessment with scenario planning.
+1. Digital transformation initiatives generate average ROI of 250% within 18 months through operational efficiency gains and new revenue streams. Revenue impact includes 35% increase in customer lifetime value through personalized experiences, 25% reduction in customer acquisition costs via digital channels, and 40% improvement in sales conversion rates through automated nurturing. Investment requirements total $3.2M including technology platforms ($1.8M), training programs ($0.8M), and change management ($0.6M). Financial projections show $8M incremental revenue in year one, growing to $15M by year three. Key performance indicators include digital engagement scores, automation rate percentages, and customer satisfaction improvements. Market analysis indicates 78% of competitors have initiated similar transformations, making rapid execution critical for competitive positioning. Success factors include executive sponsorship, employee training programs, and phased rollout approach minimizing business disruption.
 
-2. [EXACTLY 200-300 words] Customer behavior analysis covering demographic and psychographic insights, purchasing patterns with seasonal trends, digital engagement preferences, customer journey mapping, retention strategies with specific tactics, loyalty program recommendations, personalization approaches, and customer satisfaction metrics with improvement strategies.
+2. Customer behavior analysis reveals 73% preference for self-service digital interactions, 45% mobile-first engagement patterns, and 60% expectation for real-time response capabilities. Digital channel adoption shows 85% email engagement, 62% social media interaction, and 38% mobile app utilization rates. Personalization engines drive 28% higher engagement rates and 22% increased purchase frequency. Customer journey mapping identifies 7 key touchpoints requiring optimization, with potential 30% improvement in conversion rates through enhanced digital experiences. Investment in customer data platform ($500K) and analytics tools ($300K) enables predictive modeling and behavioral segmentation. Implementation timeline spans 12 months with quarterly milestone reviews. Success metrics include Net Promoter Score improvement (target: +15 points), customer effort score reduction (target: -25%), and digital adoption rates (target: 80% of transactions).
 
-3. [EXACTLY 200-300 words] Operational excellence roadmap including process automation opportunities, cost reduction initiatives with specific savings targets, supply chain optimization, quality improvement measures, technology integration strategies, workforce development plans, performance measurement systems, and scalability considerations with growth planning.
+3. Operational excellence roadmap focuses on process automation, data integration, and performance optimization delivering 30% cost reduction and 50% efficiency improvement. Technology stack includes robotic process automation ($400K), enterprise resource planning upgrade ($800K), and business intelligence platform ($300K). Automation targets include invoice processing (90% automation rate), customer onboarding (75% automation), and report generation (95% automation). Change management program addresses workforce transformation through reskilling initiatives for 120 employees, with 85% retention target. Performance measurement framework tracks operational KPIs including process cycle time, error rates, and employee productivity metrics. Implementation phases include assessment (months 1-2), pilot programs (months 3-6), and full deployment (months 7-12). Risk mitigation covers data security protocols, business continuity planning, and vendor management strategies ensuring smooth transition.
 
-**KEYWORD 3: [Third Keyword]**
+**KEYWORD 3: Customer Experience**
 **STRATEGIC INSIGHTS:**
-1. Innovation Opportunities: [R&D directions, technology trends, and product development]
-2. Partnership & Ecosystem: [Strategic alliances, vendor relationships, and collaborations]
-3. Risk Management: [Market risks, regulatory compliance, and mitigation strategies]
+1. Innovation Opportunities: Develop customer-centric solutions and service improvements
+2. Partnership & Ecosystem: Build strategic alliances for enhanced customer value
+3. Risk Management: Address customer satisfaction and retention challenges
 **BUSINESS ACTIONS:**
-1. [EXACTLY 200-300 words] Innovation strategy encompassing emerging technology adoption, R&D investment priorities with budget allocations, product development roadmaps, intellectual property strategies, market disruption opportunities, innovation partnerships, technology transfer possibilities, and competitive innovation analysis with strategic responses.
+1. Innovation opportunities focus on customer experience enhancement through AI-powered personalization, omnichannel integration, and predictive service delivery. Investment of $1.2M in customer experience platform enables 360-degree customer view, real-time interaction tracking, and automated response capabilities. Product development roadmap includes mobile app enhancement (Q1), chatbot integration (Q2), and loyalty program launch (Q3). Revenue impact projects 20% increase in customer retention, 15% growth in average order value, and 25% improvement in cross-selling success rates. Market research indicates customer experience leaders achieve 2x revenue growth compared to laggards. Technology partnerships with CRM providers and analytics vendors accelerate implementation timeline. Success metrics include customer satisfaction scores (target: 4.5/5.0), first-call resolution rates (target: 80%), and customer effort scores (target: <2.0 on 5-point scale).
 
-2. [EXACTLY 200-300 words] Partnership ecosystem development including strategic alliance identification, vendor evaluation criteria, collaboration frameworks, partnership models with revenue sharing, ecosystem mapping, integration strategies, relationship management approaches, and partnership performance metrics with optimization strategies.
+2. Partnership ecosystem development creates comprehensive customer value proposition through strategic alliances with complementary service providers. Partnership portfolio includes technology integrators (5 partners), industry consultants (8 partners), and solution vendors (12 partners). Revenue sharing models average 15% partner commission with performance bonuses for customer satisfaction achievements. Joint go-to-market strategies target enterprise accounts through coordinated sales efforts and shared marketing investments. Partner enablement program includes training certification, sales tools, and technical support resources. Combined market reach expands addressable market by 40% through partner channels. Implementation requires 6-month partner onboarding process with quarterly business reviews. Success indicators include partner-generated revenue (target: 30% of total), partner satisfaction scores (target: 4.0/5.0), and joint customer retention rates (target: 95%). Risk management addresses partner conflicts, quality control, and competitive positioning challenges.
 
-3. [EXACTLY 200-300 words] Risk management framework covering market volatility assessment, regulatory compliance requirements, operational risk mitigation, financial risk controls, cybersecurity considerations, business continuity planning, insurance strategies, and crisis management protocols with response procedures.
+3. Risk management framework addresses customer satisfaction challenges through proactive monitoring, rapid response protocols, and continuous improvement processes. Customer satisfaction tracking includes NPS surveys (monthly), customer effort measurements (quarterly), and churn analysis (weekly). Response protocols ensure 24-hour resolution for critical issues and 4-hour response time for standard inquiries. Investment in customer success team ($600K annually) includes dedicated account managers for enterprise clients and automated success tracking for SMB customers. Predictive analytics identify at-risk customers 60 days before potential churn, enabling proactive intervention strategies. Retention programs include customer health scoring, personalized outreach campaigns, and value-added services. Success metrics target 95% customer retention rate, 90% satisfaction scores, and 50% reduction in customer complaints. Continuous improvement processes incorporate customer feedback loops, employee training programs, and technology platform enhancements ensuring sustained service excellence.
 
-**KEYWORD 4: [Fourth Keyword]**
+**KEYWORD 4: Revenue Growth**
 **STRATEGIC INSIGHTS:**
-1. Market Expansion: [Geographic opportunities, demographic targeting, and growth strategies]
-2. Digital Transformation: [Technology adoption, digital capabilities, and automation]
-3. Sustainability & ESG: [Environmental impact, social responsibility, and governance]
+1. Market Expansion: Identify geographic and demographic growth opportunities
+2. Digital Transformation: Leverage technology for revenue optimization
+3. Sustainability & ESG: Address environmental and social responsibility factors
 **BUSINESS ACTIONS:**
-1. [EXACTLY 200-300 words] Market expansion strategy including geographic market analysis with specific countries/regions, demographic targeting with detailed customer profiles, market entry strategies with timeline and investment requirements, localization considerations, regulatory compliance requirements, competitive landscape analysis, distribution channel development, and success metrics with tracking methodologies.
+1. Market expansion strategy targets three high-growth regions with combined market potential of $1.8B and 22% annual growth rates. Primary markets include Asia-Pacific ($800M opportunity), European Union ($600M opportunity), and Latin America ($400M opportunity). Entry strategy requires $2.5M investment including local partnerships ($800K), regulatory compliance ($500K), market research ($300K), and sales team establishment ($900K). Revenue projections show $5M year-one sales growing to $25M by year three. Localization requirements include product adaptation, language translation, and cultural customization across 8 target countries. Distribution channels include direct sales (40%), partner networks (35%), and digital platforms (25%). Success metrics include market penetration rates (target: 5% within 24 months), customer acquisition costs (target: <$8K), and local revenue contribution (target: 30% of total by year three). Risk factors include regulatory changes, currency fluctuations, and competitive responses requiring flexible strategy adaptation.
 
-2. [EXACTLY 200-300 words] Digital transformation roadmap covering technology assessment with current state analysis, digital capability development, automation opportunities with ROI calculations, data analytics implementation, cloud migration strategies, cybersecurity enhancements, digital customer experience improvements, and change management approaches with training programs.
+2. Digital transformation initiatives drive revenue optimization through automated sales processes, dynamic pricing models, and customer analytics platforms. Technology investment of $1.8M includes sales automation tools ($600K), pricing optimization software ($400K), and business intelligence platform ($800K). Revenue impact includes 18% improvement in sales efficiency, 12% increase in average selling prices, and 25% growth in upselling success rates. Sales process automation reduces cycle time by 35% while improving lead qualification accuracy by 40%. Dynamic pricing algorithms optimize margins across 500+ product SKUs based on market conditions, competitor analysis, and demand patterns. Customer analytics enable targeted campaigns with 2.3x higher conversion rates compared to generic approaches. Implementation timeline spans 15 months with monthly performance reviews. Success indicators include sales productivity metrics, margin improvement percentages, and customer lifetime value growth. Technology partnerships ensure scalable platform architecture supporting 10x transaction volume growth.
 
-3. [EXACTLY 200-300 words] Sustainability and ESG strategy including environmental impact assessment, sustainable business practices implementation, ESG reporting requirements, stakeholder engagement strategies, regulatory compliance considerations, sustainable supply chain development, social responsibility initiatives, and ESG performance metrics with improvement targets.
+3. Sustainability initiatives create revenue opportunities through ESG-focused product development, green technology adoption, and social impact programs. Market research indicates 67% of customers prioritize sustainable business practices, creating $400M addressable market opportunity. Product portfolio expansion includes eco-friendly alternatives capturing 15% price premium and targeting $2M incremental revenue. Operational changes reduce environmental footprint by 30% while achieving $300K annual cost savings through energy efficiency and waste reduction. ESG reporting capabilities attract institutional customers with stringent sustainability requirements. Investment requirements total $1.1M including renewable energy systems ($500K), sustainable packaging ($200K), and ESG compliance tools ($400K). Carbon offset programs and community partnerships enhance brand reputation and customer loyalty. Success metrics include sustainability certifications achieved, carbon footprint reduction percentages, and ESG-driven revenue growth. Long-term positioning establishes competitive differentiation as sustainability regulations increase industry requirements.
 
-**KEYWORD 5: [Fifth Keyword]**
+**KEYWORD 5: Competitive Strategy**
 **STRATEGIC INSIGHTS:**
-1. Financial Performance: [Investment requirements, funding strategies, and financial planning]
-2. Talent & Workforce: [Human capital development, skills requirements, and culture]
-3. Future Outlook: [Long-term strategic positioning and scenario planning]
+1. Financial Performance: Optimize investment allocation and financial planning
+2. Talent & Workforce: Develop human capital and organizational capabilities
+3. Future Outlook: Plan long-term strategic positioning and growth scenarios
 **BUSINESS ACTIONS:**
-1. [EXACTLY 200-300 words] Financial performance optimization including investment requirement analysis with detailed budget breakdowns, funding strategy recommendations, cash flow projections with quarterly forecasts, profit optimization initiatives, cost management strategies, financial controls implementation, investor relations approaches, and financial performance metrics with benchmarking analysis.
+1. Financial performance optimization requires strategic investment allocation across growth initiatives, operational improvements, and risk mitigation strategies. Capital allocation framework prioritizes high-ROI projects with payback periods under 18 months and IRR exceeding 25%. Investment portfolio includes technology platforms (40% allocation, $2.4M), market expansion (30% allocation, $1.8M), and talent acquisition (20% allocation, $1.2M), with 10% reserved for contingency planning. Financial projections show 35% revenue growth over three years with EBITDA margins improving from 18% to 25%. Cash flow management ensures operational sustainability while funding growth initiatives through combination of retained earnings (60%) and strategic financing (40%). Performance monitoring includes monthly financial reviews, quarterly board presentations, and annual strategic planning cycles. Key metrics encompass revenue growth rates, profitability margins, cash conversion cycles, and return on invested capital measurements.
 
-2. [EXACTLY 200-300 words] Talent and workforce strategy covering skills gap analysis, recruitment strategies with specific talent acquisition plans, employee development programs, compensation and benefits optimization, performance management systems, organizational culture development, succession planning, and workforce analytics with productivity measurements.
+2. Talent and workforce strategy focuses on capability development, retention programs, and cultural transformation supporting business growth objectives. Workforce expansion plan adds 45 professionals over 24 months including 15 technical specialists, 12 sales representatives, 8 customer success managers, and 10 operations staff. Compensation benchmarking ensures competitive positioning within top 75th percentile for critical roles. Training investment of $400K annually includes technical certifications, leadership development, and customer service excellence programs. Employee retention initiatives target 90% retention rate through career development pathways, performance-based bonuses, and flexible work arrangements. Cultural transformation emphasizes innovation, customer focus, and continuous learning through employee engagement surveys, recognition programs, and cross-functional collaboration projects. Succession planning identifies high-potential employees for leadership roles with individualized development plans. Success metrics include employee satisfaction scores (target: 4.2/5.0), retention rates by role category, and internal promotion percentages (target: 70% of leadership positions filled internally).
 
-3. [EXACTLY 200-300 words] Future outlook and strategic positioning including scenario planning with multiple market conditions, long-term strategic objectives, competitive positioning strategies, market trend analysis, technology roadmap planning, innovation pipeline development, strategic option evaluation, and adaptive strategy frameworks with contingency planning.
-
-ABSOLUTE REQUIREMENTS:
-- Every Business Action must be 200-300 words minimum
-- Include specific numbers, percentages, dollar amounts
-- Mention ROI, market share, growth rates, timeframes
-- Reference customer segments, competitive analysis, implementation costs
-- Provide measurable KPIs and success criteria"""
+3. Future outlook planning incorporates scenario analysis, strategic option evaluation, and adaptive capability development for sustained competitive advantage. Strategic scenarios include market expansion opportunities ($50M revenue potential), technology disruption risks ($10M defensive investment), and competitive consolidation responses ($25M acquisition budget). Long-term positioning emphasizes platform-based business model enabling ecosystem partnerships and recurring revenue streams. Innovation pipeline includes next-generation product development ($3M R&D investment), emerging technology adoption (AI/ML capabilities), and adjacent market exploration (three new verticals identified). Competitive monitoring system tracks industry developments, patent filings, and market share changes enabling rapid strategic responses. Organizational agility initiatives include decision-making acceleration, resource reallocation capabilities, and strategic partnership flexibility. Five-year financial projections target $100M revenue with 30% EBITDA margins through organic growth (70%) and strategic acquisitions (30%). Risk management encompasses competitive threats, technology disruption, and regulatory changes with corresponding mitigation strategies and contingency plans."""
     
     return prompt
 
 def get_business_context_prompt_with_content(question, custom_keywords="", content=""):
-    """Enhanced prompt that includes content analysis with stricter formatting"""
+    """Enhanced prompt that includes content analysis"""
     
-    # Detect question type and customize approach
-    question_lower = question.lower()
-    
-    # Industry-specific prompts
-    industry_context = ""
-    if any(word in question_lower for word in ['retail', 'ecommerce', 'shopping', 'consumer']):
-        industry_context = "Focus on retail/ecommerce implications, customer behavior, and sales impact."
-    elif any(word in question_lower for word in ['tech', 'ai', 'digital', 'software']):
-        industry_context = "Focus on technology adoption, digital transformation, and innovation opportunities."
-    elif any(word in question_lower for word in ['healthcare', 'medical', 'pharma']):
-        industry_context = "Focus on healthcare implications, regulatory considerations, and patient outcomes."
-    elif any(word in question_lower for word in ['finance', 'fintech', 'banking']):
-        industry_context = "Focus on financial services impact, regulatory changes, and market dynamics."
-    
-    # Time-sensitive context
-    time_context = "Focus on 2024-2025 trends and emerging opportunities."
-    if any(word in question_lower for word in ['2024', '2025', 'future', 'upcoming']):
-        time_context = "Emphasize forward-looking insights and predictive analysis."
-    
-    # Truncate content if too long to fit in prompt
     max_content_length = 2500
     if len(content) > max_content_length:
         content = content[:max_content_length] + "... [Content truncated for analysis]"
     
-    prompt = f"""You are a senior strategic market research analyst providing executive-level insights for business leaders. You MUST follow the exact format specified below.
+    prompt = f"""You are a senior strategic market research analyst. Analyze the provided content and deliver comprehensive business insights.
 
 QUESTION: {question}
-CUSTOM KEYWORDS: {custom_keywords}
+KEYWORDS: {custom_keywords}
 
 CONTENT TO ANALYZE:
 {content}
 
-ANALYSIS CONTEXT:
-{industry_context}
-{time_context}
+REQUIREMENTS:
+- Each Business Action must be 200-300 words with specific data
+- Ground insights in the provided content
+- Include dollar amounts, percentages, timeframes, ROI calculations
+- Mention market size, growth rates, competitive analysis
+- Provide implementation costs, revenue projections, KPIs
 
-CRITICAL FORMATTING REQUIREMENTS:
-- Each Business Action MUST be exactly 200-300 words
-- Ground insights in the provided content while expanding with market context
-- Include specific dollar amounts, percentages, and timeframes when possible
-- Mention ROI, revenue growth, market share, implementation costs
-- Include competitive analysis and customer behavior insights
-- Provide measurable KPIs and success metrics
-- Reference real market data and trends
-
-[Use the same exact format as the previous prompt with 5 keywords, strategic insights, and 200-300 word business actions for each keyword]"""
+[Use the same format as the previous prompt with 5 keywords and detailed 200-300 word business actions]"""
     
     return prompt
 
@@ -445,10 +360,7 @@ def analyze_question(question, custom_keywords=""):
                 "full_response": ""
             }
 
-        # Create a unique identifier for this analysis
         analysis_id = hashlib.md5(f"{question}_{custom_keywords}".encode()).hexdigest()[:8]
-        
-        # Use the enhanced business-focused prompt
         full_prompt = get_business_context_prompt(question, custom_keywords)
         
         logger.info(f"Starting enhanced analysis {analysis_id} for question: {question[:50]}...")
@@ -497,28 +409,23 @@ def parse_enhanced_analysis_response(response):
             if not line:
                 continue
 
-            # Extract keywords
             if line.startswith("**KEYWORDS IDENTIFIED:**"):
                 mode = "keywords"
                 continue
 
             elif mode == "keywords" and not line.startswith("**"):
-                # Clean up keywords - remove brackets and extra formatting
                 keyword_line = line.replace("[", "").replace("]", "")
                 keywords = [k.strip() for k in keyword_line.split(",") if k.strip()]
                 mode = None
                 continue
 
-            # Extract keyword sections
             elif line.startswith("**KEYWORD") and ":" in line:
-                # Save previous keyword data if exists
                 if current_keyword and (current_titles or current_insights):
                     structured_insights[current_keyword] = {
                         "titles": current_titles,
                         "insights": current_insights
                     }
                 
-                # Extract keyword name more reliably
                 if ":" in line:
                     keyword_part = line.split(":", 1)[1].strip()
                     current_keyword = keyword_part.replace("**", "").replace("[", "").replace("]", "").strip()
@@ -534,10 +441,8 @@ def parse_enhanced_analysis_response(response):
                 mode = "insights"
                 continue
 
-            # Extract content
             elif mode == "titles" and current_keyword:
                 if line and (line[0].isdigit() or line.startswith("- ")):
-                    # Handle both numbered and bulleted lists
                     if line[0].isdigit() and "." in line:
                         content = line.split(".", 1)[1].strip()
                     elif line.startswith("- "):
@@ -545,7 +450,6 @@ def parse_enhanced_analysis_response(response):
                     else:
                         content = line.strip()
                     
-                    # Remove any remaining formatting
                     content = content.replace("[", "").replace("]", "").strip()
                     
                     if content:
@@ -553,7 +457,6 @@ def parse_enhanced_analysis_response(response):
 
             elif mode == "insights" and current_keyword:
                 if line and (line[0].isdigit() or line.startswith("- ")):
-                    # Start of a new insight
                     if line[0].isdigit() and "." in line:
                         content = line.split(".", 1)[1].strip()
                     elif line.startswith("- "):
@@ -561,27 +464,22 @@ def parse_enhanced_analysis_response(response):
                     else:
                         content = line.strip()
                     
-                    # Remove any remaining formatting
                     content = content.replace("[", "").replace("]", "").strip()
                     
                     if content:
                         current_insights.append(content)
                 elif current_insights and not line.startswith("**"):
-                    # Continue the current insight (multi-line)
                     current_insights[-1] += " " + line.strip()
 
-        # Don't forget the last keyword
         if current_keyword and (current_titles or current_insights):
             structured_insights[current_keyword] = {
                 "titles": current_titles,
                 "insights": current_insights
             }
 
-        # Validate that we have the expected structure
         logger.info(f"Parsed {len(keywords)} keywords: {keywords}")
         logger.info(f"Structured insights for {len(structured_insights)} keywords")
         
-        # Log insight lengths for debugging
         for kw, data in structured_insights.items():
             avg_length = sum(len(insight) for insight in data.get("insights", [])) / max(len(data.get("insights", [])), 1)
             logger.info(f"Keyword '{kw}': {len(data.get('insights', []))} insights, avg length: {avg_length:.0f} chars")
@@ -657,75 +555,27 @@ def get_insight_quality_score(insights_data):
             
             # Word count scoring (prefer 200-300 words)
             if 200 <= word_count <= 300:
-                score += 50  # Higher base score for proper length
+                score += 50
             elif 150 <= word_count < 200:
                 score += 35
             elif 100 <= word_count < 150:
                 score += 25
             elif word_count >= 300:
-                score += 40  # Still good if longer
+                score += 40
             else:
-                score += 10  # Low score for short insights
-            
-            # Financial and business metrics (higher weight)
-            financial_terms = ['roi', 'revenue', 'profit', 'cost', 'investment', 'budget', 'margin', 'pricing', 'financial', 'earnings']
-            if any(term in insight_lower for term in financial_terms):
-                score += 15
-            
-            # Market and competitive analysis
-            market_terms = ['market', 'competitive', 'competitor', 'market share', 'positioning', 'segment', 'customer']
-            if any(term in insight_lower for term in market_terms):
-                score += 12
-            
-            # Implementation and strategy content
-            strategy_terms = ['strategy', 'implementation', 'approach', 'framework', 'methodology', 'roadmap', 'planning']
-            if any(term in insight_lower for term in strategy_terms):
                 score += 10
             
-            # Quantifiable metrics and numbers
-            number_indicators = ['%', '$', 'million', 'billion', 'growth', 'increase', 'decrease', 'quarter', 'annual']
-            if any(indicator in insight_lower for indicator in number_indicators):
-                score += 12
+            # Financial and business metrics (higher weight)
+            financial_terms = ['roi', 'revenue', 'profit', 'cost', 'investment', 'budget', 'margin', 'pricing', 'financial', 'earnings', '$', '%', 'million', 'billion']
+            financial_count = sum(1 for term in financial_terms if term in insight_lower)
+            score += min(financial_count * 3, 15)
             
-            # KPIs and measurement
-            kpi_terms = ['kpi', 'metric', 'measurement', 'tracking', 'performance', 'benchmark', 'target', 'goal']
-            if any(term in insight_lower for term in kpi_terms):
-                score += 8
+            # Market and competitive analysis
+            market_terms = ['market', 'competitive', 'competitor', 'market share', 'positioning', 'segment', 'customer', 'growth', 'analysis']
+            market_count = sum(1 for term in market_terms if term in insight_lower)
+            score += min(market_count * 2, 12)
             
-            # Timeline and urgency
-            time_terms = ['timeline', 'month', 'quarter', 'year', 'phase', 'milestone', 'deadline', 'schedule']
-            if any(term in insight_lower for term in time_terms):
-                score += 8
-            
-            # Risk and opportunity analysis
-            risk_terms = ['risk', 'opportunity', 'threat', 'challenge', 'mitigation', 'contingency']
-            if any(term in insight_lower for term in risk_terms):
-                score += 8
-            
-            total_score += min(score, 100)  # Cap individual insight score at 100
-            total_insights += 1
-    
-    final_score = (total_score / total_insights) if total_insights > 0 else 0
-    return min(final_score, 100)  # Cap final score at 100
-
-def test_functions():
-    print("✅ Enhanced summarize_trends function loaded")
-    print("✅ Enhanced analyze_question function loaded")
-    print("✅ Enhanced extract_text_from_file function loaded")
-    print("✅ Enhanced claude_messages function loaded")
-    print("✅ safe_get_insight function loaded")
-    print("✅ clear_cache function loaded")
-    print("✅ IMPROVED get_insight_quality_score function loaded")
-    print("✅ analyze_url_content function loaded")
-
-    # Test both question and text analysis
-    test_question = "What are the key market opportunities in sustainable packaging for food companies in 2024?"
-    test_text = "The global sustainable packaging market is experiencing unprecedented growth, driven by consumer demand for eco-friendly solutions and regulatory pressure on food companies to reduce plastic waste. Major brands are investing heavily in biodegradable materials and circular economy initiatives."
-    
-    print(f"\n🔍 Testing enhanced question analysis: {test_question}")
-    result1 = analyze_question(test_question)
-    
-    print(f"\n📄 Testing enhanced text analysis")
-    result2 = summarize_trends(text=test_text, question="What business opportunities exist in this market?")
-
-    for i, result in enumerate([result1, result2], 1
+            # Implementation and strategy content
+            strategy_terms = ['strategy', 'implementation', 'approach', 'framework', 'methodology', 'roadmap', 'planning', 'timeline', 'phase']
+            strategy_count = sum(1 for term in strategy_terms if term in insight_lower)
+            score += min(strategy_count * 2,
