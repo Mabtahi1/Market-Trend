@@ -235,10 +235,10 @@ def claude_messages(prompt):
             "messages": [
                 {"role": "user", "content": prompt}
             ],
-            "max_tokens": 4096,  # Increased for longer, more detailed responses
-            "temperature": 0.2,  # Slightly higher for more creativity while maintaining consistency
-            "top_k": 250,
-            "top_p": 0.9,
+            "max_tokens": 4096,
+            "temperature": 0.1,  # Lower temperature for more consistent format following
+            "top_k": 200,
+            "top_p": 0.8,
         }
 
         response = bedrock.invoke_model(
@@ -269,7 +269,7 @@ def claude_messages(prompt):
         return f"Error calling Claude: {str(e)}"
 
 def get_business_context_prompt(question, custom_keywords=""):
-    """Generate enhanced business-focused prompt with context gathering"""
+    """Generate enhanced business-focused prompt with stricter formatting requirements"""
     
     # Detect question type and customize approach
     question_lower = question.lower()
@@ -290,7 +290,7 @@ def get_business_context_prompt(question, custom_keywords=""):
     if any(word in question_lower for word in ['2024', '2025', 'future', 'upcoming']):
         time_context = "Emphasize forward-looking insights and predictive analysis."
     
-    prompt = f"""You are a senior strategic market research analyst providing executive-level insights for business leaders. Your responses must be comprehensive, actionable, and business-focused.
+    prompt = f"""You are a senior strategic market research analyst providing executive-level insights for business leaders. You MUST follow the exact format specified below.
 
 QUESTION: {question}
 CUSTOM KEYWORDS: {custom_keywords}
@@ -299,83 +299,92 @@ ANALYSIS CONTEXT:
 {industry_context}
 {time_context}
 
-RESPONSE REQUIREMENTS:
-- Each insight must be 150-250 words (substantial and detailed)
-- Include specific business implications and opportunities
-- Provide quantifiable metrics and trends when possible
-- Focus on actionable strategies and competitive positioning
-- Include customer behavior insights and market dynamics
-- Mention potential risks and mitigation strategies
+CRITICAL FORMATTING REQUIREMENTS:
+- Each Business Action MUST be exactly 200-300 words
+- Include specific dollar amounts, percentages, and timeframes when possible
+- Mention ROI, revenue growth, market share, implementation costs
+- Include competitive analysis and customer behavior insights
+- Provide measurable KPIs and success metrics
+- Reference real market data and trends
 
-Respond using EXACTLY this format:
+Respond using EXACTLY this format with NO deviations:
 
 **KEYWORDS IDENTIFIED:**
-[List exactly 5 highly relevant business keywords separated by commas]
+[List exactly 5 business keywords separated by commas]
 
 **STRATEGIC MARKET ANALYSIS:**
 
 **KEYWORD 1: [First Keyword]**
 **STRATEGIC INSIGHTS:**
-1. Market Opportunity Assessment: [Detailed market opportunity analysis with specific business implications]
-2. Competitive Intelligence: [Competitive landscape analysis with positioning strategies]
-3. Implementation Strategy: [Actionable steps for businesses to capitalize on this trend]
+1. Market Opportunity Assessment: [Market size, growth rate, and revenue potential]
+2. Competitive Intelligence: [Key players, market positioning, and competitive advantages]  
+3. Implementation Strategy: [Step-by-step approach with timeline and resources]
 **BUSINESS ACTIONS:**
-1. [Comprehensive 150-250 word insight covering market opportunity, specific strategies, potential ROI, implementation timeline, and success metrics for the first insight]
-2. [Comprehensive 150-250 word insight covering competitive analysis, market positioning, differentiation strategies, and customer acquisition approaches for the second insight]
-3. [Comprehensive 150-250 word insight covering tactical implementation, resource requirements, risk mitigation, and measurement frameworks for the third insight]
+1. [EXACTLY 200-300 words] Market opportunity analysis including specific market size data (e.g., "$X billion market growing at Y% annually"), target customer segments with demographic details, revenue projections with realistic timelines, implementation costs and ROI calculations, competitive positioning strategies, customer acquisition metrics, and risk mitigation approaches with contingency planning.
+
+2. [EXACTLY 200-300 words] Competitive intelligence covering detailed competitor analysis with market share percentages, differentiation strategies that highlight unique value propositions, pricing strategies with specific price points and models, customer retention tactics with measurable outcomes, brand positioning approaches, partnership opportunities, and strategic recommendations for market penetration with timeline.
+
+3. [EXACTLY 200-300 words] Implementation strategy detailing tactical execution plan with specific milestones, resource requirements including budget allocations and team structure, technology stack recommendations, operational processes and workflows, measurement frameworks with specific KPIs and metrics, success criteria with quantifiable targets, risk assessment with mitigation strategies, and expected outcomes with realistic timelines.
 
 **KEYWORD 2: [Second Keyword]**
 **STRATEGIC INSIGHTS:**
-1. Revenue Impact Analysis: [Detailed revenue and growth potential analysis]
-2. Customer Behavior Trends: [Deep dive into customer behavior changes and implications]
-3. Operational Excellence: [Operational improvements and efficiency gains]
+1. Revenue Impact Analysis: [Financial projections, profit margins, and growth opportunities]
+2. Customer Behavior Trends: [Consumer patterns, preferences, and engagement strategies]
+3. Operational Excellence: [Process improvements, cost reductions, and efficiency gains]
 **BUSINESS ACTIONS:**
-1. [Comprehensive 150-250 word insight covering revenue opportunities, market sizing, customer segments, and monetization strategies]
-2. [Comprehensive 150-250 word insight covering customer behavior shifts, engagement strategies, and retention tactics]
-3. [Comprehensive 150-250 word insight covering operational optimization, cost reduction, and efficiency improvements]
+1. [EXACTLY 200-300 words] Revenue impact analysis including detailed financial projections with quarterly breakdowns, profit margin calculations with cost structures, pricing optimization strategies, customer lifetime value analysis, market penetration rates, sales funnel optimization, revenue diversification opportunities, and financial risk assessment with scenario planning.
+
+2. [EXACTLY 200-300 words] Customer behavior analysis covering demographic and psychographic insights, purchasing patterns with seasonal trends, digital engagement preferences, customer journey mapping, retention strategies with specific tactics, loyalty program recommendations, personalization approaches, and customer satisfaction metrics with improvement strategies.
+
+3. [EXACTLY 200-300 words] Operational excellence roadmap including process automation opportunities, cost reduction initiatives with specific savings targets, supply chain optimization, quality improvement measures, technology integration strategies, workforce development plans, performance measurement systems, and scalability considerations with growth planning.
 
 **KEYWORD 3: [Third Keyword]**
 **STRATEGIC INSIGHTS:**
-1. Innovation Opportunities: [Emerging innovation areas and R&D directions]
-2. Partnership & Ecosystem: [Strategic partnership opportunities and ecosystem development]
-3. Risk Management: [Potential risks and mitigation strategies]
+1. Innovation Opportunities: [R&D directions, technology trends, and product development]
+2. Partnership & Ecosystem: [Strategic alliances, vendor relationships, and collaborations]
+3. Risk Management: [Market risks, regulatory compliance, and mitigation strategies]
 **BUSINESS ACTIONS:**
-1. [Comprehensive 150-250 word insight covering innovation opportunities, technology adoption, product development, and market disruption potential]
-2. [Comprehensive 150-250 word insight covering strategic partnerships, ecosystem development, and collaborative opportunities]
-3. [Comprehensive 150-250 word insight covering risk assessment, regulatory considerations, and mitigation strategies]
+1. [EXACTLY 200-300 words] Innovation strategy encompassing emerging technology adoption, R&D investment priorities with budget allocations, product development roadmaps, intellectual property strategies, market disruption opportunities, innovation partnerships, technology transfer possibilities, and competitive innovation analysis with strategic responses.
+
+2. [EXACTLY 200-300 words] Partnership ecosystem development including strategic alliance identification, vendor evaluation criteria, collaboration frameworks, partnership models with revenue sharing, ecosystem mapping, integration strategies, relationship management approaches, and partnership performance metrics with optimization strategies.
+
+3. [EXACTLY 200-300 words] Risk management framework covering market volatility assessment, regulatory compliance requirements, operational risk mitigation, financial risk controls, cybersecurity considerations, business continuity planning, insurance strategies, and crisis management protocols with response procedures.
 
 **KEYWORD 4: [Fourth Keyword]**
 **STRATEGIC INSIGHTS:**
-1. Market Expansion: [Geographic and demographic expansion opportunities]
-2. Digital Transformation: [Technology adoption and digital strategy implications]
-3. Sustainability & ESG: [Environmental and social responsibility considerations]
+1. Market Expansion: [Geographic opportunities, demographic targeting, and growth strategies]
+2. Digital Transformation: [Technology adoption, digital capabilities, and automation]
+3. Sustainability & ESG: [Environmental impact, social responsibility, and governance]
 **BUSINESS ACTIONS:**
-1. [Comprehensive 150-250 word insight covering market expansion strategies, target demographics, and geographic opportunities]
-2. [Comprehensive 150-250 word insight covering digital transformation initiatives, technology stack, and automation opportunities]
-3. [Comprehensive 150-250 word insight covering sustainability initiatives, ESG compliance, and brand positioning advantages]
+1. [EXACTLY 200-300 words] Market expansion strategy including geographic market analysis with specific countries/regions, demographic targeting with detailed customer profiles, market entry strategies with timeline and investment requirements, localization considerations, regulatory compliance requirements, competitive landscape analysis, distribution channel development, and success metrics with tracking methodologies.
+
+2. [EXACTLY 200-300 words] Digital transformation roadmap covering technology assessment with current state analysis, digital capability development, automation opportunities with ROI calculations, data analytics implementation, cloud migration strategies, cybersecurity enhancements, digital customer experience improvements, and change management approaches with training programs.
+
+3. [EXACTLY 200-300 words] Sustainability and ESG strategy including environmental impact assessment, sustainable business practices implementation, ESG reporting requirements, stakeholder engagement strategies, regulatory compliance considerations, sustainable supply chain development, social responsibility initiatives, and ESG performance metrics with improvement targets.
 
 **KEYWORD 5: [Fifth Keyword]**
 **STRATEGIC INSIGHTS:**
-1. Financial Performance: [Financial impact and investment considerations]
-2. Talent & Workforce: [Human capital and workforce development needs]
+1. Financial Performance: [Investment requirements, funding strategies, and financial planning]
+2. Talent & Workforce: [Human capital development, skills requirements, and culture]
 3. Future Outlook: [Long-term strategic positioning and scenario planning]
 **BUSINESS ACTIONS:**
-1. [Comprehensive 150-250 word insight covering financial projections, investment requirements, ROI expectations, and budget allocation strategies]
-2. [Comprehensive 150-250 word insight covering talent acquisition, skills development, organizational change, and workforce planning]
-3. [Comprehensive 150-250 word insight covering future market scenarios, strategic positioning, and long-term competitive advantages]
+1. [EXACTLY 200-300 words] Financial performance optimization including investment requirement analysis with detailed budget breakdowns, funding strategy recommendations, cash flow projections with quarterly forecasts, profit optimization initiatives, cost management strategies, financial controls implementation, investor relations approaches, and financial performance metrics with benchmarking analysis.
 
-CRITICAL: Each Business Action must be exactly 150-250 words and include:
-- Specific business strategies and tactics
-- Quantifiable metrics and KPIs where possible
-- Implementation timelines and resource requirements
-- Potential challenges and solutions
-- Success measurement criteria
-- Real-world examples or case studies when relevant"""
+2. [EXACTLY 200-300 words] Talent and workforce strategy covering skills gap analysis, recruitment strategies with specific talent acquisition plans, employee development programs, compensation and benefits optimization, performance management systems, organizational culture development, succession planning, and workforce analytics with productivity measurements.
+
+3. [EXACTLY 200-300 words] Future outlook and strategic positioning including scenario planning with multiple market conditions, long-term strategic objectives, competitive positioning strategies, market trend analysis, technology roadmap planning, innovation pipeline development, strategic option evaluation, and adaptive strategy frameworks with contingency planning.
+
+ABSOLUTE REQUIREMENTS:
+- Every Business Action must be 200-300 words minimum
+- Include specific numbers, percentages, dollar amounts
+- Mention ROI, market share, growth rates, timeframes
+- Reference customer segments, competitive analysis, implementation costs
+- Provide measurable KPIs and success criteria"""
     
     return prompt
 
 def get_business_context_prompt_with_content(question, custom_keywords="", content=""):
-    """Enhanced prompt that includes content analysis"""
+    """Enhanced prompt that includes content analysis with stricter formatting"""
     
     # Detect question type and customize approach
     question_lower = question.lower()
@@ -397,11 +406,11 @@ def get_business_context_prompt_with_content(question, custom_keywords="", conte
         time_context = "Emphasize forward-looking insights and predictive analysis."
     
     # Truncate content if too long to fit in prompt
-    max_content_length = 3000
+    max_content_length = 2500
     if len(content) > max_content_length:
         content = content[:max_content_length] + "... [Content truncated for analysis]"
     
-    prompt = f"""You are a senior strategic market research analyst providing executive-level insights for business leaders. Your responses must be comprehensive, actionable, and business-focused.
+    prompt = f"""You are a senior strategic market research analyst providing executive-level insights for business leaders. You MUST follow the exact format specified below.
 
 QUESTION: {question}
 CUSTOM KEYWORDS: {custom_keywords}
@@ -413,79 +422,16 @@ ANALYSIS CONTEXT:
 {industry_context}
 {time_context}
 
-RESPONSE REQUIREMENTS:
-- Each insight must be 150-250 words (substantial and detailed)
-- Include specific business implications and opportunities based on the provided content
-- Provide quantifiable metrics and trends when possible
-- Focus on actionable strategies and competitive positioning
-- Include customer behavior insights and market dynamics
-- Mention potential risks and mitigation strategies
+CRITICAL FORMATTING REQUIREMENTS:
+- Each Business Action MUST be exactly 200-300 words
 - Ground insights in the provided content while expanding with market context
+- Include specific dollar amounts, percentages, and timeframes when possible
+- Mention ROI, revenue growth, market share, implementation costs
+- Include competitive analysis and customer behavior insights
+- Provide measurable KPIs and success metrics
+- Reference real market data and trends
 
-Respond using EXACTLY this format:
-
-**KEYWORDS IDENTIFIED:**
-[List exactly 5 highly relevant business keywords separated by commas, derived from the content and question]
-
-**STRATEGIC MARKET ANALYSIS:**
-
-**KEYWORD 1: [First Keyword]**
-**STRATEGIC INSIGHTS:**
-1. Market Opportunity Assessment: [Detailed market opportunity analysis with specific business implications]
-2. Competitive Intelligence: [Competitive landscape analysis with positioning strategies]
-3. Implementation Strategy: [Actionable steps for businesses to capitalize on this trend]
-**BUSINESS ACTIONS:**
-1. [Comprehensive 150-250 word insight covering market opportunity, specific strategies, potential ROI, implementation timeline, and success metrics for the first insight]
-2. [Comprehensive 150-250 word insight covering competitive analysis, market positioning, differentiation strategies, and customer acquisition approaches for the second insight]
-3. [Comprehensive 150-250 word insight covering tactical implementation, resource requirements, risk mitigation, and measurement frameworks for the third insight]
-
-**KEYWORD 2: [Second Keyword]**
-**STRATEGIC INSIGHTS:**
-1. Revenue Impact Analysis: [Detailed revenue and growth potential analysis]
-2. Customer Behavior Trends: [Deep dive into customer behavior changes and implications]
-3. Operational Excellence: [Operational improvements and efficiency gains]
-**BUSINESS ACTIONS:**
-1. [Comprehensive 150-250 word insight covering revenue opportunities, market sizing, customer segments, and monetization strategies]
-2. [Comprehensive 150-250 word insight covering customer behavior shifts, engagement strategies, and retention tactics]
-3. [Comprehensive 150-250 word insight covering operational optimization, cost reduction, and efficiency improvements]
-
-**KEYWORD 3: [Third Keyword]**
-**STRATEGIC INSIGHTS:**
-1. Innovation Opportunities: [Emerging innovation areas and R&D directions]
-2. Partnership & Ecosystem: [Strategic partnership opportunities and ecosystem development]
-3. Risk Management: [Potential risks and mitigation strategies]
-**BUSINESS ACTIONS:**
-1. [Comprehensive 150-250 word insight covering innovation opportunities, technology adoption, product development, and market disruption potential]
-2. [Comprehensive 150-250 word insight covering strategic partnerships, ecosystem development, and collaborative opportunities]
-3. [Comprehensive 150-250 word insight covering risk assessment, regulatory considerations, and mitigation strategies]
-
-**KEYWORD 4: [Fourth Keyword]**
-**STRATEGIC INSIGHTS:**
-1. Market Expansion: [Geographic and demographic expansion opportunities]
-2. Digital Transformation: [Technology adoption and digital strategy implications]
-3. Sustainability & ESG: [Environmental and social responsibility considerations]
-**BUSINESS ACTIONS:**
-1. [Comprehensive 150-250 word insight covering market expansion strategies, target demographics, and geographic opportunities]
-2. [Comprehensive 150-250 word insight covering digital transformation initiatives, technology stack, and automation opportunities]
-3. [Comprehensive 150-250 word insight covering sustainability initiatives, ESG compliance, and brand positioning advantages]
-
-**KEYWORD 5: [Fifth Keyword]**
-**STRATEGIC INSIGHTS:**
-1. Financial Performance: [Financial impact and investment considerations]
-2. Talent & Workforce: [Human capital and workforce development needs]
-3. Future Outlook: [Long-term strategic positioning and scenario planning]
-**BUSINESS ACTIONS:**
-1. [Comprehensive 150-250 word insight covering financial projections, investment requirements, ROI expectations, and budget allocation strategies]
-2. [Comprehensive 150-250 word insight covering talent acquisition, skills development, organizational change, and workforce planning]
-3. [Comprehensive 150-250 word insight covering future market scenarios, strategic positioning, and long-term competitive advantages]
-
-CRITICAL: Each Business Action must be exactly 150-250 words and include:
-- Specific business strategies and tactics derived from the content
-- Quantifiable metrics and KPIs where possible
-- Implementation timelines and resource requirements
-- Potential challenges and solutions
-- Success measurement criteria
-- Real-world examples or case studies when relevant"""
+[Use the same exact format as the previous prompt with 5 keywords, strategic insights, and 200-300 word business actions for each keyword]"""
     
     return prompt
 
@@ -693,7 +639,7 @@ def clear_cache():
     logger.info("Response cache cleared")
 
 def get_insight_quality_score(insights_data):
-    """Calculate a quality score for the insights"""
+    """Calculate an improved quality score for the insights"""
     if not insights_data:
         return 0
     
@@ -705,31 +651,62 @@ def get_insight_quality_score(insights_data):
         for insight in insights:
             score = 0
             length = len(insight)
+            words = insight.split()
+            word_count = len(words)
+            insight_lower = insight.lower()
             
-            # Length scoring (prefer 150-250 words)
-            if 150 <= length <= 250:
-                score += 40
-            elif 100 <= length < 150:
-                score += 30
-            elif 75 <= length < 100:
-                score += 20
+            # Word count scoring (prefer 200-300 words)
+            if 200 <= word_count <= 300:
+                score += 50  # Higher base score for proper length
+            elif 150 <= word_count < 200:
+                score += 35
+            elif 100 <= word_count < 150:
+                score += 25
+            elif word_count >= 300:
+                score += 40  # Still good if longer
+            else:
+                score += 10  # Low score for short insights
             
-            # Content quality indicators
-            if any(word in insight.lower() for word in ['roi', 'revenue', 'growth', 'market share']):
+            # Financial and business metrics (higher weight)
+            financial_terms = ['roi', 'revenue', 'profit', 'cost', 'investment', 'budget', 'margin', 'pricing', 'financial', 'earnings']
+            if any(term in insight_lower for term in financial_terms):
                 score += 15
-            if any(word in insight.lower() for word in ['strategy', 'implementation', 'approach']):
-                score += 10
-            if any(word in insight.lower() for word in ['customers', 'clients', 'users']):
-                score += 10
-            if any(word in insight.lower() for word in ['competitive', 'advantage', 'positioning']):
-                score += 15
-            if any(word in insight.lower() for word in ['metrics', 'kpi', 'measurement']):
+            
+            # Market and competitive analysis
+            market_terms = ['market', 'competitive', 'competitor', 'market share', 'positioning', 'segment', 'customer']
+            if any(term in insight_lower for term in market_terms):
+                score += 12
+            
+            # Implementation and strategy content
+            strategy_terms = ['strategy', 'implementation', 'approach', 'framework', 'methodology', 'roadmap', 'planning']
+            if any(term in insight_lower for term in strategy_terms):
                 score += 10
             
-            total_score += score
+            # Quantifiable metrics and numbers
+            number_indicators = ['%', '$', 'million', 'billion', 'growth', 'increase', 'decrease', 'quarter', 'annual']
+            if any(indicator in insight_lower for indicator in number_indicators):
+                score += 12
+            
+            # KPIs and measurement
+            kpi_terms = ['kpi', 'metric', 'measurement', 'tracking', 'performance', 'benchmark', 'target', 'goal']
+            if any(term in insight_lower for term in kpi_terms):
+                score += 8
+            
+            # Timeline and urgency
+            time_terms = ['timeline', 'month', 'quarter', 'year', 'phase', 'milestone', 'deadline', 'schedule']
+            if any(term in insight_lower for term in time_terms):
+                score += 8
+            
+            # Risk and opportunity analysis
+            risk_terms = ['risk', 'opportunity', 'threat', 'challenge', 'mitigation', 'contingency']
+            if any(term in insight_lower for term in risk_terms):
+                score += 8
+            
+            total_score += min(score, 100)  # Cap individual insight score at 100
             total_insights += 1
     
-    return (total_score / total_insights) if total_insights > 0 else 0
+    final_score = (total_score / total_insights) if total_insights > 0 else 0
+    return min(final_score, 100)  # Cap final score at 100
 
 def test_functions():
     print("✅ Enhanced summarize_trends function loaded")
@@ -738,7 +715,7 @@ def test_functions():
     print("✅ Enhanced claude_messages function loaded")
     print("✅ safe_get_insight function loaded")
     print("✅ clear_cache function loaded")
-    print("✅ get_insight_quality_score function loaded")
+    print("✅ IMPROVED get_insight_quality_score function loaded")
     print("✅ analyze_url_content function loaded")
 
     # Test both question and text analysis
@@ -751,20 +728,4 @@ def test_functions():
     print(f"\n📄 Testing enhanced text analysis")
     result2 = summarize_trends(text=test_text, question="What business opportunities exist in this market?")
 
-    for i, result in enumerate([result1, result2], 1):
-        print(f"\n--- RESULT {i} ---")
-        if result["error"]:
-            print("❌ Error:", result["error"])
-            continue
-
-        print(f"📊 Analysis ID: {result.get('analysis_id', 'N/A')}")
-        print("🔑 Keywords identified:", result["keywords"])
-        print(f"📈 Total insights structure: {len(result['insights'])} keywords")
-        
-        # Calculate quality score
-        quality_score = get_insight_quality_score(result['insights'])
-        print(f"🎯 Insight Quality Score: {quality_score:.1f}/100")
-
-        # Show first insight for first keyword
-        if result["keywords"]:
-            first_kw = result["keywords"][0]
+    for i, result in enumerate([result1, result2], 1
