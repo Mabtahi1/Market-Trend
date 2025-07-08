@@ -6,6 +6,7 @@ import os
 import logging
 import hashlib
 import time
+import re
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -32,7 +33,7 @@ def claude_messages(prompt):
             "messages": [
                 {"role": "user", "content": prompt}
             ],
-            "max_tokens": 2000,  # Much smaller for faster processing
+            "max_tokens": 2500,  # Increased slightly for better responses
             "temperature": 0.3,
             "top_k": 150,
             "top_p": 0.9,
@@ -60,194 +61,297 @@ def claude_messages(prompt):
         return f"Error calling Claude: {str(e)}"
 
 def get_business_context_prompt(question, custom_keywords=""):
-    """Simple, fast business prompt"""
+    """Enhanced business prompt with strict formatting requirements"""
     
-    prompt = f"""You are a business analyst. Provide strategic insights for this question.
+    prompt = f"""You are a senior business strategist providing executive-level insights. You MUST follow the exact format specified below.
 
+ANALYSIS REQUEST:
 Question: {question}
-Keywords: {custom_keywords}
+Focus Keywords: {custom_keywords}
 
-Please respond in exactly this format:
+CRITICAL FORMATTING REQUIREMENTS:
+- Use the EXACT format shown below
+- Each Business Action must be 150-200 words
+- Include specific dollar amounts, percentages, timeframes
+- Provide market data, ROI calculations, implementation costs
+- Focus on actionable strategies with measurable outcomes
+
+RESPOND USING EXACTLY THIS FORMAT:
 
 **KEYWORDS IDENTIFIED:**
-Market Analysis, Growth Strategy, Customer Experience, Digital Innovation, Competitive Advantage
+Market Opportunities, Growth Strategy, Digital Innovation, Customer Experience, Competitive Positioning
 
 **STRATEGIC ANALYSIS:**
 
-**KEYWORD 1: Market Analysis**
+**KEYWORD 1: Market Opportunities**
 **INSIGHTS:**
-1. Market Opportunity: Current market size and growth potential
-2. Target Customers: Key customer segments and their needs
-3. Revenue Potential: Financial projections and business model
+1. Market Opportunity Assessment: Total addressable market size and growth potential analysis
+2. Customer Segmentation: Target customer analysis and value proposition development
+3. Revenue Projections: Financial forecasting and business model optimization
 **ACTIONS:**
-1. The market opportunity represents a significant $2.5 billion addressable market growing at 15% annually. Primary customer segments include enterprise clients (60% of market, $120K average contracts) and SMBs (40% of market, $25K average deals). Implementation requires $1.8M investment over 12 months including technology development ($1M), sales team ($500K), and marketing ($300K). Revenue projections show $1.5M in year one, scaling to $8M by year three with 22% EBITDA margins. Key success metrics include 5% market penetration within 24 months, $8K customer acquisition cost, and $180K customer lifetime value.
+1. Market opportunity analysis reveals $2.8 billion addressable market growing at 18% annually through 2027. Primary customer segments include enterprise clients (65% of market, $150K average contracts) and SMBs (35% of market, $45K average deals). Geographic expansion targets North America ($1.2B market), Europe ($900M), Asia-Pacific ($700M). Implementation requires $2.2M investment over 15 months including technology development ($1.2M), sales team expansion ($600K), marketing initiatives ($400K). Revenue projections show $1.8M year one, $5.2M year two, $9.8M year three with 28% EBITDA margins. Success metrics include 6% market penetration within 30 months, $9K customer acquisition cost, $220K lifetime value, and 15% quarterly growth rate.
 
-2. Competitive landscape analysis reveals three major players controlling 45% of total market share, creating opportunities for innovative disruption. Customer acquisition strategy combines digital marketing campaigns targeting decision-makers, strategic partnerships with industry associations, and direct sales approach. Brand positioning emphasizes speed, reliability, and cost-effectiveness with case studies demonstrating 40% faster implementation than competitors. Success metrics include 15% brand awareness within 12 months, 20% shorter sales cycles, and 4.4/5.0 customer satisfaction scores.
+2. Competitive landscape shows fragmented market with top three players controlling 42% share, creating disruption opportunity. Primary competitors include TechLeader Corp ($140M revenue, 16% share), InnovateSys ($110M revenue, 14% share), Digital Solutions ($95M revenue, 12% share). Differentiation strategy targets underserved mid-market with 35% cost reduction through automation and cloud architecture. Customer acquisition combines targeted digital marketing ($150K quarterly budget), strategic partnerships (15 industry alliances), direct sales team (12 representatives covering key regions). Brand positioning emphasizes rapid deployment (4-month implementation vs 12-month industry average), superior ROI (35% better outcomes), and comprehensive support (24/7 availability).
 
-3. Implementation roadmap requires cross-functional team of 18 professionals including engineers, sales specialists, and customer success managers. Technology infrastructure investment includes cloud platform development, security certifications, and integration capabilities. Operational processes encompass automated customer onboarding, AI-powered support systems, and performance analytics. Key milestones include beta testing with pilot customers, limited market release, and full product launch within 12-month timeline.
+3. Implementation roadmap requires cross-functional team of 28 professionals: 12 engineers, 8 sales specialists, 4 marketing professionals, 4 customer success managers. Technology infrastructure investment totals $1.6M including cloud platform ($700K), security certifications ($300K), integration capabilities ($400K), analytics dashboard ($200K). Operational framework includes automated onboarding (reducing setup time 60%), AI-powered support (achieving 85% first-contact resolution), predictive analytics for customer success. Key milestones: beta testing months 3-6, limited release month 9, full launch month 12, international expansion month 18. Risk mitigation addresses development delays, competitive pressure, talent acquisition through agile methodology, flexible pricing models, comprehensive retention programs.
 
 **KEYWORD 2: Growth Strategy**
 **INSIGHTS:**
-1. Revenue Streams: Multiple income sources and monetization
-2. Market Expansion: Geographic and demographic growth
-3. Customer Retention: Loyalty and lifetime value optimization
+1. Revenue Diversification: Multiple income stream development and optimization strategies
+2. Market Expansion: Geographic and demographic growth opportunity identification
+3. Customer Lifetime Value: Retention and upselling program development
 **ACTIONS:**
-1. Revenue diversification strategy targets subscription model ($5M annual recurring revenue), professional services ($2M), and marketplace transactions ($1M) generating combined $8M by year three. Subscription pricing ranges from $1,500/month basic to $8,000/month enterprise tiers. Professional services offer implementation consulting and customization at $200/hour average billing rate. Implementation requires dedicated teams with $800K investment in personnel and technology platforms.
+1. Revenue diversification strategy targets four income streams generating $12.5M combined annual recurring revenue by year three. Primary subscription model ($8.2M, 66%) offers tiered pricing from $2,000/month basic to $12,000/month enterprise. Professional services division ($2.8M, 22%) provides implementation consulting, customization, ongoing optimization at $250/hour average rate. Marketplace revenue ($1.1M, 9%) creates ecosystem partnerships with 20% revenue sharing. Training programs ($400K, 3%) deliver certification courses, workshops, documentation. Financial projections show 35% gross margins on subscriptions, 68% on services, 45% on marketplace, 88% on training. Investment requires $1.1M in dedicated teams, technology platforms, market development. Success metrics include revenue diversification index (no stream exceeding 70%), customer lifetime value improvement (45% increase), cross-selling rates (2.5 products per customer).
 
-2. Market expansion initiative focuses on geographic growth targeting North America ($1.2B market), Europe ($800M), and Asia-Pacific ($600M). Customer expansion includes upselling existing accounts with average 25% annual contract value increases and cross-selling complementary solutions. Investment totals $1.2M including international team establishment, localization, and regulatory compliance.
+2. Market expansion initiative targets high-growth regions with $2.1B combined opportunity and 22% annual growth rates. Primary markets include Asia-Pacific ($850M opportunity, 25% growth), Latin America ($650M, 20% growth), Middle East ($600M, 19% growth). Entry strategy requires $1.8M investment: local partnerships ($600K), regulatory compliance ($450K), market research ($300K), sales team establishment ($450K). Localization includes product adaptation, language translation, cultural customization across 8 target countries. Distribution channels combine direct sales (45%), certified partners (35%), digital platforms (20%). Revenue projections show $3.2M international sales year one, growing to $18M by year three. Success metrics include 4% market penetration within 24 months, $7K acquisition costs, 28% local revenue contribution by year three.
 
-3. Customer retention program implements success management framework reducing churn from 15% to 8% while increasing lifetime value by 35%. Retention initiatives include quarterly business reviews, proactive support, and loyalty rewards. Investment of $400K includes customer success team expansion and retention technology platform with predictive analytics identifying at-risk accounts.
+3. Customer lifetime value optimization program increases retention from 82% to 94% while boosting average revenue per user 38%. Customer success framework segments users by engagement levels, business outcomes, growth potential enabling personalized strategies. High-value program (400+ customers, 70% revenue) includes dedicated success managers, quarterly executive briefings, early feature access, customized training. Risk identification system monitors usage patterns, support frequency, satisfaction scores triggering proactive interventions. Retention initiatives include win-back campaigns (73% success rate), loyalty rewards, advocacy programs. Investment totals $650K: customer success team expansion ($400K), retention platform ($150K), loyalty program ($100K). Success indicators include gross retention (95%), net retention (125%), lifetime value ($275K average), advocacy participation (30% customer base).
 
-**KEYWORD 3: Customer Experience**
+**KEYWORD 3: Digital Innovation**
 **INSIGHTS:**
-1. User Journey: Touchpoint optimization and satisfaction
-2. Service Quality: Support and success measurement
-3. Engagement: Community building and advocacy programs
+1. Technology Transformation: Platform modernization and capability enhancement initiatives
+2. Process Automation: Operational efficiency and cost reduction through automation
+3. Data Analytics: Business intelligence and predictive analytics implementation
 **ACTIONS:**
-1. Customer experience enhancement delivers 30% satisfaction improvement through journey optimization, personalized interactions, and proactive support. Investment of $600K includes experience platform, training programs, and measurement systems. Success metrics include Net Promoter Score improvement from 35 to 55, customer effort score reduction of 35%, and support resolution time decrease of 40%.
+1. Technology transformation modernizes core platform delivering 45% performance improvement and 55% operational cost reduction. Cloud-native redesign migrates from legacy infrastructure to microservices architecture supporting 8x scalability, 99.98% availability. Investment of $1.5M over 12 months includes platform re-engineering ($650K), cloud migration ($450K), security enhancements ($250K), testing automation ($150K). Enhanced capabilities include real-time processing, 40+ third-party integrations, mobile-responsive interface. Performance improvements: 2.5-second page loads (previously 7 seconds), 400ms API responses (previously 1.1 seconds), 35,000 concurrent users (7x current capacity). Implementation follows agile methodology with bi-weekly sprints, CI/CD pipeline, comprehensive testing. Success metrics include 99.95% uptime, 4.8/5.0 customer satisfaction with performance, 32% operational cost reduction within 10 months.
 
-2. Service quality initiative implements 24/7 support availability, comprehensive knowledge base, and AI-powered assistance achieving 75% first-contact resolution rates. Support technology investment of $300K includes chatbot implementation, ticketing system upgrade, and performance monitoring tools. Quality targets include 99.5% uptime, 2-hour response times, and 4.5/5.0 satisfaction ratings.
+2. Process automation streamlines operations reducing manual effort 68% and improving consistency across customer-facing activities. RPA deployment targets invoice processing (92% automation), customer onboarding (85% automation), report generation (95% automation), support routing (88% automation). Investment totals $550K: automation software ($250K), process reengineering ($200K), training programs ($100K). Workflow optimization identifies 26 repetitive tasks with 950 hours monthly savings enabling staff reallocation to strategic activities. Customer onboarding automation reduces setup from 12 days to 2.5 days while improving accuracy through standardized procedures. Support automation includes chatbot handling 75% routine inquiries, automated classification, intelligent routing reducing response times 52%. Success metrics include 65% processing time reduction, 85% fewer manual errors, 4.3/5.0 employee satisfaction, $350K annual savings.
 
-3. Community building program creates user ecosystem with online platform hosting discussions, best practices sharing, and peer support. Annual user conference and quarterly webinars strengthen relationships while providing product feedback. Investment of $250K includes community platform, content creation, and event management generating enhanced customer loyalty and advocacy.
+3. Data analytics platform processes 1.8M daily data points from customer interactions, system performance, market indicators generating actionable insights. Machine learning algorithms identify usage patterns, predict churn with 89% accuracy, recommend features improving engagement 44%. Investment of $850K includes analytics platform ($350K), data engineering team ($350K), visualization tools ($150K). Custom dashboards provide real-time KPI visibility, customer health scores, operational metrics for executives, success teams, product managers. Predictive capabilities include revenue forecasting (96% confidence), lifetime value modeling, market trend analysis supporting strategic planning. Data governance ensures privacy compliance, security protocols, ethical AI practices. Success indicators include 99% data accuracy, 88% analytics adoption, 55% faster decision-making, 30% KPI achievement improvement. Implementation spans 8 months including infrastructure setup, model development, user training, continuous optimization.
 
-**KEYWORD 4: Digital Innovation**
+**KEYWORD 4: Customer Experience**
 **INSIGHTS:**
-1. Technology Trends: Emerging capabilities and adoption
-2. Automation: Process optimization and efficiency gains
-3. Data Analytics: Intelligence and decision-making enhancement
+1. Journey Optimization: Customer touchpoint enhancement and satisfaction improvement
+2. Service Excellence: Support quality and response time optimization
+3. Community Building: User engagement and advocacy program development
 **ACTIONS:**
-1. Technology transformation includes AI integration, mobile optimization, and cloud-native architecture delivering 40% performance improvement and 50% cost reduction. Investment of $1.2M covers platform modernization, AI capabilities, and mobile development. Success metrics include 99.9% system availability, 2-second response times, and 25% productivity improvement.
+1. Customer experience optimization redesigns entire journey delivering 42% satisfaction improvement and 32% churn reduction. Journey mapping identifies 11 critical touchpoints from awareness through renewal, implementing targeted enhancements at each stage. Onboarding enhancement reduces time-to-value from 35 days to 14 days through guided wizards, automated setup, dedicated success manager assignment. Support transformation includes 24/7 chat availability, 400+ knowledge base articles, AI suggestion engine resolving 72% inquiries without human intervention. Investment of $750K encompasses experience design ($180K), platform upgrades ($350K), training programs ($140K), measurement systems ($80K). Personalization engine delivers customized content, feature recommendations based on usage patterns improving engagement 48%. Success indicators include NPS improvement (38 to 61), customer effort score reduction (45% improvement), satisfaction ratings (4.7/5.0), support resolution 30% faster.
 
-2. Automation implementation targets operational processes achieving 60% manual effort reduction through robotic process automation, workflow optimization, and intelligent routing. Investment of $500K includes automation software, process reengineering, and employee training. Automation covers customer onboarding (80% automated), support ticket management (70% automated), and reporting (90% automated).
+2. Service excellence program establishes world-class support achieving industry-leading performance metrics and customer satisfaction. Support infrastructure includes multi-channel availability (chat, email, phone, video), comprehensive documentation, proactive monitoring, escalation procedures. Quality assurance framework ensures consistent service delivery through training, performance monitoring, continuous improvement. Investment totals $480K: support team expansion ($280K), technology platform ($120K), training programs ($80K). Service level targets include 99.8% system availability, 1-hour response times, 95% first-contact resolution, 4.8/5.0 satisfaction scores. Proactive support identifies potential issues before customer impact through predictive analytics, automated monitoring, early warning systems. Success metrics encompass customer satisfaction (4.8/5.0), support ticket reduction (40% decrease), resolution time improvement (50% faster), team productivity increase (35% more efficient).
 
-3. Data analytics platform processes customer interactions, system performance, and market indicators generating actionable insights for business optimization. Machine learning algorithms predict customer behavior, identify upselling opportunities, and optimize pricing strategies. Investment of $400K includes analytics platform, data engineering, and visualization tools enabling data-driven decision making.
+3. Community building initiative creates engaged ecosystem fostering peer learning, product advocacy, collaborative innovation. Online platform hosts 2,200+ active members participating in discussions, best practice sharing, peer support reducing official support burden 38%. User-generated content program encourages case studies, tutorials, feature requests with recognition rewards for contributors. Annual conference brings 350 customers for networking, training, roadmap discussions generating $140K revenue while strengthening relationships. Investment of $420K includes platform development ($160K), content creation ($120K), event planning ($100K), community management ($40K). Customer advisory board (12 strategic accounts) provides product feedback, market insights influencing 68% major decisions. Success measurements include community engagement (88% monthly active), user content (45 posts weekly), advocacy participation (32% customer base), community-driven support (42% inquiries).
 
-**KEYWORD 5: Competitive Advantage**
+**KEYWORD 5: Competitive Positioning**
 **INSIGHTS:**
-1. Differentiation: Unique value proposition development
-2. Market Position: Industry leadership and recognition
-3. Strategic Planning: Future positioning and adaptation
+1. Market Differentiation: Unique value proposition and competitive advantage development
+2. Strategic Partnerships: Alliance building and ecosystem expansion for market reach
+3. Future Planning: Long-term positioning and market evolution preparation
 **ACTIONS:**
-1. Competitive differentiation through proprietary technology, superior customer outcomes, and innovative business model capturing 12% market share within three years. Unique value proposition emphasizes 50% faster implementation, 30% lower total cost, and 20% better performance versus alternatives. Investment of $800K funds product differentiation, competitive intelligence, and market positioning initiatives.
+1. Market differentiation establishes unique competitive positioning through proprietary technology, superior outcomes, innovative business model capturing 14% market share within four years. Competitive analysis reveals gaps in customization capabilities, mobile experience, analytics functionality creating differentiation opportunities. Value proposition emphasizes 55% faster implementation, 38% lower total cost, 28% better satisfaction versus leading competitors. Technology differentiation includes patented algorithms, AI automation, industry-specific configurations unavailable elsewhere. Investment of $1.3M funds competitive intelligence ($180K), product differentiation ($650K), marketing positioning ($280K), sales enablement ($190K). Brand positioning targets innovative companies seeking competitive advantage through technology leadership. Messaging framework emphasizes speed, reliability, measurable outcomes supported by customer testimonials, third-party validation. Success metrics include competitive win rate (48% of evaluations), brand differentiation scores (top 2 analyst rankings), premium pricing sustainability (18% price premium).
 
-2. Market leadership positioning through thought leadership, industry partnerships, and analyst recognition. Brand building includes content marketing, speaking engagements, and strategic partnerships enhancing credibility and market presence. Investment of $400K covers marketing initiatives, partnership development, and analyst relations programs establishing industry authority and customer trust.
+2. Strategic partnership ecosystem expands market reach through technology vendors, implementation consultants, industry specialists generating 38% total revenue through channels. Partnership portfolio includes 6 technology integrations, 10 implementation partners, 12 industry resellers providing comprehensive solution ecosystem. System integrator relationships with consulting firms provide expertise, credibility while expanding addressable market 65% through partner customer bases. Technology partnerships enable seamless integrations with CRM, ERP, industry-specific applications. Investment totals $680K: partner enablement ($240K), integration development ($280K), channel management ($160K). Revenue sharing models average 22% partner margin with performance bonuses for satisfaction, retention achievements. Co-marketing initiatives include webinars, conferences, content creation amplifying market presence 140%. Success indicators include partner revenue (42% total), satisfaction scores (4.5/5.0), integration quality (4.8/5.0), market coverage expansion (22 additional markets).
 
-3. Strategic planning incorporates market trend analysis, competitive monitoring, and scenario planning for sustained advantage. Long-term roadmap includes technology innovation, market expansion, and acquisition opportunities. Investment in research and development totals $600K annually supporting innovation pipeline and competitive positioning maintenance through continuous improvement and adaptation.
+3. Future planning strategic positioning prepares organization for market evolution over five-year horizon addressing AI adoption, regulatory changes, industry consolidation. Market trend analysis identifies key drivers shaping competitive landscape enabling proactive strategy development. Strategic scenario planning evaluates technology disruption, new competitor entry, market maturation developing responsive strategies. Investment in emerging technologies totals $950K annually: AI research, blockchain exploration, IoT integration positioning for next-generation requirements. Long-term roadmap extends 30 months incorporating customer feedback, technology trends, competitive intelligence ensuring continued leadership. Organizational capability development includes talent acquisition, strategic partnerships, intellectual property protection through patents, trade secrets. Financial planning supports sustainable growth: 28% annual revenue increases, 32% EBITDA margins, $4M acquisition budget for complementary technologies. Success framework includes innovation metrics, market share trends, customer retention, financial performance against targets. Environmental scanning monitors competitive moves, regulations, technology developments enabling proactive adjustments.
 
-Provide specific numbers, percentages, dollar amounts, and timeframes in every action item."""
+CRITICAL: Every Business Action must be exactly 150-200 words and include specific dollar amounts, percentages, timeframes, market data, and measurable KPIs."""
     
     return prompt
 
 def get_business_context_prompt_with_content(question, custom_keywords="", content=""):
-    """Simple prompt with content"""
+    """Enhanced prompt that includes content analysis"""
     
-    max_content_length = 800  # Very short to prevent timeout
+    max_content_length = 1000  # Optimized to prevent timeout
     if len(content) > max_content_length:
-        content = content[:max_content_length] + "..."
+        content = content[:max_content_length] + "... [Content truncated for analysis]"
     
-    prompt = f"""Analyze this content and provide business insights.
+    prompt = f"""You are a senior business strategist. Analyze the provided content and deliver comprehensive strategic insights.
 
+ANALYSIS REQUEST:
 Question: {question}
-Keywords: {custom_keywords}
-Content: {content}
+Focus Keywords: {custom_keywords}
 
-Use the same format as above with 5 keywords and detailed action items including specific numbers and dollar amounts."""
+CONTENT TO ANALYZE:
+{content}
+
+Use the same EXACT format as specified above with 5 keywords and detailed Business Actions (150-200 words each) including specific quantitative data grounded in the provided content."""
     
     return prompt
 
 def parse_enhanced_analysis_response(response):
     try:
-        lines = response.strip().split("\n")
-        keywords = []
-        structured_insights = {}
-        current_keyword = None
-        mode = None
-        current_titles = []
-        current_insights = []
-
-        for line in lines:
-            line = line.strip()
-            if not line:
-                continue
-
-            if line.startswith("**KEYWORDS IDENTIFIED:**"):
-                mode = "keywords"
-                continue
-
-            elif mode == "keywords" and not line.startswith("**"):
-                keyword_line = line.replace("[", "").replace("]", "")
-                keywords = [k.strip() for k in keyword_line.split(",") if k.strip()]
-                mode = None
-                continue
-
-            elif line.startswith("**KEYWORD") and ":" in line:
-                if current_keyword and (current_titles or current_insights):
-                    structured_insights[current_keyword] = {
-                        "titles": current_titles,
-                        "insights": current_insights
-                    }
-                
-                if ":" in line:
-                    keyword_part = line.split(":", 1)[1].strip()
-                    current_keyword = keyword_part.replace("**", "").strip()
-                    current_titles = []
-                    current_insights = []
-                continue
-
-            elif line.startswith("**INSIGHTS:**"):
-                mode = "titles"
-                continue
-
-            elif line.startswith("**ACTIONS:**"):
-                mode = "insights"
-                continue
-
-            elif mode == "titles" and current_keyword:
-                if line and (line[0].isdigit() or line.startswith("- ")):
-                    if line[0].isdigit() and "." in line:
-                        content = line.split(".", 1)[1].strip()
-                    elif line.startswith("- "):
-                        content = line[2:].strip()
-                    else:
-                        content = line.strip()
-                    
-                    if content:
-                        current_titles.append(content)
-
-            elif mode == "insights" and current_keyword:
-                if line and (line[0].isdigit() or line.startswith("- ")):
-                    if line[0].isdigit() and "." in line:
-                        content = line.split(".", 1)[1].strip()
-                    elif line.startswith("- "):
-                        content = line[2:].strip()
-                    else:
-                        content = line.strip()
-                    
-                    if content:
-                        current_insights.append(content)
-                elif current_insights and not line.startswith("**"):
-                    current_insights[-1] += " " + line.strip()
-
-        if current_keyword and (current_titles or current_insights):
-            structured_insights[current_keyword] = {
-                "titles": current_titles,
-                "insights": current_insights
-            }
-
-        logger.info(f"Parsed {len(keywords)} keywords: {keywords}")
-        logger.info(f"Structured insights for {len(structured_insights)} keywords")
+        # Handle multiple response formats
+        if "**KEYWORDS IDENTIFIED:**" in response:
+            # Standard format parsing
+            return parse_standard_format(response)
+        elif "Keywords:" in response and "**KEYWORDS IDENTIFIED:**" not in response:
+            # Handle alternative format
+            return parse_alternative_format(response)
+        else:
+            # Fallback parsing
+            return parse_fallback_format(response)
         
-        return {
-            "keywords": keywords,
-            "structured_insights": structured_insights
-        }
-
     except Exception as e:
         logger.error(f"Error parsing response: {str(e)}")
-        return {
-            "keywords": [],
-            "structured_insights": {}
+        return {"keywords": [], "structured_insights": {}}
+
+def parse_standard_format(response):
+    """Parse properly formatted responses"""
+    lines = response.strip().split("\n")
+    keywords = []
+    structured_insights = {}
+    current_keyword = None
+    mode = None
+    current_titles = []
+    current_insights = []
+
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+
+        if line.startswith("**KEYWORDS IDENTIFIED:**"):
+            mode = "keywords"
+            continue
+
+        elif mode == "keywords" and not line.startswith("**"):
+            keyword_line = line.replace("[", "").replace("]", "")
+            keywords = [k.strip() for k in keyword_line.split(",") if k.strip()]
+            mode = None
+            continue
+
+        elif line.startswith("**KEYWORD") and ":" in line:
+            if current_keyword and (current_titles or current_insights):
+                structured_insights[current_keyword] = {
+                    "titles": current_titles,
+                    "insights": current_insights
+                }
+            
+            if ":" in line:
+                keyword_part = line.split(":", 1)[1].strip()
+                current_keyword = keyword_part.replace("**", "").strip()
+                current_titles = []
+                current_insights = []
+            continue
+
+        elif line.startswith("**INSIGHTS:**"):
+            mode = "titles"
+            continue
+
+        elif line.startswith("**ACTIONS:**"):
+            mode = "insights"
+            continue
+
+        elif mode == "titles" and current_keyword:
+            if line and (line[0].isdigit() or line.startswith("- ")):
+                if line[0].isdigit() and "." in line:
+                    content = line.split(".", 1)[1].strip()
+                elif line.startswith("- "):
+                    content = line[2:].strip()
+                else:
+                    content = line.strip()
+                
+                if content:
+                    current_titles.append(content)
+
+        elif mode == "insights" and current_keyword:
+            if line and (line[0].isdigit() or line.startswith("- ")):
+                if line[0].isdigit() and "." in line:
+                    content = line.split(".", 1)[1].strip()
+                elif line.startswith("- "):
+                    content = line[2:].strip()
+                else:
+                    content = line.strip()
+                
+                if content:
+                    current_insights.append(content)
+            elif current_insights and not line.startswith("**"):
+                current_insights[-1] += " " + line.strip()
+
+    if current_keyword and (current_titles or current_insights):
+        structured_insights[current_keyword] = {
+            "titles": current_titles,
+            "insights": current_insights
         }
+
+    return {
+        "keywords": keywords,
+        "structured_insights": structured_insights
+    }
+
+def parse_alternative_format(response):
+    """Parse alternative format like 'Keywords: 1. AI 2. Quantum...'"""
+    lines = response.split('\n')
+    keywords = []
+    structured_insights = {}
+    
+    # Extract keywords from numbered format
+    for line in lines:
+        if line.strip().startswith("Keywords:"):
+            keyword_text = line.replace("Keywords:", "").strip()
+            # Extract numbered keywords using regex
+            keyword_matches = re.findall(r'\d+\.\s*([^0-9]+?)(?=\d+\.|$)', keyword_text)
+            keywords = [k.strip().rstrip('()').rstrip(':') for k in keyword_matches if k.strip()]
+            break
+    
+    # Create structured insights from content sections
+    current_section = ""
+    current_content = []
+    
+    for line in lines:
+        line = line.strip()
+        
+        # Check if line is a keyword section header
+        if any(keyword.lower() in line.lower() for keyword in keywords) and line.endswith(':'):
+            # Save previous section
+            if current_section and current_content:
+                structured_insights[current_section] = {
+                    "titles": ["Market Opportunity", "Implementation Strategy", "Investment Analysis"],
+                    "insights": current_content
+                }
+            
+            # Start new section
+            current_section = line.rstrip(':').strip()
+            current_content = []
+            
+        elif line.startswith('-') and current_section:
+            # Add insight to current section
+            insight = line.lstrip('- ').strip()
+            if insight:
+                current_content.append(insight)
+    
+    # Don't forget the last section
+    if current_section and current_content:
+        structured_insights[current_section] = {
+            "titles": ["Market Opportunity", "Implementation Strategy", "Investment Analysis"],
+            "insights": current_content
+        }
+    
+    logger.info(f"Alternative format parsed: {len(keywords)} keywords, {len(structured_insights)} sections")
+    
+    return {
+        "keywords": keywords,
+        "structured_insights": structured_insights
+    }
+
+def parse_fallback_format(response):
+    """Fallback parser for unstructured responses"""
+    # Extract any technology/business terms as keywords
+    common_keywords = ['AI', 'Technology', 'Innovation', 'Market', 'Strategy', 'Digital', 'Growth', 'Customer', 'Business', 'Investment']
+    keywords = []
+    
+    for keyword in common_keywords:
+        if keyword.lower() in response.lower():
+            keywords.append(keyword)
+    
+    keywords = keywords[:5]  # Limit to 5
+    
+    # Split response into chunks for insights
+    paragraphs = [p.strip() for p in response.split('\n\n') if p.strip()]
+    
+    structured_insights = {}
+    for i, keyword in enumerate(keywords):
+        if i < len(paragraphs):
+            structured_insights[keyword] = {
+                "titles": ["Analysis", "Strategy", "Implementation"],
+                "insights": [paragraphs[i][:500]]  # Limit length
+            }
+    
+    logger.info(f"Fallback parsing: {len(keywords)} keywords extracted")
+    
+    return {
+        "keywords": keywords,
+        "structured_insights": structured_insights
+    }
 
 def analyze_question(question, custom_keywords=""):
     try:
@@ -391,7 +495,7 @@ def extract_text_from_file(uploaded_file, return_format="dict"):
         
         analysis_result = summarize_trends(
             text=text,
-            question="Analyze this document for business insights",
+            question="Analyze this document for strategic business insights and market opportunities",
             return_format="dict"
         )
         
@@ -420,23 +524,23 @@ def analyze_url_content(url, question=None, keyword=None):
         import requests
         from bs4 import BeautifulSoup
         
-        headers = {'User-Agent': 'Mozilla/5.0'}
-        response = requests.get(url, headers=headers, timeout=10)
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
+        response = requests.get(url, headers=headers, timeout=15)
         response.raise_for_status()
         
         soup = BeautifulSoup(response.content, 'html.parser')
-        for script in soup(["script", "style"]):
+        for script in soup(["script", "style", "nav", "header", "footer"]):
             script.extract()
         
         text = soup.get_text()
         text = ' '.join(text.split())
         
-        if len(text) > 2000:
-            text = text[:2000] + "..."
+        if len(text) > 2500:  # Increased slightly
+            text = text[:2500] + "..."
         
         analysis_result = summarize_trends(
             text=text,
-            question=question or "Analyze this web content",
+            question=question or "Analyze this web content for strategic business insights",
             keyword=keyword,
             return_format="dict"
         )
@@ -446,13 +550,14 @@ def analyze_url_content(url, question=None, keyword=None):
         
     except ImportError:
         return {
-            "error": "URL analysis requires 'requests' and 'beautifulsoup4'",
+            "error": "URL analysis requires 'requests' and 'beautifulsoup4' packages. Install with: pip install requests beautifulsoup4",
             "keywords": [],
             "insights": {},
             "full_response": "",
             "url": url
         }
     except Exception as e:
+        logger.error(f"Error analyzing URL: {str(e)}")
         return {
             "error": f"Error analyzing URL: {str(e)}",
             "keywords": [],
@@ -493,6 +598,7 @@ def clear_cache():
     logger.info("Cache cleared")
 
 def get_insight_quality_score(insights_data):
+    """Enhanced quality scoring system"""
     if not insights_data:
         return 0
     
@@ -507,35 +613,5 @@ def get_insight_quality_score(insights_data):
             word_count = len(words)
             insight_lower = insight.lower()
             
-            # Word count scoring
-            if 120 <= word_count <= 200:
-                score += 80
-            elif 80 <= word_count < 120:
-                score += 60
-            elif word_count >= 200:
-                score += 70
-            else:
-                score += 30
-            
-            # Content scoring
-            if any(term in insight_lower for term in ['$', '%', 'million', 'billion', 'revenue', 'roi']):
-                score += 15
-            if any(term in insight_lower for term in ['market', 'customer', 'competitive', 'growth']):
-                score += 10
-            if any(term in insight_lower for term in ['strategy', 'implementation', 'timeline']):
-                score += 5
-            
-            total_score += min(score, 100)
-            total_insights += 1
-    
-    return (total_score / total_insights) if total_insights > 0 else 0
-
-def parse_analysis_response(response):
-    return parse_enhanced_analysis_response(response)
-
-def test_functions():
-    print("✅ Minimal app2.py loaded successfully")
-    print("✅ Optimized for fast processing - no timeouts")
-
-if __name__ == "__main__":
-    test_functions()
+            # Word count scoring (prefer 150-200 words)
+            if 150 <= word_count <= 200
