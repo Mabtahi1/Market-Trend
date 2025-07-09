@@ -24,7 +24,7 @@ except ImportError as e:
     st.stop()
 
 def display_analysis_results(result):
-    """Display analysis results in a structured format"""
+    """Display analysis results with clickable keywords"""
     if result.get("error"):
         st.error(f"Analysis Error: {result['error']}")
         return
@@ -43,42 +43,96 @@ def display_analysis_results(result):
         analysis_id = result.get("analysis_id", "N/A")
         st.metric("Analysis ID", analysis_id)
     
-    # Display keywords
-    if result.get("keywords"):
+    # Display clickable keywords and insights
+    if result.get("keywords") and result.get("insights"):
+        st.subheader("🔑 Strategic Keywords Analysis")
+        st.markdown("*Click on any keyword below to view detailed insights:*")
+        
+        # Initialize session state for selected keyword if not exists
+        if 'selected_keyword' not in st.session_state:
+            st.session_state.selected_keyword = None
+        
+        # Create clickable keyword buttons
+        keyword_cols = st.columns(min(len(result["keywords"]), 5))
+        
+        for i, keyword in enumerate(result["keywords"][:5]):
+            with keyword_cols[i]:
+                # Create a unique button for each keyword
+                if st.button(
+                    f"📌 {keyword}",
+                    key=f"keyword_btn_{i}",
+                    help=f"Click to view insights for {keyword}",
+                    use_container_width=True
+                ):
+                    st.session_state.selected_keyword = keyword
+        
+        # Display insights for selected keyword
+        if st.session_state.selected_keyword:
+            selected_keyword = st.session_state.selected_keyword
+            
+            # Check if the selected keyword exists in insights
+            if selected_keyword in result["insights"]:
+                st.markdown("---")
+                
+                # Header for selected keyword
+                st.markdown(f"### 🎯 **{selected_keyword}** - Strategic Analysis")
+                
+                keyword_data = result["insights"][selected_keyword]
+                titles = keyword_data.get("titles", [])
+                insights = keyword_data.get("insights", [])
+                
+                # Display strategic insights titles
+                if titles:
+                    st.markdown("#### **Strategic Focus Areas:**")
+                    for j, title in enumerate(titles, 1):
+                        st.markdown(f"**{j}.** {title}")
+                
+                st.markdown("---")
+                
+                # Display business actions with better formatting
+                if insights:
+                    st.markdown("#### **📋 Business Actions & Recommendations:**")
+                    
+                    for j, insight in enumerate(insights, 1):
+                        # Create expandable sections for each insight
+                        with st.expander(
+                            f"🔍 **Action {j}** | {len(insight.split())} words | {len(insight)} characters",
+                            expanded=True  # Show first insight expanded by default
+                        ):
+                            # Add some styling to the insight text
+                            st.markdown(f"<div style='text-align: justify; line-height: 1.6;'>{insight}</div>", 
+                                      unsafe_allow_html=True)
+                            
+                            # Add word count and character count info
+                            word_count = len(insight.split())
+                            char_count = len(insight)
+                            
+                            col_a, col_b = st.columns(2)
+                            with col_a:
+                                st.caption(f"📝 Words: {word_count}")
+                            with col_b:
+                                st.caption(f"🔤 Characters: {char_count}")
+                
+                # Add a button to clear selection
+                if st.button("🔄 Clear Selection", key="clear_selection"):
+                    st.session_state.selected_keyword = None
+                    st.rerun()
+                    
+            else:
+                st.warning(f"No insights found for keyword: {selected_keyword}")
+        
+        else:
+            # Show instruction when no keyword is selected
+            st.info("👆 **Click on any keyword above to view detailed strategic insights and business actions.**")
+    
+    elif result.get("keywords"):
+        # If we have keywords but no insights
         st.subheader("🔑 Identified Keywords")
         keyword_cols = st.columns(min(len(result["keywords"]), 5))
         for i, keyword in enumerate(result["keywords"][:5]):
             with keyword_cols[i]:
                 st.info(keyword)
-    
-    # Display detailed insights
-    if result.get("insights"):
-        st.subheader("📊 Strategic Analysis")
-        
-        # Create tabs for each keyword
-        if result["keywords"]:
-            tabs = st.tabs(result["keywords"])
-            
-            for i, keyword in enumerate(result["keywords"]):
-                with tabs[i]:
-                    keyword_data = result["insights"].get(keyword, {})
-                    titles = keyword_data.get("titles", [])
-                    insights = keyword_data.get("insights", [])
-                    
-                    # Display strategic insights titles
-                    if titles:
-                        st.markdown("**Strategic Focus Areas:**")
-                        for j, title in enumerate(titles, 1):
-                            st.markdown(f"{j}. {title}")
-                    
-                    st.markdown("---")
-                    
-                    # Display business actions
-                    if insights:
-                        st.markdown("**Business Actions:**")
-                        for j, insight in enumerate(insights, 1):
-                            with st.expander(f"Action {j} ({len(insight)} characters)"):
-                                st.write(insight)
+        st.warning("No detailed insights available for these keywords.")
     
     # Show full response in expander
     if result.get("full_response"):
