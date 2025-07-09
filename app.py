@@ -29,6 +29,9 @@ def display_analysis_results(result):
         st.error(f"Analysis Error: {result['error']}")
         return
     
+    # Store analysis results in session state
+    st.session_state.analysis_result = result
+    
     # Display summary metrics
     col1, col2, col3 = st.columns(3)
     
@@ -65,6 +68,7 @@ def display_analysis_results(result):
                     use_container_width=True
                 ):
                     st.session_state.selected_keyword = keyword
+                    st.rerun()
         
         # Display insights for selected keyword
         if st.session_state.selected_keyword:
@@ -205,11 +209,17 @@ def main():
                 with st.spinner("🤖 Analyzing your question..."):
                     try:
                         result = analyze_question(question, custom_keywords)
+                        # Clear previous keyword selection when new analysis starts
+                        st.session_state.selected_keyword = None
                         display_analysis_results(result)
                     except Exception as e:
                         st.error(f"Error during analysis: {str(e)}")
             else:
                 st.warning("Please enter a question to analyze")
+        
+        # Display previous analysis results if they exist
+        if 'analysis_result' in st.session_state and st.session_state.analysis_result:
+            display_analysis_results(st.session_state.analysis_result)
 
     elif analysis_type == "File Analysis":
         st.header("📄 Document Analysis")
@@ -255,10 +265,16 @@ def main():
                                     return_format="dict"
                                 )
                     
+                    # Clear previous keyword selection when new analysis starts
+                    st.session_state.selected_keyword = None
                     display_analysis_results(result)
                     
                 except Exception as e:
                     st.error(f"Error analyzing document: {str(e)}")
+        
+        # Display previous analysis results if they exist
+        if 'analysis_result' in st.session_state and st.session_state.analysis_result:
+            display_analysis_results(st.session_state.analysis_result)
 
     elif analysis_type == "URL Analysis":
         st.header("🌐 Web Content Analysis")
@@ -286,11 +302,17 @@ def main():
                 with st.spinner("🌐 Fetching and analyzing web content..."):
                     try:
                         result = analyze_url_content(url, url_question, url_keywords)
+                        # Clear previous keyword selection when new analysis starts
+                        st.session_state.selected_keyword = None
                         display_analysis_results(result)
                     except Exception as e:
                         st.error(f"Error analyzing URL: {str(e)}")
             else:
                 st.warning("Please enter a valid URL starting with http:// or https://")
+        
+        # Display previous analysis results if they exist
+        if 'analysis_result' in st.session_state and st.session_state.analysis_result:
+            display_analysis_results(st.session_state.analysis_result)
 
     elif analysis_type == "Text Analysis":
         st.header("📝 Direct Text Analysis")
@@ -323,9 +345,15 @@ def main():
                         keyword=text_keywords,
                         return_format="dict"
                     )
+                    # Clear previous keyword selection when new analysis starts
+                    st.session_state.selected_keyword = None
                     display_analysis_results(result)
                 except Exception as e:
                     st.error(f"Error analyzing text: {str(e)}")
+        
+        # Display previous analysis results if they exist
+        if 'analysis_result' in st.session_state and st.session_state.analysis_result:
+            display_analysis_results(st.session_state.analysis_result)
 
     # Footer
     st.markdown("---")
