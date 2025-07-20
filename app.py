@@ -165,6 +165,8 @@ def main():
     user_info = st.session_state.get('user', {})
     user_email = user_info.get('email', 'Unknown User')
     st.sidebar.success(f"👤 Logged in as: {user_email}")
+    # Show usage information
+    show_usage_info()
     
     # Logout button
     if st.sidebar.button("🚪 Logout"):
