@@ -205,17 +205,37 @@ def main():
             )
         
         if st.button("🔍 Analyze Question", type="primary"):
-            if question.strip():
-                with st.spinner("🤖 Analyzing your question..."):
-                    try:
-                        result = analyze_question(question, custom_keywords)
-                        # Clear previous keyword selection when new analysis starts
-                        st.session_state.selected_keyword = None
-                        display_analysis_results(result)
-                    except Exception as e:
-                        st.error(f"Error during analysis: {str(e)}")
+             if question.strip():
+                    # Get user email
+                    user_email = st.session_state.get('user', {}).get('email')
+        
+                    # Check usage limits
+                    can_use, message = check_usage_limits(user_email, "summary")
+        
+                    if not can_use:
+                       st.error(f"❌ {message}")
+                       st.info("💳 Please upgrade your plan to continue.")
+                       if st.button("🔗 Go to Pricing"):
+                           st.markdown('[Upgrade Plan](https://prolexisanalytics.com/pricing)')
+                       else:
+                           with st.spinner("🤖 Analyzing your question..."):
+                               try:
+                                    result = analyze_question(question, custom_keywords)
+                    
+                                    # Increment usage count after successful analysis
+                                    increment_usage(user_email, "summary")
+                    
+                                    # Clear previous keyword selection when new analysis starts
+                                    st.session_state.selected_keyword = None
+                                    display_analysis_results(result)
+                    
+                                    # Show success message with remaining usage
+                                    st.success("✅ Analysis complete!")
+                    
+                               except Exception as e:
+                                    st.error(f"Error during analysis: {str(e)}")
             else:
-                st.warning("Please enter a question to analyze")
+               st.warning("Please enter a question to analyze")
         
         # Display previous analysis results if they exist
         if 'analysis_result' in st.session_state and st.session_state.analysis_result:
