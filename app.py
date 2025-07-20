@@ -236,7 +236,7 @@ def main():
                     
                                except Exception as e:
                                     st.error(f"Error during analysis: {str(e)}")
-            else:
+             else:
                st.warning("Please enter a question to analyze")
         
         # Display previous analysis results if they exist
