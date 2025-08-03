@@ -1,6 +1,8 @@
 print("auth.py is loaded!")
 import streamlit as st
 import pyrebase
+from datetime import datetime, timedelta
+import json
 
 firebase_config = {
     "apiKey": "AIzaSyDt6y7YRFVF_zrMTYPn4z4ViHjLbmfMsLQ",
@@ -15,7 +17,7 @@ firebase_config = {
 
 firebase = pyrebase.initialize_app(firebase_config)
 auth = firebase.auth()
-db = firebase.database() 
+db = firebase.database()
 
 def show_login():
     if 'user' not in st.session_state:
@@ -34,6 +36,7 @@ def show_login():
                 # Initialize user data if it doesn't exist
                 initialize_user_data(email)
                 st.success("Logged in successfully!")
+                st.rerun()
             except:
                 st.error("Invalid email or password")
 
@@ -44,18 +47,12 @@ def show_login():
                 # Create initial user data with free trial
                 create_user_subscription(email, "trial")
                 st.success("Account created successfully!")
+                st.rerun()
             except:
                 st.error("Account creation failed")
 
 def is_logged_in():
     return st.session_state.get('user') is not None
-
-# Add these imports at the top (after your existing imports)
-from datetime import datetime, timedelta
-import json
-
-# Keep all your existing code (firebase_config, show_login, is_logged_in)
-# Then add these new functions:
 
 def initialize_user_data(email):
     """Initialize user data if it doesn't exist"""
@@ -68,9 +65,8 @@ def initialize_user_data(email):
 
 def create_user_subscription(email, plan_type):
     """Create user subscription data"""
-    user_key = email.replace(".", "_")  # Firebase doesn't allow dots in keys
+    user_key = email.replace(".", "_")
     
-    # Define plan limits
     plans = {
         "trial": {
             "summaries_per_month": 2,
@@ -92,6 +88,27 @@ def create_user_subscription(email, plan_type):
             "has_competitor_tracking": True,
             "has_automation": False,
             "has_forecasting": False
+        },
+        "onetime": {
+            "summaries_per_month": 3,
+            "sources_limit": 3,
+            "has_competitor_tracking": False,
+            "has_automation": False,
+            "has_forecasting": False
+        },
+        "starter": {
+            "summaries_per_month": 10,
+            "sources_limit": 5,
+            "has_competitor_tracking": False,
+            "has_automation": True,
+            "has_forecasting": False
+        },
+        "premium": {
+            "summaries_per_month": "unlimited",
+            "sources_limit": "unlimited",
+            "has_competitor_tracking": True,
+            "has_automation": True,
+            "has_forecasting": True
         }
     }
     
@@ -119,7 +136,6 @@ def check_usage_limits(email, action_type="summary"):
         if not user_data:
             return False, "No subscription found. Please contact support."
         
-        # Check subscription status
         if user_data.get('subscription_status') not in ['active', 'trial']:
             return False, "Subscription expired. Please upgrade your plan."
         
@@ -191,4 +207,4 @@ def show_usage_info():
             if status == "trial":
                 st.warning("⚠️ You're on a trial plan. Upgrade for more features!")
                 if st.button("🔗 Upgrade Plan"):
-                    st.markdown('[Upgrade Now](https://prolexisanalytics.com/pricing)')
+                    st.markdown('[Upgrade Now](https://prolexisanalytics.com)')
