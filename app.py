@@ -7,7 +7,15 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 # Import your modules
 try:
-    from auth import show_login, is_logged_in
+    from auth import (
+    show_login, 
+    is_logged_in, 
+    show_usage_info, 
+    check_usage_limits, 
+    increment_usage,
+    get_user_info,
+    initialize_user_data
+)
     from app2 import (
         analyze_question, 
         summarize_trends, 
@@ -207,36 +215,36 @@ def main():
             )
         
         if st.button("🔍 Analyze Question", type="primary"):
-             if question.strip():
-                    # Get user email
-                    user_email = st.session_state.get('user', {}).get('email')
+           if question.strip():
+              # Get user email
+              user_email = st.session_state.get('user', {}).get('email')
         
-                    # Check usage limits
-                    can_use, message = check_usage_limits(user_email, "summary")
+              # Check usage limits
+              can_use, message = check_usage_limits(user_email, "summary")
         
-                    if not can_use:
-                       st.error(f"❌ {message}")
-                       st.info("💳 Please upgrade your plan to continue.")
-                       if st.button("🔗 Go to Pricing"):
-                           st.markdown('[Upgrade Plan](https://prolexisanalytics.com/pricing)')
-                       else:
-                           with st.spinner("🤖 Analyzing your question..."):
-                               try:
-                                    result = analyze_question(question, custom_keywords)
+              if not can_use:
+                  st.error(f"❌ {message}")
+                  st.info("💳 Please upgrade your plan to continue.")
+                  if st.button("🔗 Go to Pricing"):
+                       st.markdown('[Upgrade Plan](https://prolexisanalytics.com/pricing)')
+              else:
+                   with st.spinner("🤖 Analyzing your question..."):
+                       try:
+                           result = analyze_question(question, custom_keywords)
                     
-                                    # Increment usage count after successful analysis
-                                    increment_usage(user_email, "summary")
+                           # Increment usage count after successful analysis
+                           increment_usage(user_email, "summary")
                     
-                                    # Clear previous keyword selection when new analysis starts
-                                    st.session_state.selected_keyword = None
-                                    display_analysis_results(result)
+                           # Clear previous keyword selection when new analysis starts
+                           st.session_state.selected_keyword = None
+                           display_analysis_results(result)
                     
-                                    # Show success message with remaining usage
-                                    st.success("✅ Analysis complete!")
+                           # Show success message
+                           st.success("✅ Analysis complete!")
                     
-                               except Exception as e:
-                                    st.error(f"Error during analysis: {str(e)}")
-             else:
+                       except Exception as e:
+                           st.error(f"Error during analysis: {str(e)}")
+           else:
                st.warning("Please enter a question to analyze")
         
         # Display previous analysis results if they exist
