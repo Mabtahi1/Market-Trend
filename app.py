@@ -1,21 +1,26 @@
-import streamlit as st
-import sys
+from flask import Flask, request, jsonify, render_template_string
+from flask_cors import CORS
 import os
+import sys
+import json
+import uuid
+from datetime import datetime, timedelta
+import logging
 
 # Add the current directory to the path to import your modules
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-# Import your modules
+# Import your existing modules
 try:
     from auth import (
-    show_login, 
-    is_logged_in, 
-    show_usage_info, 
-    check_usage_limits, 
-    increment_usage,
-    get_user_info,
-    initialize_user_data
-)
+        show_login, 
+        is_logged_in, 
+        show_usage_info, 
+        check_usage_limits, 
+        increment_usage,
+        get_user_info,
+        initialize_user_data
+    )
     from app2 import (
         analyze_question, 
         summarize_trends, 
@@ -25,376 +30,437 @@ try:
         clear_cache,
         get_insight_quality_score
     )
-    st.success("✅ All modules loaded successfully!")
+    print("✅ All modules loaded successfully!")
 except ImportError as e:
-    st.error(f"❌ Error importing modules: {e}")
-    st.error("Make sure auth.py and app2.py are in the same directory as this app.py file")
-    st.stop()
+    print(f"❌ Error importing modules: {e}")
+    print("Make sure auth.py and app2.py are in the same directory as this file")
 
-def display_analysis_results(result):
-    """Display analysis results with clickable keywords"""
-    if result.get("error"):
-        st.error(f"Analysis Error: {result['error']}")
-        return
-    
-    # Store analysis results in session state
-    st.session_state.analysis_result = result
-    
-    # Display summary metrics
-    col1, col2, col3 = st.columns(3)
-    
-    with col1:
-        st.metric("Keywords Found", len(result.get("keywords", [])))
-    
-    with col2:
-        quality_score = get_insight_quality_score(result.get("insights", {}))
-        st.metric("Quality Score", f"{quality_score:.1f}/100")
-    
-    with col3:
-        analysis_id = result.get("analysis_id", "N/A")
-        st.metric("Analysis ID", analysis_id)
-    
-    # Display clickable keywords and insights
-    if result.get("keywords") and result.get("insights"):
-        st.subheader("🔑 Strategic Keywords Analysis")
-        st.markdown("*Click on any keyword below to view detailed insights:*")
-        
-        # Initialize session state for selected keyword if not exists
-        if 'selected_keyword' not in st.session_state:
-            st.session_state.selected_keyword = None
-        
-        # Create clickable keyword buttons
-        keyword_cols = st.columns(min(len(result["keywords"]), 5))
-        
-        for i, keyword in enumerate(result["keywords"][:5]):
-            with keyword_cols[i]:
-                # Create a unique button for each keyword
-                if st.button(
-                    f"📌 {keyword}",
-                    key=f"keyword_btn_{i}",
-                    help=f"Click to view insights for {keyword}",
-                    use_container_width=True
-                ):
-                    st.session_state.selected_keyword = keyword
-                    st.rerun()
-        
-        # Display insights for selected keyword
-        if st.session_state.selected_keyword:
-            selected_keyword = st.session_state.selected_keyword
-            
-            # Check if the selected keyword exists in insights
-            if selected_keyword in result["insights"]:
-                st.markdown("---")
-                
-                # Header for selected keyword
-                st.markdown(f"### 🎯 **{selected_keyword}** - Strategic Analysis")
-                
-                keyword_data = result["insights"][selected_keyword]
-                titles = keyword_data.get("titles", [])
-                insights = keyword_data.get("insights", [])
-                
-                # Display strategic insights titles
-                if titles:
-                    st.markdown("#### **Strategic Focus Areas:**")
-                    for j, title in enumerate(titles, 1):
-                        st.markdown(f"**{j}.** {title}")
-                
-                st.markdown("---")
-                
-                # Display business actions with better formatting
-                if insights:
-                    st.markdown("#### **📋 Business Actions & Recommendations:**")
-                    
-                    for j, insight in enumerate(insights, 1):
-                        # Create expandable sections for each insight
-                        with st.expander(
-                            f"🔍 **Action {j}** | {len(insight.split())} words | {len(insight)} characters",
-                            expanded=True  # Show first insight expanded by default
-                        ):
-                            # Add some styling to the insight text
-                            st.markdown(f"<div style='text-align: justify; line-height: 1.6;'>{insight}</div>", 
-                                      unsafe_allow_html=True)
-                            
-                            # Add word count and character count info
-                            word_count = len(insight.split())
-                            char_count = len(insight)
-                            
-                            col_a, col_b = st.columns(2)
-                            with col_a:
-                                st.caption(f"📝 Words: {word_count}")
-                            with col_b:
-                                st.caption(f"🔤 Characters: {char_count}")
-                
-                # Add a button to clear selection
-                if st.button("🔄 Clear Selection", key="clear_selection"):
-                    st.session_state.selected_keyword = None
-                    st.rerun()
-                    
-            else:
-                st.warning(f"No insights found for keyword: {selected_keyword}")
-        
-        else:
-            # Show instruction when no keyword is selected
-            st.info("👆 **Click on any keyword above to view detailed strategic insights and business actions.**")
-    
-    elif result.get("keywords"):
-        # If we have keywords but no insights
-        st.subheader("🔑 Identified Keywords")
-        keyword_cols = st.columns(min(len(result["keywords"]), 5))
-        for i, keyword in enumerate(result["keywords"][:5]):
-            with keyword_cols[i]:
-                st.info(keyword)
-        st.warning("No detailed insights available for these keywords.")
-    
-    # Show full response in expander
-    if result.get("full_response"):
-        with st.expander("📄 View Full Analysis Response"):
-            st.text(result["full_response"])
+# Initialize Flask app
+app = Flask(__name__)
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-here')
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 
-def main():
-    st.set_page_config(
-        page_title="Business Intelligence Analyzer",
-        page_icon="📊",
-        layout="wide"
-    )
+# Enable CORS for all routes
+CORS(app)
 
-    st.title("📊 Business Intelligence Analyzer")
-    st.markdown("Advanced AI-powered business analysis and trend identification")
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-    # Authentication
-    show_login()
-    
-    if not is_logged_in():
-        st.warning("⚠️ Please log in to access the Business Intelligence Analyzer")
-        st.info("Use the sidebar to login or sign up for an account")
-        st.stop()
+# In-memory storage for demo (use database in production)
+user_sessions = {}
+analysis_cache = {}
 
-    # User info
-    user_info = st.session_state.get('user', {})
-    user_email = user_info.get('email', 'Unknown User')
-    st.sidebar.success(f"👤 Logged in as: {user_email}")
-    # Show usage information
-    show_usage_info()
-    
-    # Logout button
-    if st.sidebar.button("🚪 Logout"):
-        st.session_state['user'] = None
-        st.rerun()
+# Authentication endpoints
+@app.route('/api/auth/login', methods=['POST'])
+def login():
+    """Handle user login"""
+    try:
+        data = request.get_json()
+        email = data.get('email')
+        password = data.get('password')
+        
+        if not email or not password:
+            return jsonify({'error': 'Email and password are required'}), 400
+        
+        # Here you would normally validate against your user database
+        # For demo purposes, we'll accept any valid email format
+        if '@' not in email:
+            return jsonify({'error': 'Invalid email format'}), 400
+        
+        # Initialize user data
+        initialize_user_data(email)
+        user_info = get_user_info(email)
+        
+        # Create session
+        session_id = str(uuid.uuid4())
+        user_sessions[session_id] = {
+            'email': email,
+            'login_time': datetime.now(),
+            'user_info': user_info
+        }
+        
+        return jsonify({
+            'success': True,
+            'session_id': session_id,
+            'user': user_info,
+            'message': 'Login successful'
+        })
+        
+    except Exception as e:
+        logger.error(f"Login error: {str(e)}")
+        return jsonify({'error': 'Login failed'}), 500
 
-    # Sidebar for user options
-    st.sidebar.title("Analysis Options")
-    
-    analysis_type = st.sidebar.selectbox(
-        "Choose Analysis Type",
-        ["Question Analysis", "File Analysis", "URL Analysis", "Text Analysis"]
-    )
+@app.route('/api/auth/signup', methods=['POST'])
+def signup():
+    """Handle user signup"""
+    try:
+        data = request.get_json()
+        email = data.get('email')
+        password = data.get('password')
+        
+        if not email or not password:
+            return jsonify({'error': 'Email and password are required'}), 400
+        
+        if '@' not in email:
+            return jsonify({'error': 'Invalid email format'}), 400
+        
+        # Initialize user data
+        initialize_user_data(email)
+        user_info = get_user_info(email)
+        
+        # Create session
+        session_id = str(uuid.uuid4())
+        user_sessions[session_id] = {
+            'email': email,
+            'login_time': datetime.now(),
+            'user_info': user_info
+        }
+        
+        return jsonify({
+            'success': True,
+            'session_id': session_id,
+            'user': user_info,
+            'message': 'Account created successfully'
+        })
+        
+    except Exception as e:
+        logger.error(f"Signup error: {str(e)}")
+        return jsonify({'error': 'Signup failed'}), 500
 
-    # Cache management
-    st.sidebar.markdown("---")
-    if st.sidebar.button("🗑️ Clear Cache"):
-        clear_cache()
-        st.sidebar.success("Cache cleared!")
+@app.route('/api/auth/logout', methods=['POST'])
+def logout():
+    """Handle user logout"""
+    try:
+        data = request.get_json()
+        session_id = data.get('session_id')
+        
+        if session_id in user_sessions:
+            del user_sessions[session_id]
+        
+        return jsonify({'success': True, 'message': 'Logged out successfully'})
+        
+    except Exception as e:
+        logger.error(f"Logout error: {str(e)}")
+        return jsonify({'error': 'Logout failed'}), 500
 
-    # Main content area
-    if analysis_type == "Question Analysis":
-        st.header("🔍 Strategic Question Analysis")
+@app.route('/api/auth/validate', methods=['POST'])
+def validate_session():
+    """Validate user session"""
+    try:
+        data = request.get_json()
+        session_id = data.get('session_id')
         
-        col1, col2 = st.columns([2, 1])
+        if session_id not in user_sessions:
+            return jsonify({'valid': False, 'error': 'Invalid session'}), 401
         
-        with col1:
-            question = st.text_area(
-                "Enter your business question:",
-                placeholder="e.g., What are the emerging opportunities in sustainable packaging for 2024?",
-                height=100
-            )
+        session_data = user_sessions[session_id]
         
-        with col2:
-            custom_keywords = st.text_input(
-                "Custom Keywords (optional):",
-                placeholder="e.g., sustainability, packaging, innovation"
-            )
+        # Check if session is expired (24 hours)
+        if datetime.now() - session_data['login_time'] > timedelta(hours=24):
+            del user_sessions[session_id]
+            return jsonify({'valid': False, 'error': 'Session expired'}), 401
         
-        if st.button("🔍 Analyze Question", type="primary"):
-           if question.strip():
-              # Get user email
-              user_email = st.session_state.get('user', {}).get('email')
+        # Update user info
+        email = session_data['email']
+        user_info = get_user_info(email)
+        session_data['user_info'] = user_info
         
-              # Check usage limits
-              can_use, message = check_usage_limits(user_email, "summary")
+        return jsonify({
+            'valid': True,
+            'user': user_info
+        })
         
-              if not can_use:
-                  st.error(f"❌ {message}")
-                  st.info("💳 Please upgrade your plan to continue.")
-                  if st.button("🔗 Go to Pricing"):
-                       st.markdown('[Upgrade Plan](https://prolexisanalytics.com/pricing)')
-              else:
-                   with st.spinner("🤖 Analyzing your question..."):
-                       try:
-                           result = analyze_question(question, custom_keywords)
-                    
-                           # Increment usage count after successful analysis
-                           increment_usage(user_email, "summary")
-                    
-                           # Clear previous keyword selection when new analysis starts
-                           st.session_state.selected_keyword = None
-                           display_analysis_results(result)
-                    
-                           # Show success message
-                           st.success("✅ Analysis complete!")
-                    
-                       except Exception as e:
-                           st.error(f"Error during analysis: {str(e)}")
-           else:
-               st.warning("Please enter a question to analyze")
-        
-        # Display previous analysis results if they exist
-        if 'analysis_result' in st.session_state and st.session_state.analysis_result:
-            display_analysis_results(st.session_state.analysis_result)
+    except Exception as e:
+        logger.error(f"Session validation error: {str(e)}")
+        return jsonify({'valid': False, 'error': 'Validation failed'}), 500
 
-    elif analysis_type == "File Analysis":
-        st.header("📄 Document Analysis")
+# Analysis endpoints
+@app.route('/api/analyze/question', methods=['POST'])
+def api_analyze_question():
+    """Analyze a business question"""
+    try:
+        data = request.get_json()
+        session_id = data.get('session_id')
+        question = data.get('question')
+        keywords = data.get('keywords', '')
         
-        uploaded_file = st.file_uploader(
-            "Upload a document for analysis",
-            type=['pdf', 'docx', 'txt', 'png', 'jpg', 'jpeg'],
-            help="Supported formats: PDF, DOCX, TXT, PNG, JPG, JPEG"
+        # Validate session
+        if session_id not in user_sessions:
+            return jsonify({'error': 'Invalid session'}), 401
+        
+        session_data = user_sessions[session_id]
+        email = session_data['email']
+        
+        # Check usage limits
+        can_use, message = check_usage_limits(email, "summary")
+        if not can_use:
+            return jsonify({'error': message, 'upgrade_required': True}), 429
+        
+        if not question:
+            return jsonify({'error': 'Question is required'}), 400
+        
+        # Perform analysis
+        result = analyze_question(question, keywords)
+        
+        # Increment usage
+        increment_usage(email, "summary")
+        
+        # Update session user info
+        session_data['user_info'] = get_user_info(email)
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        logger.error(f"Question analysis error: {str(e)}")
+        return jsonify({'error': 'Analysis failed'}), 500
+
+@app.route('/api/analyze/text', methods=['POST'])
+def api_analyze_text():
+    """Analyze text content"""
+    try:
+        data = request.get_json()
+        session_id = data.get('session_id')
+        text = data.get('text')
+        question = data.get('question', '')
+        keywords = data.get('keywords', '')
+        
+        # Validate session
+        if session_id not in user_sessions:
+            return jsonify({'error': 'Invalid session'}), 401
+        
+        session_data = user_sessions[session_id]
+        email = session_data['email']
+        
+        # Check usage limits
+        can_use, message = check_usage_limits(email, "summary")
+        if not can_use:
+            return jsonify({'error': message, 'upgrade_required': True}), 429
+        
+        if not text:
+            return jsonify({'error': 'Text content is required'}), 400
+        
+        # Perform analysis
+        result = summarize_trends(
+            text=text,
+            question=question,
+            keyword=keywords,
+            return_format="dict"
         )
         
-        col1, col2 = st.columns(2)
-        with col1:
-            custom_question = st.text_input(
-                "Analysis Focus (optional):",
-                placeholder="e.g., What are the key business opportunities?"
-            )
+        # Increment usage
+        increment_usage(email, "summary")
         
-        with col2:
-            file_keywords = st.text_input(
-                "Keywords to focus on (optional):",
-                placeholder="e.g., market trends, innovation"
-            )
+        # Update session user info
+        session_data['user_info'] = get_user_info(email)
         
-        if uploaded_file and st.button("📄 Analyze Document", type="primary"):
-            with st.spinner("📄 Extracting and analyzing document content..."):
-                try:
-                    # Reset file pointer
-                    uploaded_file.seek(0)
-                    
-                    # Extract and analyze
-                    result = extract_text_from_file(uploaded_file, return_format="dict")
-                    
-                    if not result.get("error"):
-                        # If we have custom parameters, re-analyze with them
-                        if custom_question or file_keywords:
-                            uploaded_file.seek(0)  # Reset again
-                            text_result = extract_text_from_file(uploaded_file, return_format="string")
-                            if not text_result.startswith("Error:"):
-                                result = summarize_trends(
-                                    text=text_result,
-                                    question=custom_question,
-                                    keyword=file_keywords,
-                                    return_format="dict"
-                                )
-                    
-                    # Clear previous keyword selection when new analysis starts
-                    st.session_state.selected_keyword = None
-                    display_analysis_results(result)
-                    
-                except Exception as e:
-                    st.error(f"Error analyzing document: {str(e)}")
+        return jsonify(result)
         
-        # Display previous analysis results if they exist
-        if 'analysis_result' in st.session_state and st.session_state.analysis_result:
-            display_analysis_results(st.session_state.analysis_result)
+    except Exception as e:
+        logger.error(f"Text analysis error: {str(e)}")
+        return jsonify({'error': 'Analysis failed'}), 500
 
-    elif analysis_type == "URL Analysis":
-        st.header("🌐 Web Content Analysis")
+@app.route('/api/analyze/url', methods=['POST'])
+def api_analyze_url():
+    """Analyze URL content"""
+    try:
+        data = request.get_json()
+        session_id = data.get('session_id')
+        url = data.get('url')
+        question = data.get('question', '')
+        keywords = data.get('keywords', '')
         
-        url = st.text_input(
-            "Enter URL to analyze:",
-            placeholder="https://example.com/article"
-        )
+        # Validate session
+        if session_id not in user_sessions:
+            return jsonify({'error': 'Invalid session'}), 401
         
-        col1, col2 = st.columns(2)
-        with col1:
-            url_question = st.text_input(
-                "Analysis Focus (optional):",
-                placeholder="e.g., What business insights can be derived?"
-            )
+        session_data = user_sessions[session_id]
+        email = session_data['email']
         
-        with col2:
-            url_keywords = st.text_input(
-                "Keywords to focus on (optional):",
-                placeholder="e.g., technology, market trends"
-            )
+        # Check usage limits
+        can_use, message = check_usage_limits(email, "summary")
+        if not can_use:
+            return jsonify({'error': message, 'upgrade_required': True}), 429
         
-        if url and st.button("🌐 Analyze URL", type="primary"):
-            if url.startswith(('http://', 'https://')):
-                with st.spinner("🌐 Fetching and analyzing web content..."):
-                    try:
-                        result = analyze_url_content(url, url_question, url_keywords)
-                        # Clear previous keyword selection when new analysis starts
-                        st.session_state.selected_keyword = None
-                        display_analysis_results(result)
-                    except Exception as e:
-                        st.error(f"Error analyzing URL: {str(e)}")
-            else:
-                st.warning("Please enter a valid URL starting with http:// or https://")
+        if not url:
+            return jsonify({'error': 'URL is required'}), 400
         
-        # Display previous analysis results if they exist
-        if 'analysis_result' in st.session_state and st.session_state.analysis_result:
-            display_analysis_results(st.session_state.analysis_result)
+        if not url.startswith(('http://', 'https://')):
+            return jsonify({'error': 'Invalid URL format'}), 400
+        
+        # Perform analysis
+        result = analyze_url_content(url, question, keywords)
+        
+        # Increment usage
+        increment_usage(email, "summary")
+        
+        # Update session user info
+        session_data['user_info'] = get_user_info(email)
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        logger.error(f"URL analysis error: {str(e)}")
+        return jsonify({'error': 'Analysis failed'}), 500
 
-    elif analysis_type == "Text Analysis":
-        st.header("📝 Direct Text Analysis")
+@app.route('/api/analyze/file', methods=['POST'])
+def api_analyze_file():
+    """Analyze uploaded file"""
+    try:
+        session_id = request.form.get('session_id')
+        question = request.form.get('question', '')
+        keywords = request.form.get('keywords', '')
         
-        text_content = st.text_area(
-            "Paste your content here:",
-            height=200,
-            placeholder="Enter or paste the text content you want to analyze..."
-        )
+        # Validate session
+        if session_id not in user_sessions:
+            return jsonify({'error': 'Invalid session'}), 401
         
-        col1, col2 = st.columns(2)
-        with col1:
-            text_question = st.text_input(
-                "Analysis Focus (optional):",
-                placeholder="e.g., What are the key strategic insights?"
-            )
+        session_data = user_sessions[session_id]
+        email = session_data['email']
         
-        with col2:
-            text_keywords = st.text_input(
-                "Keywords to focus on (optional):",
-                placeholder="e.g., innovation, growth, strategy"
-            )
+        # Check usage limits
+        can_use, message = check_usage_limits(email, "summary")
+        if not can_use:
+            return jsonify({'error': message, 'upgrade_required': True}), 429
         
-        if text_content and st.button("📝 Analyze Text", type="primary"):
-            with st.spinner("📝 Analyzing text content..."):
-                try:
+        # Check if file was uploaded
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file uploaded'}), 400
+        
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'error': 'No file selected'}), 400
+        
+        # Validate file type
+        allowed_extensions = {'.pdf', '.docx', '.txt', '.png', '.jpg', '.jpeg'}
+        file_ext = os.path.splitext(file.filename)[1].lower()
+        
+        if file_ext not in allowed_extensions:
+            return jsonify({'error': 'Unsupported file type'}), 400
+        
+        # Perform analysis
+        result = extract_text_from_file(file, return_format="dict")
+        
+        if not result.get("error"):
+            # If we have custom parameters, re-analyze with them
+            if question or keywords:
+                file.seek(0)  # Reset file pointer
+                text_result = extract_text_from_file(file, return_format="string")
+                if not text_result.startswith("Error:"):
                     result = summarize_trends(
-                        text=text_content,
-                        question=text_question,
-                        keyword=text_keywords,
+                        text=text_result,
+                        question=question,
+                        keyword=keywords,
                         return_format="dict"
                     )
-                    # Clear previous keyword selection when new analysis starts
-                    st.session_state.selected_keyword = None
-                    display_analysis_results(result)
-                except Exception as e:
-                    st.error(f"Error analyzing text: {str(e)}")
         
-        # Display previous analysis results if they exist
-        if 'analysis_result' in st.session_state and st.session_state.analysis_result:
-            display_analysis_results(st.session_state.analysis_result)
+        # Increment usage
+        increment_usage(email, "summary")
+        
+        # Update session user info
+        session_data['user_info'] = get_user_info(email)
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        logger.error(f"File analysis error: {str(e)}")
+        return jsonify({'error': 'Analysis failed'}), 500
 
-    # Footer
-    st.markdown("---")
-    st.markdown(
+# Utility endpoints
+@app.route('/api/cache/clear', methods=['POST'])
+def api_clear_cache():
+    """Clear analysis cache"""
+    try:
+        data = request.get_json()
+        session_id = data.get('session_id')
+        
+        # Validate session
+        if session_id not in user_sessions:
+            return jsonify({'error': 'Invalid session'}), 401
+        
+        clear_cache()
+        analysis_cache.clear()
+        
+        return jsonify({'success': True, 'message': 'Cache cleared successfully'})
+        
+    except Exception as e:
+        logger.error(f"Cache clear error: {str(e)}")
+        return jsonify({'error': 'Failed to clear cache'}), 500
+
+@app.route('/api/user/info', methods=['POST'])
+def api_user_info():
+    """Get user information"""
+    try:
+        data = request.get_json()
+        session_id = data.get('session_id')
+        
+        # Validate session
+        if session_id not in user_sessions:
+            return jsonify({'error': 'Invalid session'}), 401
+        
+        session_data = user_sessions[session_id]
+        email = session_data['email']
+        
+        # Get fresh user info
+        user_info = get_user_info(email)
+        session_data['user_info'] = user_info
+        
+        return jsonify({
+            'success': True,
+            'user': user_info
+        })
+        
+    except Exception as e:
+        logger.error(f"User info error: {str(e)}")
+        return jsonify({'error': 'Failed to get user info'}), 500
+
+# Serve the main application
+@app.route('/')
+def index():
+    """Serve the main web application"""
+    # Read the HTML file content (you would save the previous artifact as index.html)
+    try:
+        with open('index.html', 'r', encoding='utf-8') as f:
+            html_content = f.read()
+        return html_content
+    except FileNotFoundError:
+        return """
+        <h1>Business Intelligence Analyzer</h1>
+        <p>Please save the HTML artifact as 'index.html' in the same directory as this Flask app.</p>
+        <p>Then restart the Flask server.</p>
         """
-        <div style='text-align: center; color: gray;'>
-            <p>Business Intelligence Analyzer | Powered by Claude AI on AWS Bedrock</p>
-        </div>
-        """, 
-        unsafe_allow_html=True
-    )
 
-if __name__ == "__main__":
-    main()
+# Health check endpoint
+@app.route('/api/health')
+def health_check():
+    """Health check endpoint"""
+    return jsonify({
+        'status': 'healthy',
+        'timestamp': datetime.now().isoformat(),
+        'version': '1.0.0'
+    })
+
+# Error handlers
+@app.errorhandler(413)
+def too_large(e):
+    return jsonify({'error': 'File too large. Maximum size is 16MB.'}), 413
+
+@app.errorhandler(404)
+def not_found(e):
+    return jsonify({'error': 'Endpoint not found'}), 404
+
+@app.errorhandler(500)
+def internal_error(e):
+    return jsonify({'error': 'Internal server error'}), 500
+
+if __name__ == '__main__':
+    # Create required directories
+    os.makedirs('uploads', exist_ok=True)
+    os.makedirs('logs', exist_ok=True)
+    
+    # Run the Flask app
+    app.run(
+        host='0.0.0.0',  # Allow external connections
+        port=int(os.environ.get('PORT', 5000)),
+        debug=os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
+    )
