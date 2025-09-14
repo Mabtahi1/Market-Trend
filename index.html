@@ -1,0 +1,975 @@
+// Analysis functions
+        async function analyzeQuestion() {
+            const question = document.getElementById('question-input').value;
+            const keywords = document.getElementById('question-keywords').value;
+
+            if (!question.trim()) {
+                showAlert('Please enter a question to analyze', 'warning');
+                return;
+            }
+
+            try {
+                showLoading();
+                const result = await apiCall('/analyze/question', {
+                    session_id: sessionId,
+                    question: question,
+                    keywords: keywords
+                });
+
+                analysisResults = result;
+                displayResults(result);
+                showAlert('Analysis completed successfully!', 'success');
+                
+                // Update user usage info
+                await updateUserInfo();
+            } catch (error) {
+                if (error.message.includes('upgrade')) {
+                    showAlert('You have reached your daily limit. Please upgrade your plan.', 'error');
+                } else {
+                    showAlert(error.message || 'Analysis failed', 'error');
+                }
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function analyzeFile() {
+            const fileInput = document.getElementById('file-input');
+            const question = document.getElementById('file-question').value;
+            const keywords = document.getElementById('file-keywords').value;
+
+            if (!fileInput.files[0]) {
+                showAlert('Please select a file to analyze', 'warning');
+                return;
+            }
+
+            try {
+                showLoading();
+                
+                const formData = new FormData();
+                formData.append('session_id', sessionId);
+                formData.append('file', fileInput.files[0]);
+                formData.append('question', question);
+                formData.append('keywords', keywords);
+
+                const result = await apiFileUpload('/analyze/file', formData);
+
+                analysisResults = result;
+                displayResults(result);
+                showAlert('File analysis completed successfully!', 'success');
+                
+                // Update user usage info
+                await updateUserInfo();
+            } catch (error) {
+                if (error.message.includes('upgrade')) {
+                    showAlert('You have reached your daily limit. Please upgrade your plan.', 'error');
+                } else {
+                    showAlert(error.message || 'File analysis failed', 'error');
+                }
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function analyzeUrl() {
+            const url = document.getElementById('url-input').value;
+            const question = document.getElementById('url-question').value;
+            const keywords = document.getElementById('url-keywords').value;
+
+            if (!url.trim()) {
+                showAlert('Please enter a URL to analyze', 'warning');
+                return;
+            }
+
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                showAlert('Please enter a valid URL starting with http:// or https://', 'error');
+                return;
+            }
+
+            try {
+                showLoading();
+                const result = await apiCall('/analyze/url', {
+                    session_id: sessionId,
+                    url: url,
+                    question: question,
+                    keywords: keywords
+                });
+
+                analysisResults = result;
+                displayResults(result);
+                showAlert('URL analysis completed successfully!', 'success');
+                
+                // Update user usage info
+                await updateUserInfo();
+            } catch (error) {
+                if (error.message.includes('upgrade')) {
+                    showAlert('You have reached your daily limit. Please upgrade your plan.', 'error');
+                } else {
+                    showAlert(error.message || 'URL analysis failed', 'error');
+                }
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function analyzeText() {
+            const text = document.getElementById('text-input').value;
+            const question = document.getElementById('text-question').value;
+            const keywords = document.getElementById('text-keywords').value;
+
+            if (!text.trim()) {
+                showAlert('Please enter text content to analyze', 'warning');
+                return;
+            }
+
+            try {
+                showLoading();
+                const result = await apiCall('/analyze/text', {
+                    session_id: sessionId,
+                    text: text,
+                    question: question,
+                    keywords: keywords
+                });
+
+                analysisResults = result;
+                displayResults(result);
+                showAlert('Text analysis completed successfully!', 'success');
+                
+                // Update user usage info
+                await<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Intelligence Analyzer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .auth-section {
+            display: none;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 2px solid #e9ecef;
+        }
+
+        .auth-section.active {
+            display: block;
+        }
+
+        .login-form, .signup-form {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 5px;
+            margin-bottom: 30px;
+            gap: 5px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px 20px;
+            text-align: center;
+            background: transparent;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            color: #6c757d;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .analysis-content {
+            display: none;
+        }
+
+        .analysis-content.active {
+            display: block;
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.2);
+        }
+
+        .metric-card h3 {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+
+        .metric-card p {
+            opacity: 0.9;
+            font-weight: 500;
+        }
+
+        .keywords-section {
+            margin-bottom: 30px;
+        }
+
+        .keywords-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .keyword-btn {
+            background: linear-gradient(135deg, #e9ecef 0%, #f8f9fa 100%);
+            border: 2px solid #e9ecef;
+            padding: 15px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-align: center;
+            color: #495057;
+        }
+
+        .keyword-btn:hover, .keyword-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.2);
+        }
+
+        .insights-section {
+            display: none;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+        }
+
+        .insights-section.active {
+            display: block;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .insight-item {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        .insight-item h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .insight-item p {
+            line-height: 1.6;
+            color: #495057;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .user-info {
+            background: #e8f5e8;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logout-btn {
+            background: #dc3545;
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+
+        .logout-btn:hover {
+            background: #c82333;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .main-content {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            .metrics {
+                grid-template-columns: 1fr;
+            }
+            
+            .keywords-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Business Intelligence Analyzer</h1>
+            <p>Advanced AI-powered business analysis and trend identification</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Authentication Section -->
+            <div id="auth-section" class="auth-section active">
+                <div class="tabs" style="margin-bottom: 20px;">
+                    <button class="tab active" onclick="showAuthTab('login')">Login</button>
+                    <button class="tab" onclick="showAuthTab('signup')">Sign Up</button>
+                </div>
+
+                <div id="login-form" class="login-form">
+                    <div class="form-group">
+                        <label for="login-email">Email:</label>
+                        <input type="email" id="login-email" placeholder="Enter your email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">Password:</label>
+                        <input type="password" id="login-password" placeholder="Enter your password" required>
+                    </div>
+                    <div class="form-group" style="text-align: center;">
+                        <button class="btn" onclick="handleLogin()">Login</button>
+                    </div>
+                </div>
+
+                <div id="signup-form" class="signup-form" style="display: none;">
+                    <div class="form-group">
+                        <label for="signup-email">Email:</label>
+                        <input type="email" id="signup-email" placeholder="Enter your email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-password">Password:</label>
+                        <input type="password" id="signup-password" placeholder="Create a password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-confirm">Confirm Password:</label>
+                        <input type="password" id="signup-confirm" placeholder="Confirm your password" required>
+                    </div>
+                    <div class="form-group" style="text-align: center;">
+                        <button class="btn" onclick="handleSignup()">Sign Up</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Info Section -->
+            <div id="user-info" class="user-info" style="display: none;">
+                <div>
+                    <strong>👤 Logged in as: <span id="user-email"></span></strong>
+                    <div style="font-size: 14px; color: #666; margin-top: 5px;">
+                        <span id="usage-info">Usage: 0/50 analyses today</span>
+                    </div>
+                </div>
+                <button class="btn logout-btn" onclick="handleLogout()">🚪 Logout</button>
+            </div>
+
+            <!-- Analysis Tabs -->
+            <div id="main-app" style="display: none;">
+                <div class="tabs">
+                    <button class="tab active" onclick="showAnalysisTab('question')">📋 Question</button>
+                    <button class="tab" onclick="showAnalysisTab('file')">📄 File</button>
+                    <button class="tab" onclick="showAnalysisTab('url')">🌐 URL</button>
+                    <button class="tab" onclick="showAnalysisTab('text')">📝 Text</button>
+                </div>
+
+                <!-- Question Analysis -->
+                <div id="question-analysis" class="analysis-content active">
+                    <h3>🔍 Strategic Question Analysis</h3>
+                    <div class="form-group">
+                        <label for="question-input">Enter your business question:</label>
+                        <textarea id="question-input" rows="4" placeholder="e.g., What are the emerging opportunities in sustainable packaging for 2024?"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="question-keywords">Custom Keywords (optional):</label>
+                        <input type="text" id="question-keywords" placeholder="e.g., sustainability, packaging, innovation">
+                    </div>
+                    <div class="form-group" style="text-align: center;">
+                        <button class="btn" onclick="analyzeQuestion()">🔍 Analyze Question</button>
+                    </div>
+                </div>
+
+                <!-- File Analysis -->
+                <div id="file-analysis" class="analysis-content">
+                    <h3>📄 Document Analysis</h3>
+                    <div class="form-group">
+                        <label for="file-input">Upload a document:</label>
+                        <input type="file" id="file-input" accept=".pdf,.docx,.txt,.png,.jpg,.jpeg">
+                        <small style="color: #666;">Supported: PDF, DOCX, TXT, PNG, JPG, JPEG</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="file-question">Analysis Focus (optional):</label>
+                        <input type="text" id="file-question" placeholder="e.g., What are the key business opportunities?">
+                    </div>
+                    <div class="form-group">
+                        <label for="file-keywords">Keywords to focus on (optional):</label>
+                        <input type="text" id="file-keywords" placeholder="e.g., market trends, innovation">
+                    </div>
+                    <div class="form-group" style="text-align: center;">
+                        <button class="btn" onclick="analyzeFile()">📄 Analyze Document</button>
+                    </div>
+                </div>
+
+                <!-- URL Analysis -->
+                <div id="url-analysis" class="analysis-content">
+                    <h3>🌐 Web Content Analysis</h3>
+                    <div class="form-group">
+                        <label for="url-input">Enter URL to analyze:</label>
+                        <input type="url" id="url-input" placeholder="https://example.com/article">
+                    </div>
+                    <div class="form-group">
+                        <label for="url-question">Analysis Focus (optional):</label>
+                        <input type="text" id="url-question" placeholder="e.g., What business insights can be derived?">
+                    </div>
+                    <div class="form-group">
+                        <label for="url-keywords">Keywords to focus on (optional):</label>
+                        <input type="text" id="url-keywords" placeholder="e.g., technology, market trends">
+                    </div>
+                    <div class="form-group" style="text-align: center;">
+                        <button class="btn" onclick="analyzeUrl()">🌐 Analyze URL</button>
+                    </div>
+                </div>
+
+                <!-- Text Analysis -->
+                <div id="text-analysis" class="analysis-content">
+                    <h3>📝 Direct Text Analysis</h3>
+                    <div class="form-group">
+                        <label for="text-input">Paste your content here:</label>
+                        <textarea id="text-input" rows="8" placeholder="Enter or paste the text content you want to analyze..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="text-question">Analysis Focus (optional):</label>
+                        <input type="text" id="text-question" placeholder="e.g., What are the key strategic insights?">
+                    </div>
+                    <div class="form-group">
+                        <label for="text-keywords">Keywords to focus on (optional):</label>
+                        <input type="text" id="text-keywords" placeholder="e.g., innovation, growth, strategy">
+                    </div>
+                    <div class="form-group" style="text-align: center;">
+                        <button class="btn" onclick="analyzeText()">📝 Analyze Text</button>
+                    </div>
+                </div>
+
+                <!-- Loading Section -->
+                <div id="loading-section" class="loading">
+                    <div class="spinner"></div>
+                    <p>🤖 Analyzing your content...</p>
+                </div>
+
+                <!-- Results Section -->
+                <div id="results-section" style="display: none;">
+                    <!-- Metrics -->
+                    <div class="metrics">
+                        <div class="metric-card">
+                            <h3 id="keywords-count">0</h3>
+                            <p>Keywords Found</p>
+                        </div>
+                        <div class="metric-card">
+                            <h3 id="quality-score">0.0</h3>
+                            <p>Quality Score</p>
+                        </div>
+                        <div class="metric-card">
+                            <h3 id="analysis-id">N/A</h3>
+                            <p>Analysis ID</p>
+                        </div>
+                    </div>
+
+                    <!-- Keywords Section -->
+                    <div class="keywords-section">
+                        <h3>🔑 Strategic Keywords Analysis</h3>
+                        <p style="margin-bottom: 20px; color: #666;"><em>Click on any keyword below to view detailed insights:</em></p>
+                        <div id="keywords-grid" class="keywords-grid"></div>
+                    </div>
+
+                    <!-- Insights Section -->
+                    <div id="insights-section" class="insights-section">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h3 id="selected-keyword-title">🎯 Strategic Analysis</h3>
+                            <button class="btn btn-secondary" onclick="clearKeywordSelection()">🔄 Clear Selection</button>
+                        </div>
+                        <div id="insights-content"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let currentUser = null;
+        let analysisResults = null;
+        let selectedKeyword = null;
+
+        // Authentication functions
+        function showAuthTab(tab) {
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Show/hide forms
+            if (tab === 'login') {
+                document.getElementById('login-form').style.display = 'block';
+                document.getElementById('signup-form').style.display = 'none';
+            } else {
+                document.getElementById('login-form').style.display = 'none';
+                document.getElementById('signup-form').style.display = 'block';
+            }
+        }
+
+        function handleLogin() {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            if (!email || !password) {
+                showAlert('Please fill in all fields', 'error');
+                return;
+            }
+
+            // Simulate login API call
+            showLoading();
+            setTimeout(() => {
+                hideLoading();
+                // Mock successful login
+                currentUser = {
+                    email: email,
+                    usage: Math.floor(Math.random() * 20), // Random usage for demo
+                    limit: 50
+                };
+                showMainApp();
+                showAlert('Login successful!', 'success');
+            }, 1500);
+        }
+
+        function handleSignup() {
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            const confirm = document.getElementById('signup-confirm').value;
+
+            if (!email || !password || !confirm) {
+                showAlert('Please fill in all fields', 'error');
+                return;
+            }
+
+            if (password !== confirm) {
+                showAlert('Passwords do not match', 'error');
+                return;
+            }
+
+            // Simulate signup API call
+            showLoading();
+            setTimeout(() => {
+                hideLoading();
+                currentUser = { email: email, usage: 0, limit: 50 };
+                showMainApp();
+                showAlert('Account created successfully!', 'success');
+            }, 1500);
+        }
+
+        function handleLogout() {
+            currentUser = null;
+            analysisResults = null;
+            selectedKeyword = null;
+            
+            document.getElementById('auth-section').classList.add('active');
+            document.getElementById('main-app').style.display = 'none';
+            document.getElementById('user-info').style.display = 'none';
+            document.getElementById('results-section').style.display = 'none';
+            
+            // Clear forms
+            document.querySelectorAll('input, textarea').forEach(input => input.value = '');
+        }
+
+        function showMainApp() {
+            document.getElementById('auth-section').classList.remove('active');
+            document.getElementById('main-app').style.display = 'block';
+            document.getElementById('user-info').style.display = 'flex';
+            document.getElementById('user-email').textContent = currentUser.email;
+            document.getElementById('usage-info').textContent = `Usage: ${currentUser.usage}/${currentUser.limit} analyses today`;
+        }
+
+        // Analysis tab switching
+        function showAnalysisTab(tab) {
+            // Update tab buttons
+            document.querySelectorAll('#main-app .tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Hide all analysis content
+            document.querySelectorAll('.analysis-content').forEach(content => {
+                content.classList.remove('active');
+            });
+
+            // Show selected content
+            document.getElementById(`${tab}-analysis`).classList.add('active');
+        }
+
+        // Analysis functions
+        function analyzeQuestion() {
+            const question = document.getElementById('question-input').value;
+            const keywords = document.getElementById('question-keywords').value;
+
+            if (!question.trim()) {
+                showAlert('Please enter a question to analyze', 'warning');
+                return;
+            }
+
+            performAnalysis({ type: 'question', question, keywords });
+        }
+
+        function analyzeFile() {
+            const fileInput = document.getElementById('file-input');
+            const question = document.getElementById('file-question').value;
+            const keywords = document.getElementById('file-keywords').value;
+
+            if (!fileInput.files[0]) {
+                showAlert('Please select a file to analyze', 'warning');
+                return;
+            }
+
+            performAnalysis({ type: 'file', file: fileInput.files[0], question, keywords });
+        }
+
+        function analyzeUrl() {
+            const url = document.getElementById('url-input').value;
+            const question = document.getElementById('url-question').value;
+            const keywords = document.getElementById('url-keywords').value;
+
+            if (!url.trim()) {
+                showAlert('Please enter a URL to analyze', 'warning');
+                return;
+            }
+
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                showAlert('Please enter a valid URL starting with http:// or https://', 'error');
+                return;
+            }
+
+            performAnalysis({ type: 'url', url, question, keywords });
+        }
+
+        function analyzeText() {
+            const text = document.getElementById('text-input').value;
+            const question = document.getElementById('text-question').value;
+            const keywords = document.getElementById('text-keywords').value;
+
+            if (!text.trim()) {
+                showAlert('Please enter text content to analyze', 'warning');
+                return;
+            }
+
+            performAnalysis({ type: 'text', text, question, keywords });
+        }
+
+        function performAnalysis(params) {
+            if (currentUser.usage >= currentUser.limit) {
+                showAlert('You have reached your daily analysis limit. Please upgrade your plan.', 'error');
+                return;
+            }
+
+            showLoading();
+            
+            // Simulate API call to your backend
+            setTimeout(() => {
+                hideLoading();
+                
+                // Mock analysis results
+                const mockResults = {
+                    keywords: ['innovation', 'sustainability', 'market trends', 'growth', 'strategy'],
+                    insights: {
+                        'innovation': {
+                            titles: ['Technology Advancement', 'Market Innovation', 'Product Development'],
+                            insights: [
+                                'Focus on emerging technologies that can disrupt traditional market segments and create new value propositions for customers.',
+                                'Develop strategic partnerships with technology companies to accelerate innovation cycles and reduce time-to-market.',
+                                'Invest in R&D capabilities that align with future market demands and sustainability requirements.'
+                            ]
+                        },
+                        'sustainability': {
+                            titles: ['Environmental Impact', 'Sustainable Practices', 'Green Technology'],
+                            insights: [
+                                'Implement circular economy principles to reduce waste and create new revenue streams from sustainable practices.',
+                                'Develop eco-friendly products that meet growing consumer demand for environmentally responsible solutions.',
+                                'Create sustainability metrics and reporting systems to track progress and communicate value to stakeholders.'
+                            ]
+                        },
+                        'market trends': {
+                            titles: ['Consumer Behavior', 'Market Dynamics', 'Competitive Landscape'],
+                            insights: [
+                                'Analyze shifting consumer preferences and adapt product offerings to meet evolving market demands.',
+                                'Monitor competitor strategies and identify gaps in the market for potential business opportunities.',
+                                'Leverage data analytics to predict future trends and position the company ahead of market changes.'
+                            ]
+                        },
+                        'growth': {
+                            titles: ['Revenue Expansion', 'Market Penetration', 'Scale Operations'],
+                            insights: [
+                                'Expand into adjacent markets that leverage existing capabilities and customer relationships.',
+                                'Optimize operational efficiency to support sustainable growth while maintaining quality standards.',
+                                'Develop strategic acquisition targets that can accelerate growth and add complementary capabilities.'
+                            ]
+                        },
+                        'strategy': {
+                            titles: ['Strategic Planning', 'Competitive Advantage', 'Business Model'],
+                            insights: [
+                                'Create differentiated value propositions that are difficult for competitors to replicate.',
+                                'Build strategic capabilities that support long-term competitive advantage and market leadership.',
+                                'Develop flexible business models that can adapt to changing market conditions and customer needs.'
+                            ]
+                        }
+                    },
+                    analysis_id: 'ANAL-' + Math.random().toString(36).substr(2, 9).toUpperCase(),
+                    quality_score: Math.random() * 30 + 70 // Random score between 70-100
+                };
+
+                analysisResults = mockResults;
+                currentUser.usage++;
+                document.getElementById('usage-info').textContent = `Usage: ${currentUser.usage}/${currentUser.limit} analyses today`;
+                
+                displayResults(mockResults);
+                showAlert('Analysis completed successfully!', 'success');
+            }, 3000);
+        }
+
+        function displayResults(results) {
+            // Update metrics
+            document.getElementById('keywords-count').textContent = results.keywords.length;
+            document.getElementById('quality-score').textContent = results.quality_score.toFixed(1);
+            document.getElementById('analysis-id').textContent = results.analysis_id;
+
+            // Display keywords
+            const keywordsGrid = document.getElementById('keywords-grid');
+            keywordsGrid.innerHTML = '';
+            
+            results.keywords.forEach((keyword, index) => {
+                const keywordBtn = document.createElement('button');
+                keywordBtn.className = 'keyword-btn';
+                keywordBtn.textContent = `📌 ${keyword}`;
+                keywordBtn.onclick = () => selectKeyword(keyword);
+                keywordsGrid.appendChild(keywordBtn);
+            });
+
+            // Show results section
+            document.getElementById('results-section').style.display = 'block';
+        }
+
+        function selectKeyword(keyword) {
+            selectedKeyword = keyword;
+            
+            // Update active keyword button
+            document.querySelectorAll('.keyword-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent.includes(keyword)) {
+                    btn.classList.add('active');
+                }
+            });
+
+            // Display insights
+            const insightsSection = document.getElementById('insights-section');
+            const keywordTitle = document.getElementById('selected-keyword-title');
+            const insightsContent = document.getElementById('insights-content');
+
+            if (analysisResults.insights[keyword]) {
+                keywordTitle.textContent = `🎯 ${keyword} - Strategic Analysis`;
+                
+                const data = analysisResults.insights[keyword];
+                let html = '';
+
+                if (data.titles && data.titles.length > 0) {
+                    html += '<h4>Strategic Focus Areas:</h4>';
+                    data.titles.forEach((title, index) => {
+                        html += `<p><strong>${index + 1}.</strong> ${title}</p>`;
+                    });
+                    html += '<hr style="margin: 20px 0;">';
+                }
+
+                if (data.insights && data.insights.length > 0) {
+                    html += '<h4>📋 Business Actions & Recommendations:</h4>';
+                    data.insights.forEach((insight, index) => {
+                        const wordCount = insight.split(' ').length;
+                        const charCount = insight.length;
+                        
+                        html += `
+                            <div class="insight-item">
+                                <h4>🔍 Action ${index + 1} | ${wordCount} words | ${charCount} characters
