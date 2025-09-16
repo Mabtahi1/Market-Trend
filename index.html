@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Intelligence Analyzer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.13.3/cdn.min.js" defer></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .auth-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .main-app {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .user-info {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .usage-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .stat-card h4 {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .stat-card .value {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+
+        .analysis-tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 5px;
+            margin-bottom: 30px;
+            gap: 5px;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 15px 20px;
+            border: none;
+            background: transparent;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .tab-button.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .file-upload-area {
+            border: 2px dashed #cbd5e0;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .file-upload-area:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .file-upload-area.dragover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .results-container {
+            margin-top: 30px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            border-left: 5px solid #667eea;
+        }
+
+        .results-container h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .insight-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        .insight-card h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 40px;
+            color: #667eea;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border-left: 4px solid #c33;
+        }
+
+        .success {
+            background: #efe;
+            color: #363;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border-left: 4px solid #363;
+        }
+
+        .floating-nav {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            padding: 12px;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover {
+            transform: scale(1.1);
+            background: white;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .main-app {
+                padding: 20px;
+            }
+
+            .analysis-tabs {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body x-data="app()" x-init="init()">
+    <div class="floating-nav" x-show="isAuthenticated">
+        <button class="nav-btn" @click="clearCache()" title="Clear Cache">
+            <i class="fas fa-trash"></i>
+        </button>
+        <button class="nav-btn" @click="logout()" title="Logout">
+            <i class="fas fa-sign-out-alt"></i>
+        </button>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-chart-line"></i> Business Intelligence Analyzer</h1>
+            <p>Advanced AI-powered business insights and analysis</p>
+        </div>
+
+        <!-- Authentication -->
+        <div x-show="!isAuthenticated" class="auth-container">
+            <div x-show="authMode === 'login'">
+                <h2 style="text-align: center; margin-bottom: 30px; color: #667eea;">
+                    <i class="fas fa-sign-in-alt"></i> Sign In
+                </h2>
+                <form @submit.prevent="login()">
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" class="form-control" x-model="credentials.email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" class="form-control" x-model="credentials.password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;" :disabled="loading">
+                        <i class="fas fa-sign-in-alt"></i>
+                        <span x-text="loading ? 'Signing In...' : 'Sign In'"></span>
+                    </button>
+                </form>
+                <p style="text-align: center; margin-top: 20px;">
+                    Don't have an account? 
+                    <a href="#" @click="authMode = 'signup'" style="color: #667eea; text-decoration: none;">Sign Up</a>
+                </p>
+            </div>
+
+            <div x-show="authMode === 'signup'">
+                <h2 style="text-align: center; margin-bottom: 30px; color: #667eea;">
+                    <i class="fas fa-user-plus"></i> Create Account
+                </h2>
+                <form @submit.prevent="signup()">
+                    <div class="form-group">
+                        <label for="signup-email">Email Address</label>
+                        <input type="email" id="signup-email" class="form-control" x-model="credentials.email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-password">Password</label>
+                        <input type="password" id="signup-password" class="form-control" x-model="credentials.password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;" :disabled="loading">
+                        <i class="fas fa-user-plus"></i>
+                        <span x-text="loading ? 'Creating Account...' : 'Create Account'"></span>
+                    </button>
+                </form>
+                <p style="text-align: center; margin-top: 20px;">
+                    Already have an account? 
+                    <a href="#" @click="authMode = 'login'" style="color: #667eea; text-decoration: none;">Sign In</a>
+                </p>
+            </div>
+
+            <div x-show="message" :class="messageType" x-text="message"></div>
+        </div>
+
+        <!-- Main Application -->
+        <div x-show="isAuthenticated" class="main-app">
+            <!-- User Info -->
+            <div class="user-info">
+                <div>
+                    <h3><i class="fas fa-user"></i> Welcome back!</h3>
+                    <p x-text="user?.email"></p>
+                </div>
+                <div>
+                    <span x-text="user?.subscription_type || 'Free'"></span>
+                </div>
+            </div>
+
+            <!-- Usage Statistics -->
+            <div class="usage-stats">
+                <div class="stat-card">
+                    <h4>Summaries Used</h4>
+                    <div class="value" x-text="`${user?.usage?.summary || 0}/${user?.limits?.summary || 10}`"></div>
+                </div>
+                <div class="stat-card">
+                    <h4>Analyses Used</h4>
+                    <div class="value" x-text="`${user?.usage?.analysis || 0}/${user?.limits?.analysis || 5}`"></div>
+                </div>
+                <div class="stat-card">
+                    <h4>Questions Used</h4>
+                    <div class="value" x-text="`${user?.usage?.question || 0}/${user?.limits?.question || 20}`"></div>
+                </div>
+            </div>
+
+            <!-- Analysis Tabs -->
+            <div class="analysis-tabs">
+                <button class="tab-button" :class="{ active: activeTab === 'question' }" @click="activeTab = 'question'">
+                    <i class="fas fa-question-circle"></i> Business Questions
+                </button>
+                <button class="tab-button" :class="{ active: activeTab === 'text' }" @click="activeTab = 'text'">
+                    <i class="fas fa-file-text"></i> Text Analysis
+                </button>
+                <button class="tab-button" :class="{ active: activeTab === 'url' }" @click="activeTab = 'url'">
+                    <i class="fas fa-link"></i> URL Analysis
+                </button>
+                <button class="tab-button" :class="{ active: activeTab === 'file' }" @click="activeTab = 'file'">
+                    <i class="fas fa-file-upload"></i> File Analysis
+                </button>
+            </div>
+
+            <!-- Business Questions Tab -->
+            <div x-show="activeTab === 'question'" class="tab-content active">
+                <form @submit.prevent="analyzeQuestion()">
+                    <div class="form-group">
+                        <label for="question">Business Question</label>
+                        <textarea id="question" class="form-control" x-model="forms.question.question" 
+                                placeholder="e.g., What are the key trends in our industry for Q4 2024?"
+                                required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="question-keywords">Keywords (optional)</label>
+                        <input type="text" id="question-keywords" class="form-control" x-model="forms.question.keywords"
+                               placeholder="e.g., technology, growth, market share">
+                    </div>
+                    <button type="submit" class="btn btn-primary" :disabled="loading">
+                        <i class="fas fa-search"></i>
+                        <span x-text="loading ? 'Analyzing...' : 'Analyze Question'"></span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Text Analysis Tab -->
+            <div x-show="activeTab === 'text'" class="tab-content">
+                <form @submit.prevent="analyzeText()">
+                    <div class="form-group">
+                        <label for="text-content">Text Content</label>
+                        <textarea id="text-content" class="form-control" x-model="forms.text.text" 
+                                style="min-height: 200px;"
+                                placeholder="Paste your text content here for analysis..."
+                                required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="text-question">Specific Question (optional)</label>
+                        <input type="text" id="text-question" class="form-control" x-model="forms.text.question"
+                               placeholder="What would you like to know about this text?">
+                    </div>
+                    <div class="form-group">
+                        <label for="text-keywords">Keywords (optional)</label>
+                        <input type="text" id="text-keywords" class="form-control" x-model="forms.text.keywords"
+                               placeholder="Focus keywords for analysis">
+                    </div>
+                    <button type="submit" class="btn btn-primary" :disabled="loading">
+                        <i class="fas fa-search"></i>
+                        <span x-text="loading ? 'Analyzing...' : 'Analyze Text'"></span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- URL Analysis Tab -->
+            <div x-show="activeTab === 'url'" class="tab-content">
+                <form @submit.prevent="analyzeUrl()">
+                    <div class="form-group">
+                        <label for="url">Website URL</label>
+                        <input type="url" id="url" class="form-control" x-model="forms.url.url" 
+                               placeholder="https://example.com"
+                               required>
+                    </div>
+                    <div class="form-group">
+                        <label for="url-question">Specific Question (optional)</label>
+                        <input type="text" id="url-question" class="form-control" x-model="forms.url.question"
+                               placeholder="What would you like to know about this website?">
+                    </div>
+                    <div class="form-group">
+                        <label for="url-keywords">Keywords (optional)</label>
+                        <input type="text" id="url-keywords" class="form-control" x-model="forms.url.keywords"
+                               placeholder="Focus keywords for analysis">
+                    </div>
+                    <button type="submit" class="btn btn-primary" :disabled="loading">
+                        <i class="fas fa-search"></i>
+                        <span x-text="loading ? 'Analyzing...' : 'Analyze URL'"></span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- File Analysis Tab -->
+            <div x-show="activeTab === 'file'" class="tab-content">
+                <form @submit.prevent="analyzeFile()">
+                    <div class="form-group">
+                        <label>File Upload</label>
+                        <div class="file-upload-area" 
+                             @click="$refs.fileInput.click()"
+                             @dragover.prevent="handleDragOver"
+                             @dragleave.prevent="handleDragLeave"
+                             @drop.prevent="handleFileDrop">
+                            <i class="fas fa-cloud-upload-alt" style="font-size: 3rem; color: #667eea; margin-bottom: 15px;"></i>
+                            <p x-show="!forms.file.file">
+                                <strong>Click to upload</strong> or drag and drop<br>
+                                <small>PDF, DOCX, TXT, PNG, JPG (max 16MB)</small>
+                            </p>
+                            <p x-show="forms.file.file" style="color: #667eea;">
+                                <i class="fas fa-file"></i>
+                                <span x-text="forms.file.file?.name"></span>
+                            </p>
+                            <input type="file" x-ref="fileInput" @change="handleFileSelect" 
+                                   accept=".pdf,.docx,.txt,.png,.jpg,.jpeg" style="display: none;">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="file-question">Specific Question (optional)</label>
+                        <input type="text" id="file-question" class="form-control" x-model="forms.file.question"
+                               placeholder="What would you like to know about this file?">
+                    </div>
+                    <div class="form-group">
+                        <label for="file-keywords">Keywords (optional)</label>
+                        <input type="text" id="file-keywords" class="form-control" x-model="forms.file.keywords"
+                               placeholder="Focus keywords for analysis">
+                    </div>
+                    <button type="submit" class="btn btn-primary" :disabled="loading || !forms.file.file">
+                        <i class="fas fa-search"></i>
+                        <span x-text="loading ? 'Analyzing...' : 'Analyze File'"></span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Loading -->
+            <div x-show="loading" class="loading">
+                <div class="spinner"></div>
+                <span>Processing your request...</span>
+            </div>
+
+            <!-- Messages -->
+            <div x-show="message" :class="messageType" x-text="message"></div>
+
+            <!-- Results -->
+            <div x-show="results && !loading" class="results-container">
+                <h3><i class="fas fa-chart-bar"></i> Analysis Results</h3>
+                
+                <template x-if="results.executive_summary">
+                    <div class="insight-card">
+                        <h4><i class="fas fa-star"></i> Executive Summary</h4>
+                        <p x-text="results.executive_summary"></p>
+                    </div>
+                </template>
+
+                <template x-if="results.key_insights">
+                    <div class="insight-card">
+                        <h4><i class="fas fa-lightbulb"></i> Key Insights</h4>
+                        <div x-html="formatInsights(results.key_insights)"></div>
+                    </div>
+                </template>
+
+                <template x-if="results.opportunities">
+                    <div class="insight-card">
+                        <h4><i class="fas fa-rocket"></i> Opportunities</h4>
+                        <div x-html="formatInsights(results.opportunities)"></div>
+                    </div>
+                </template>
+
+                <template x-if="results.risks">
+                    <div class="insight-card">
+                        <h4><i class="fas fa-exclamation-triangle"></i> Risks & Challenges</h4>
+                        <div x-html="formatInsights(results.risks)"></div>
+                    </div>
+                </template>
+
+                <template x-if="results.recommendations">
+                    <div class="insight-card">
+                        <h4><i class="fas fa-tasks"></i> Recommendations</h4>
+                        <div x-html="formatInsights(results.recommendations)"></div>
+                    </div>
+                </template>
+
+                <template x-if="results.summary">
+                    <div class="insight-card">
+                        <h4><i class="fas fa-file-alt"></i> Summary</h4>
+                        <p x-text="results.summary"></p>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function app() {
+            return {
+                // Authentication
+                isAuthenticated: false,
+                authMode: 'login',
+                credentials: { email: '', password: '' },
+                sessionId: '',
+                user: null,
+
+                // UI State
+                activeTab: 'question',
+                loading: false,
+                message: '',
+                messageType: '',
+                results: null,
+
+                // Forms
+                forms: {
+                    question: { question: '', keywords: '' },
+                    text: { text: '', question: '', keywords: '' },
+                    url: { url: '', question: '', keywords: '' },
+                    file: { file: null, question: '', keywords: '' }
+                },
+
+                // API Base URL - adjust this to your Flask server
+                apiBase: window.location.origin,
+
+                init() {
+                    // Check for existing session
+                    const savedSessionId = localStorage.getItem('sessionId');
+                    if (savedSessionId) {
+                        this.sessionId = savedSessionId;
+                        this.validateSession();
+                    }
+                },
+
+                async validateSession() {
+                    try {
+                        const response = await fetch(`${this.apiBase}/api/auth/validate`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ session_id: this.sessionId })
+                        });
+
+                        if (response.ok) {
+                            const data = await response.json();
+                            this.isAuthenticated = true;
+                            this.user = data.user;
+                        } else {
+                            localStorage.removeItem('sessionId');
+                            this.sessionId = '';
+                        }
+                    } catch (error) {
+                        console.error('Session validation error:', error);
+                    }
+                },
+
+                async login() {
+                    this.loading = true;
+                    this.message = '';
+
+                    try {
+                        const response = await fetch(`${this.apiBase}/api/auth/login`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(this.credentials)
+                        });
+
+                        const data = await response.json();
+
+                        if (response.ok) {
+                            this.sessionId = data.session_id;
+                            this.user = data.user;
+                            this.isAuthenticated = true;
+                            localStorage.setItem('sessionId', this.sessionId);
+                            this.showMessage('Login successful!', 'success');
+                        } else {
+                            this.showMessage(data.error || 'Login failed', 'error');
+                        }
+                    } catch (error) {
+                        this.showMessage('Network error. Please try again.', 'error');
+                    }
+
+                    this.loading = false;
+                },
+
+                async signup() {
+                    this.loading = true;
+                    this.message = '';
+
+                    try {
+                        const response = await fetch(`${this.apiBase}/api/auth/signup`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(this.credentials)
+                        });
+
+                        const data = await response.json();
+
+                        if (response.ok) {
+                            this.sessionId = data.session_id;
+                            this.user = data.user;
+                            this.isAuthenticated = true;
+                            localStorage.setItem('sessionId', this.sessionId);
+                            this.showMessage('Account created successfully!', 'success');
+                        } else {
+                            this.showMessage(data.error || 'Signup failed', 'error');
+                        }
+                    } catch (error) {
+                        this.showMessage('Network error. Please try again.', 'error');
+                    }
+
+                    this.loading = false;
+                },
+
+                async logout() {
+                    try {
+                        await fetch(`${this.apiBase}/api/auth/logout`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ session_id: this.sessionId })
+                        });
+                    } catch (error) {
+                        console.error('Logout error:', error);
+                    }
+
+                    this.isAuthenticated = false;
+                    this.sessionId = '';
+                    this.user = null;
+                    this.results = null;
+                    localStorage.removeItem('sessionId');
+                    this.showMessage('Logged out successfully', 'success');
+                },
+
+                async analyzeQuestion() {
+                    await this.makeApiCall('/api/analyze/question', {
+                        session_id: this.sessionId,
+                        question: this.forms.question.question,
+                        keywords: this.forms.question.keywords
+                    });
+                },
+
+                async analyzeText() {
+                    await this.makeApiCall('/api/analyze/text', {
+                        session_id: this.sessionId,
+                        text: this.forms.text.text,
+                        question: this.forms.text.question,
+                        keywords: this.forms.text.keywords
+                    });
+                },
+
+                async analyzeUrl() {
+                    await this.makeApiCall('/api/analyze/url', {
+                        session_id: this.sessionId,
+                        url: this.forms.url.url,
+                        question: this.forms.url.question,
+                        keywords: this.forms.url.keywords
+                    });
+                },
+
+                async analyzeFile() {
+                    this.loading = true;
+                    this.message = '';
+                    this.results = null;
+
+                    try {
+                        const formData = new FormData();
+                        formData.append('session_id', this.sessionId);
+                        formData.append('file', this.forms.file.file);
+                        formData.append('question', this.forms.file.question);
+                        formData.append('keywords', this.forms.file.keywords);
+
+                        const response = await fetch(`${this.apiBase}/api/analyze/file`, {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        const data = await response.json();
+
+                        if (response.ok) {
+                            this.results = data;
+                            await this.refreshUserInfo();
+                        } else {
+                            this.showMessage(data.error || 'Analysis failed', 'error');
+                        }
+                    } catch (error) {
+                        this.showMessage('Network error. Please try again.', 'error');
+                    }
+
+                    this.loading = false;
+                },
+
+                async makeApiCall(endpoint, data) {
+                    this.loading = true;
+                    this.message = '';
+                    this.results = null;
+
+                    try {
+                        const response = await fetch(`${this.apiBase}${endpoint}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(data)
+                        });
+
+                        const responseData = await response.json();
+
+                        if (response.ok) {
+                            this.results = responseData;
+                            await this.refreshUserInfo();
+                        } else {
+                            if (responseData.upgrade_required) {
+                                this.showMessage('Usage limit reached. Please upgrade your plan.', 'error');
+                            } else {
+                                this.showMessage(responseData.error || 'Analysis failed', 'error');
+                            }
+                        }
+                    } catch (error) {
+                        this.showMessage('Network error. Please try again.', 'error');
+                    }
+
+                    this.loading = false;
+                },
+
+                async refreshUserInfo() {
+                    try {
+                        const response = await fetch(`${this.apiBase}/api/user/info`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ session_id: this.sessionId })
+                        });
+
+                        if (response.ok) {
+                            const data = await response.json();
+                            this.user = data.user;
+                        }
+                    } catch (error) {
+                        console.error('Error refreshing user info:', error);
+                    }
+                },
+
+                async clearCache() {
+                    try {
+                        const response = await fetch(`${this.apiBase}/api/cache/clear`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ session_id: this.sessionId })
+                        });
+
+                        if (response.ok) {
+                            this.showMessage('Cache cleared successfully', 'success');
+                        }
+                    } catch (error) {
+                        this.showMessage('Failed to clear cache', 'error');
+                    }
+                },
+
+                handleFileSelect(event) {
+                    const file = event.target.files[0];
+                    if (file) {
+                        if (file.size > 16 * 1024 * 1024) {
+                            this.showMessage('File too large. Maximum size is 16MB.', 'error');
+                            return;
+                        }
+                        this.forms.file.file = file;
+                    }
+                },
+
+                handleDragOver(event) {
+                    event.target.classList.add('dragover');
+                },
+
+                handleDragLeave(event) {
+                    event.target.classList.remove('dragover');
+                },
+
+                handleFileDrop(event) {
+                    event.target.classList.remove('dragover');
+                    const files = event.dataTransfer.files;
+                    if (files.length > 0) {
+                        const file = files[0];
+                        if (file.size > 16 * 1024 * 1024) {
+                            this.showMessage('File too large. Maximum size is 16MB.', 'error');
+                            return;
+                        }
+                        this.forms.file.file = file;
+                    }
+                },
+
+                formatInsights(insights) {
+                    if (Array.isArray(insights)) {
+                        return '<ul>' + insights.map(insight => `<li>${insight}</li>`).join('') + '</ul>';
+                    }
+                    return insights;
+                },
+
+                showMessage(text, type) {
+                    this.message = text;
+                    this.messageType = type;
+                    setTimeout(() => {
+                        this.message = '';
+                    }, 5000);
+                }
+            }
+        }
+    </script>
+</body>
+</html>
