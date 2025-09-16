@@ -706,7 +706,192 @@
             }
         }
 
-        /* Professional Animations */
+        /* Image Carousel Styles */
+        .image-carousel {
+            margin: 40px 0;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .carousel-container {
+            position: relative;
+            border-radius: 25px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .carousel-track {
+            display: flex;
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: transform;
+        }
+
+        .carousel-slide {
+            min-width: 100%;
+            position: relative;
+            height: 400px;
+            overflow: hidden;
+        }
+
+        .carousel-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.8s ease;
+        }
+
+        .carousel-slide:hover img {
+            transform: scale(1.05);
+        }
+
+        .slide-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+            color: white;
+            padding: 40px 30px 30px;
+            transform: translateY(20px);
+            opacity: 0;
+            transition: all 0.5s ease;
+        }
+
+        .carousel-slide:hover .slide-overlay {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .slide-overlay h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .slide-overlay p {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        /* Navigation Dots */
+        .carousel-dots {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+            z-index: 10;
+        }
+
+        .carousel-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            background: transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .carousel-dot:hover,
+        .carousel-dot.active {
+            background: white;
+            border-color: white;
+            transform: scale(1.2);
+        }
+
+        /* Navigation Arrows */
+        .carousel-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            z-index: 10;
+            opacity: 0;
+        }
+
+        .carousel-container:hover .carousel-nav {
+            opacity: 1;
+        }
+
+        .carousel-nav:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .carousel-nav.prev {
+            left: 20px;
+        }
+
+        .carousel-nav.next {
+            right: 20px;
+        }
+
+        .carousel-nav i {
+            font-size: 1.2rem;
+        }
+
+        /* Auto-play progress indicator */
+        .carousel-container::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            animation: progress 4s linear infinite;
+            z-index: 5;
+        }
+
+        @keyframes progress {
+            from {
+                width: 0%;
+            }
+            to {
+                width: 100%;
+            }
+        }
+
+        /* Responsive carousel */
+        @media (max-width: 768px) {
+            .carousel-slide {
+                height: 300px;
+            }
+            
+            .carousel-nav {
+                width: 40px;
+                height: 40px;
+            }
+            
+            .carousel-nav.prev {
+                left: 10px;
+            }
+            
+            .carousel-nav.next {
+                right: 10px;
+            }
+            
+            .slide-overlay {
+                padding: 20px 20px 20px;
+            }
+            
+            .slide-overlay h3 {
+                font-size: 1.2rem;
+            }
+        }
         .fade-in {
             animation: fadeIn 0.6s ease;
         }
@@ -760,6 +945,69 @@
         <div x-show="!isAuthenticated" class="hero fade-in">
             <h1>AI-Powered Business Intelligence</h1>
             <p>Transform your data into actionable insights with our advanced AI analytics platform. Make smarter decisions with real-time analysis and predictive intelligence.</p>
+            
+            <!-- Professional Image Carousel -->
+            <div class="image-carousel" x-data="carousel()">
+                <div class="carousel-container">
+                    <div class="carousel-track" :style="`transform: translateX(-${currentSlide * 100}%)`">
+                        <!-- Replace these URLs with your actual image URLs -->
+                        <div class="carousel-slide">
+                            <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=500&fit=crop&crop=center" alt="AI Analytics Dashboard" loading="lazy">
+                            <div class="slide-overlay">
+                                <h3>AI Analytics Dashboard</h3>
+                                <p>Real-time data visualization and insights</p>
+                            </div>
+                        </div>
+                        <div class="carousel-slide">
+                            <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=500&fit=crop&crop=center" alt="Business Intelligence Reports" loading="lazy">
+                            <div class="slide-overlay">
+                                <h3>Smart Business Reports</h3>
+                                <p>Automated report generation and analysis</p>
+                            </div>
+                        </div>
+                        <div class="carousel-slide">
+                            <img src="https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?w=800&h=500&fit=crop&crop=center" alt="Data Analysis" loading="lazy">
+                            <div class="slide-overlay">
+                                <h3>Advanced Data Analysis</h3>
+                                <p>Machine learning powered insights</p>
+                            </div>
+                        </div>
+                        <div class="carousel-slide">
+                            <img src="https://images.unsplash.com/photo-1551434678-e076c223a692?w=800&h=500&fit=crop&crop=center" alt="Market Trends" loading="lazy">
+                            <div class="slide-overlay">
+                                <h3>Market Trend Analysis</h3>
+                                <p>Predict market movements with AI</p>
+                            </div>
+                        </div>
+                        <div class="carousel-slide">
+                            <img src="https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=800&h=500&fit=crop&crop=center" alt="Document Processing" loading="lazy">
+                            <div class="slide-overlay">
+                                <h3>Document Intelligence</h3>
+                                <p>Extract insights from any document</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Navigation Dots -->
+                    <div class="carousel-dots">
+                        <template x-for="(slide, index) in 5" :key="index">
+                            <button class="carousel-dot" 
+                                    :class="{ active: currentSlide === index }"
+                                    @click="goToSlide(index)">
+                            </button>
+                        </template>
+                    </div>
+                    
+                    <!-- Navigation Arrows -->
+                    <button class="carousel-nav prev" @click="prevSlide()">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="carousel-nav next" @click="nextSlide()">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+            
             <div class="hero-features">
                 <div class="hero-feature">
                     <i class="fas fa-robot"></i>
@@ -1411,6 +1659,46 @@
                     setTimeout(() => {
                         this.message = '';
                     }, 5000);
+                }
+            }
+        }
+
+        // Carousel Component
+        function carousel() {
+            return {
+                currentSlide: 0,
+                totalSlides: 5,
+                autoPlayInterval: null,
+
+                init() {
+                    this.startAutoPlay();
+                },
+
+                startAutoPlay() {
+                    this.autoPlayInterval = setInterval(() => {
+                        this.nextSlide();
+                    }, 4000); // Change slide every 4 seconds
+                },
+
+                stopAutoPlay() {
+                    if (this.autoPlayInterval) {
+                        clearInterval(this.autoPlayInterval);
+                    }
+                },
+
+                nextSlide() {
+                    this.currentSlide = (this.currentSlide + 1) % this.totalSlides;
+                },
+
+                prevSlide() {
+                    this.currentSlide = this.currentSlide === 0 ? this.totalSlides - 1 : this.currentSlide - 1;
+                },
+
+                goToSlide(index) {
+                    this.currentSlide = index;
+                    // Restart auto-play when user manually navigates
+                    this.stopAutoPlay();
+                    setTimeout(() => this.startAutoPlay(), 2000);
                 }
             }
         }
