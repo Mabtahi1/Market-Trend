@@ -429,7 +429,11 @@ def index():
         <p>Please save the HTML artifact as 'index.html' in the same directory as this Flask app.</p>
         <p>Then restart the Flask server.</p>
         """
-
+@app.route('/static/<path:filename>')
+def serve_static(filename):
+    """Serve static files"""
+    return send_from_directory('static', filename)
+    
 # Health check endpoint
 @app.route('/api/health')
 def health_check():
