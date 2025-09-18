@@ -15,6 +15,131 @@ logger = logging.getLogger(__name__)
 # Simple cache to prevent duplicate calls
 _response_cache = {}
 
+
+# Add these imports to your app2.py
+import re
+from collections import Counter
+import requests
+from textblob import TextBlob  # For sentiment analysis
+import praw  # For Reddit API
+from googleapiclient.discovery import build  # For YouTube API
+
+def analyze_sentiment_emotion(text):
+    """Analyze sentiment and detect emotions"""
+    blob = TextBlob(text)
+    sentiment_score = blob.sentiment.polarity
+    
+    # Emotion keywords detection
+    emotion_keywords = {
+        'positive': ['excited', 'happy', 'love', 'amazing', 'great', 'excellent'],
+        'negative': ['hate', 'terrible', 'awful', 'disappointed', 'angry'],
+        'neutral': ['okay', 'fine', 'average', 'normal']
+    }
+    
+    emotions_found = []
+    text_lower = text.lower()
+    for emotion, keywords in emotion_keywords.items():
+        if any(keyword in text_lower for keyword in keywords):
+            emotions_found.append(emotion)
+    
+    return {
+        'sentiment_score': sentiment_score,
+        'sentiment_label': 'positive' if sentiment_score > 0.1 else 'negative' if sentiment_score < -0.1 else 'neutral',
+        'emotions': emotions_found
+    }
+
+def extract_brand_mentions(text, brands_list=None):
+    """Find brand and competitor mentions"""
+    if brands_list is None:
+        # Common brand patterns
+        brands_list = ['apple', 'google', 'microsoft', 'amazon', 'meta', 'tesla', 'netflix']
+    
+    mentions = {}
+    text_lower = text.lower()
+    
+    for brand in brands_list:
+        count = text_lower.count(brand.lower())
+        if count > 0:
+            mentions[brand] = count
+    
+    return mentions
+
+def suggest_hashtags_keywords(text, topic=None):
+    """Generate hashtag and keyword suggestions"""
+    # Extract keywords using frequency analysis
+    words = re.findall(r'\b\w+\b', text.lower())
+    word_freq = Counter(words)
+    
+    # Remove common stop words
+    stop_words = {'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by'}
+    keywords = [word for word, freq in word_freq.most_common(20) if word not in stop_words and len(word) > 3]
+    
+    # Generate hashtags
+    hashtags = [f"#{word}" for word in keywords[:10]]
+    
+    return {
+        'keywords': keywords,
+        'hashtags': hashtags,
+        'trending_terms': keywords[:5]
+    }
+
+def scan_reddit_content(subreddits, query, limit=50):
+    """Scan Reddit for relevant posts"""
+    # You'll need to set up Reddit API credentials
+    try:
+        reddit = praw.Reddit(
+            client_id="YOUR_CLIENT_ID",
+            client_secret="YOUR_CLIENT_SECRET",
+            user_agent="YOUR_APP_NAME"
+        )
+        
+        posts = []
+        for subreddit_name in subreddits:
+            subreddit = reddit.subreddit(subreddit_name)
+            for post in subreddit.search(query, limit=limit):
+                posts.append({
+                    'title': post.title,
+                    'content': post.selftext,
+                    'score': post.score,
+                    'url': post.url,
+                    'created': post.created_utc
+                })
+        return posts
+    except Exception as e:
+        return {'error': f'Reddit API error: {str(e)}'}
+
+def analyze_comprehensive_trend(text, url=None, social_platforms=None):
+    """Comprehensive trend analysis combining all features"""
+    results = {
+        'summary': '',
+        'sentiment_analysis': analyze_sentiment_emotion(text),
+        'brand_mentions': extract_brand_mentions(text),
+        'hashtag_suggestions': suggest_hashtags_keywords(text),
+        'key_insights': [],
+        'recommendations': []
+    }
+    
+    # Generate summary
+    sentences = text.split('.')
+    if len(sentences) > 3:
+        results['summary'] = '. '.join(sentences[:3]) + '.'
+    else:
+        results['summary'] = text
+    
+    # Generate insights based on sentiment and mentions
+    sentiment = results['sentiment_analysis']
+    if sentiment['sentiment_score'] > 0.3:
+        results['key_insights'].append("Overall positive sentiment detected in content")
+    elif sentiment['sentiment_score'] < -0.3:
+        results['key_insights'].append("Negative sentiment detected - monitor for potential issues")
+    
+    if results['brand_mentions']:
+        top_brand = max(results['brand_mentions'].items(), key=lambda x: x[1])
+        results['key_insights'].append(f"Most mentioned brand: {top_brand[0]} ({top_brand[1]} mentions)")
+    
+    return results
+
+
 def claude_messages(prompt):
     try:
         if not prompt or not prompt.strip():
