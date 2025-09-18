@@ -12,5 +12,9 @@ textract==1.6.5
 Flask==2.3.3
 Flask-CORS==4.0.0
 boto3
+textblob==0.17.1
+praw==7.7.1
+google-api-python-client==2.88.0
+
 
 
