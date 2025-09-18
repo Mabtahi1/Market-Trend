@@ -273,7 +273,27 @@
             backdrop-filter: blur(10px);
         }
 
-        /* Usage Statistics */
+        /* Analysis Tabs */
+        .analysis-section {
+            margin-bottom: 40px;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .section-header h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .section-header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
         .usage-stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -333,101 +353,136 @@
             z-index: 1;
         }
 
-        /* Analysis Tabs */
-        .analysis-section {
-            margin-bottom: 40px;
-        }
-
-        .section-header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .section-header h2 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: #333;
-            margin-bottom: 10px;
-        }
-
-        .section-header p {
-            color: #666;
-            font-size: 1.1rem;
-        }
-
+        /* Analysis Tabs with Background Images */
         .analysis-tabs {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
             margin-bottom: 40px;
         }
 
         .tab-card {
             background: white;
             border-radius: 20px;
-            padding: 25px;
+            padding: 30px;
             cursor: pointer;
             transition: all 0.3s ease;
             border: 2px solid transparent;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
             position: relative;
             overflow: hidden;
+            min-height: 280px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
+        /* Background Images for Each Tab */
+        .tab-card:nth-child(1) {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.9), rgba(118, 75, 162, 0.9)), 
+                        url('https://images.unsplash.com/photo-1553729459-efe14ef6055d?w=500&h=300&fit=crop&crop=center') center/cover;
+        }
+
+        .tab-card:nth-child(2) {
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.9), rgba(67, 160, 71, 0.9)), 
+                        url('https://images.unsplash.com/photo-1509909756405-be0199881695?w=500&h=300&fit=crop&crop=center') center/cover;
+        }
+
+        .tab-card:nth-child(3) {
+            background: linear-gradient(135deg, rgba(255, 152, 0, 0.9), rgba(255, 193, 7, 0.9)), 
+                        url('https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=500&h=300&fit=crop&crop=center') center/cover;
+        }
+
+        .tab-card:nth-child(4) {
+            background: linear-gradient(135deg, rgba(233, 30, 99, 0.9), rgba(156, 39, 176, 0.9)), 
+                        url('https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=500&h=300&fit=crop&crop=center') center/cover;
+        }
+
+        /* Animated background pattern overlay */
         .tab-card::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #667eea, #764ba2);
-            transform: scaleX(0);
-            transition: transform 0.3s ease;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="30" r="1.5" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="25" r="2.5" fill="rgba(255,255,255,0.1)"/><circle cx="30" cy="60" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="70" cy="70" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="15" cy="80" r="1.5" fill="rgba(255,255,255,0.1)"/></svg>');
+            background-size: 100px 100px;
+            animation: float 20s ease-in-out infinite;
+            opacity: 0.5;
+            pointer-events: none;
         }
 
-        .tab-card:hover::before,
-        .tab-card.active::before {
-            transform: scaleX(1);
+        .tab-card:hover::before {
+            animation-duration: 10s;
+            opacity: 0.7;
         }
 
         .tab-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
         }
 
         .tab-card.active {
-            border-color: #667eea;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(102, 126, 234, 0.3);
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
+            border-color: rgba(255, 255, 255, 0.3);
         }
 
         .tab-icon {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
+            font-size: 3rem;
+            margin-bottom: 20px;
             display: block;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .tab-card.active .tab-icon {
-            -webkit-text-fill-color: white;
+            color: white;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 2;
         }
 
         .tab-title {
-            font-size: 1.3rem;
-            font-weight: 600;
-            margin-bottom: 10px;
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: white;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 2;
         }
 
         .tab-description {
-            font-size: 0.9rem;
-            opacity: 0.8;
-            line-height: 1.4;
+            font-size: 1rem;
+            line-height: 1.5;
+            color: rgba(255, 255, 255, 0.95);
+            text-shadow: 0 1px 5px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Usage Stats Cards with Background Images */
+        .stat-card {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.9), rgba(118, 75, 162, 0.9));
+            color: white;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:nth-child(1) {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.9), rgba(118, 75, 162, 0.9)), 
+                        url('https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=250&fit=crop&crop=center') center/cover;
+        }
+
+        .stat-card:nth-child(2) {
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.9), rgba(67, 160, 71, 0.9)), 
+                        url('https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?w=400&h=250&fit=crop&crop=center') center/cover;
+        }
+
+        .stat-card:nth-child(3) {
+            background: linear-gradient(135deg, rgba(255, 152, 0, 0.9), rgba(255, 193, 7, 0.9)), 
+                        url('https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=400&h=250&fit=crop&crop=center') center/cover;
         }
 
         /* Form Styles */
