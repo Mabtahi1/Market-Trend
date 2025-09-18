@@ -398,24 +398,21 @@
                         url('https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=500&h=300&fit=crop&crop=center') center/cover;
         }
 
-        /* Animated background pattern overlay */
+        /* Simplified tab card animations - reduce GPU load */
         .tab-card::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
-            bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="30" r="1.5" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="25" r="2.5" fill="rgba(255,255,255,0.1)"/><circle cx="30" cy="60" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="70" cy="70" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="15" cy="80" r="1.5" fill="rgba(255,255,255,0.1)"/></svg>');
-            background-size: 100px 100px;
-            animation: float 20s ease-in-out infinite;
-            opacity: 0.5;
-            pointer-events: none;
+            height: 4px;
+            background: linear-gradient(90deg, rgba(255,255,255,0.3), rgba(255,255,255,0.1));
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
         }
 
         .tab-card:hover::before {
-            animation-duration: 10s;
-            opacity: 0.7;
+            transform: scaleX(1);
         }
 
         .tab-card:hover {
@@ -1141,27 +1138,56 @@
 
                 <!-- Business Questions Tab -->
                 <div x-show="activeTab === 'question'" class="tab-content active">
-                    <form @submit.prevent="analyzeQuestion()">
-                        <div class="form-group">
-                            <label for="question">
-                                <i class="fas fa-question-circle"></i> Business Question
-                            </label>
-                            <textarea id="question" class="form-control" x-model="forms.question.question" 
-                                    placeholder="e.g., What are the key market trends in renewable energy for 2024? How can we improve customer retention? What opportunities exist in the AI market?"
-                                    required style="min-height: 120px;"></textarea>
+                    <div class="chat-interface">
+                        <div class="chat-header">
+                            <div class="chat-header-icon">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="chat-header-text">
+                                <h3>AI Business Consultant</h3>
+                                <p>Ask me anything about your business strategy</p>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="question-keywords">
-                                <i class="fas fa-tags"></i> Focus Keywords (optional)
-                            </label>
-                            <input type="text" id="question-keywords" class="form-control" x-model="forms.question.keywords"
-                                   placeholder="e.g., technology, growth, market share, competition">
+                        <div class="chat-body">
+                            <form @submit.prevent="analyzeQuestion()">
+                                <div class="chat-input-container">
+                                    <div class="chat-textarea-label">What's your business question?</div>
+                                    <textarea class="chat-textarea" x-model="forms.question.question" 
+                                            placeholder="e.g., What are the key market trends in renewable energy for 2024? How can we improve customer retention? What opportunities exist in the AI market?"
+                                            required></textarea>
+                                </div>
+                                
+                                <div class="chat-suggestions">
+                                    <div class="suggestion-chip" @click="forms.question.question = 'What are the emerging trends in my industry?'">Industry trends</div>
+                                    <div class="suggestion-chip" @click="forms.question.question = 'How can I improve customer retention?'">Customer retention</div>
+                                    <div class="suggestion-chip" @click="forms.question.question = 'What are my biggest growth opportunities?'">Growth opportunities</div>
+                                    <div class="suggestion-chip" @click="forms.question.question = 'How should I price my products competitively?'">Pricing strategy</div>
+                                </div>
+
+                                <div class="chat-input-row">
+                                    <input type="text" x-model="forms.question.keywords"
+                                           placeholder="Focus keywords (optional) - e.g., technology, growth, market share">
+                                </div>
+
+                                <div class="chat-submit-container">
+                                    <div class="chat-features">
+                                        <div class="chat-feature">
+                                            <i class="fas fa-shield-alt"></i>
+                                            <span>Secure & Private</span>
+                                        </div>
+                                        <div class="chat-feature">
+                                            <i class="fas fa-clock"></i>
+                                            <span>Instant Analysis</span>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="chat-submit-btn" :disabled="loading">
+                                        <i class="fas fa-paper-plane"></i>
+                                        <span x-text="loading ? 'Analyzing...' : 'Get Insights'"></span>
+                                    </button>
+                                </div>
+                            </form>
                         </div>
-                        <button type="submit" class="btn btn-primary" :disabled="loading">
-                            <i class="fas fa-search"></i>
-                            <span x-text="loading ? 'Analyzing...' : 'Analyze Question'"></span>
-                        </button>
-                    </form>
+                    </div>
                 </div>
 
                 <!-- Text Analysis Tab -->
