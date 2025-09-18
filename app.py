@@ -1,5 +1,5 @@
 # Fixed Flask App with All Analysis Features
-from flask import Flask, request, jsonify, render_template, session
+from flask import Flask, request, jsonify, render_template, session, send_from_directory
 from flask_cors import CORS
 import logging
 from datetime import datetime, timedelta
@@ -8,7 +8,8 @@ import uuid
 import os
 import tempfile
 
-app = Flask(__name__)
+# Configure Flask to look for templates in current directory
+app = Flask(__name__, template_folder='.')
 app.secret_key = os.environ.get('SECRET_KEY', 'your-secret-key-here')
 CORS(app)
 
