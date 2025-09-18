@@ -809,9 +809,9 @@
                                     <h3>Social Media Scanner</h3>
                                     <p>Scan Reddit, YouTube, and Twitter for trends</p>
                                </div>
-                     </div>
-                     <div class="chat-body">
-                         <form @submit.prevent="analyzeSocial()">
+                          </div>
+                          <div class="chat-body">
+                            <form @submit.prevent="analyzeSocial()">
                               <div style="position: relative; margin-bottom: 30px;">
                                   <div class="chat-textarea-label">What topic should we scan for?</div>
                                   <input type="text" class="chat-textarea" style="min-height: auto; padding: 20px;" 
@@ -843,10 +843,10 @@
                                       <span x-text="loading ? 'Scanning...' : 'Scan Social Media'"></span>
                                   </button>
                               </div>
-                          </form>
-                      </div>
-                  </div>
-              </div>
+                            </form>
+                          </div>
+                     </div>
+                </div>
 
                 <div x-show="activeTab === 'text'" class="tab-content">
                     <form @submit.prevent="analyzeText()">
