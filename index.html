@@ -800,28 +800,53 @@
                 </div>
 
                 <div x-show="activeTab === 'social'" class="tab-content">
-                    <form @submit.prevent="analyzeSocial()">
-                        <div class="form-group">
-                            <label>Search Query</label>
-                            <input type="text" class="form-control" x-model="forms.social.query" 
-                                   placeholder="e.g., Tesla Model 3, iPhone 15, climate change" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Select Platforms</label>
-                            <div class="platform-selector">
-                                <div class="platform-chip" :class="{ selected: forms.social.platforms.includes('reddit') }" @click="togglePlatform('reddit')">Reddit</div>
-                                <div class="platform-chip" :class="{ selected: forms.social.platforms.includes('youtube') }" @click="togglePlatform('youtube')">YouTube</div>
-                                <div class="platform-chip" :class="{ selected: forms.social.platforms.includes('twitter') }" @click="togglePlatform('twitter')">Twitter</div>
-                            </div>
-                        </div>
+                     <div class="chat-interface">
+                          <div class="chat-header">
+                               <div class="chat-header-icon">
+                                    <i class="fas fa-share-alt"></i>
+                               </div>
+                               <div>
+                                    <h3>Social Media Scanner</h3>
+                                    <p>Scan Reddit, YouTube, and Twitter for trends</p>
+                               </div>
+                     </div>
+                     <div class="chat-body">
+                         <form @submit.prevent="analyzeSocial()">
+                              <div style="position: relative; margin-bottom: 30px;">
+                                  <div class="chat-textarea-label">What topic should we scan for?</div>
+                                  <input type="text" class="chat-textarea" style="min-height: auto; padding: 20px;" 
+                                         x-model="forms.social.query" 
+                                         placeholder="e.g., Tesla Model 3, iPhone 15, climate change" required>
+                              </div>
+                
+                              <div class="form-group">
+                                  <label>Select Platforms</label>
+                                  <div class="platform-selector">
+                                      <div class="platform-chip" :class="{ selected: forms.social.platforms.includes('reddit') }" 
+                                           @click="togglePlatform('reddit')">Reddit</div>
+                                      <div class="platform-chip" :class="{ selected: forms.social.platforms.includes('youtube') }" 
+                                           @click="togglePlatform('youtube')">YouTube</div>
+                                      <div class="platform-chip" :class="{ selected: forms.social.platforms.includes('twitter') }" 
+                                           @click="togglePlatform('twitter')">Twitter</div>
+                                  </div>
+                              </div>
 
-                        <button type="submit" class="btn btn-primary" :disabled="loading">
-                            <i class="fas fa-search"></i>
-                            <span x-text="loading ? 'Scanning...' : 'Scan Social Media'"></span>
-                        </button>
-                    </form>
-                </div>
+                              <div class="chat-submit-container">
+                                  <div class="chat-features">
+                                      <div class="chat-feature">
+                                          <i class="fas fa-search"></i>
+                                          <span>Multi-Platform Scan</span>
+                                      </div>
+                                  </div>
+                                  <button type="submit" class="chat-submit-btn" :disabled="loading">
+                                      <i class="fas fa-search"></i>
+                                      <span x-text="loading ? 'Scanning...' : 'Scan Social Media'"></span>
+                                  </button>
+                              </div>
+                          </form>
+                      </div>
+                  </div>
+              </div>
 
                 <div x-show="activeTab === 'text'" class="tab-content">
                     <form @submit.prevent="analyzeText()">
