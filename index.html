@@ -946,68 +946,6 @@
             <h1>AI-Powered Business Intelligence</h1>
             <p>Transform your data into actionable insights with our advanced AI analytics platform. Make smarter decisions with real-time analysis and predictive intelligence.</p>
             
-            <!-- Professional Image Carousel -->
-            <div class="image-carousel" x-data="carousel()">
-                <div class="carousel-container">
-                    <div class="carousel-track" :style="`transform: translateX(-${currentSlide * 100}%)`">
-                        <!-- Replace these URLs with your actual image URLs -->
-                        <div class="carousel-slide">
-                            <img src="static/images/Dashboard.jpg" alt="AI Analytics Dashboard" loading="lazy">
-                            <div class="slide-overlay">
-                                <h3>AI Analytics Dashboard</h3>
-                                <p>Real-time data visualization and insights</p>
-                            </div>
-                        </div>
-                        <div class="carousel-slide">
-                            <img src="static/images/dashboard th (1).jpg" alt="Business Intelligence Reports" loading="lazy">
-                            <div class="slide-overlay">
-                                <h3>Smart Business Reports</h3>
-                                <p>Automated report generation and analysis</p>
-                            </div>
-                        </div>
-                        <div class="carousel-slide">
-                            <img src="https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?w=800&h=500&fit=crop&crop=center" alt="Data Analysis" loading="lazy">
-                            <div class="slide-overlay">
-                                <h3>Advanced Data Analysis</h3>
-                                <p>Machine learning powered insights</p>
-                            </div>
-                        </div>
-                        <div class="carousel-slide">
-                            <img src="https://images.unsplash.com/photo-1551434678-e076c223a692?w=800&h=500&fit=crop&crop=center" alt="Market Trends" loading="lazy">
-                            <div class="slide-overlay">
-                                <h3>Market Trend Analysis</h3>
-                                <p>Predict market movements with AI</p>
-                            </div>
-                        </div>
-                        <div class="carousel-slide">
-                            <img src="https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=800&h=500&fit=crop&crop=center" alt="Document Processing" loading="lazy">
-                            <div class="slide-overlay">
-                                <h3>Document Intelligence</h3>
-                                <p>Extract insights from any document</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Navigation Dots -->
-                    <div class="carousel-dots">
-                        <template x-for="(slide, index) in 5" :key="index">
-                            <button class="carousel-dot" 
-                                    :class="{ active: currentSlide === index }"
-                                    @click="goToSlide(index)">
-                            </button>
-                        </template>
-                    </div>
-                    
-                    <!-- Navigation Arrows -->
-                    <button class="carousel-nav prev" @click="prevSlide()">
-                        <i class="fas fa-chevron-left"></i>
-                    </button>
-                    <button class="carousel-nav next" @click="nextSlide()">
-                        <i class="fas fa-chevron-right"></i>
-                    </button>
-                </div>
-            </div>
-            
             <div class="hero-features">
                 <div class="hero-feature">
                     <i class="fas fa-robot"></i>
@@ -1659,46 +1597,6 @@
                     setTimeout(() => {
                         this.message = '';
                     }, 5000);
-                }
-            }
-        }
-
-        // Carousel Component
-        function carousel() {
-            return {
-                currentSlide: 0,
-                totalSlides: 5,
-                autoPlayInterval: null,
-
-                init() {
-                    this.startAutoPlay();
-                },
-
-                startAutoPlay() {
-                    this.autoPlayInterval = setInterval(() => {
-                        this.nextSlide();
-                    }, 4000); // Change slide every 4 seconds
-                },
-
-                stopAutoPlay() {
-                    if (this.autoPlayInterval) {
-                        clearInterval(this.autoPlayInterval);
-                    }
-                },
-
-                nextSlide() {
-                    this.currentSlide = (this.currentSlide + 1) % this.totalSlides;
-                },
-
-                prevSlide() {
-                    this.currentSlide = this.currentSlide === 0 ? this.totalSlides - 1 : this.currentSlide - 1;
-                },
-
-                goToSlide(index) {
-                    this.currentSlide = index;
-                    // Restart auto-play when user manually navigates
-                    this.stopAutoPlay();
-                    setTimeout(() => this.startAutoPlay(), 2000);
                 }
             }
         }
