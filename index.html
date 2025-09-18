@@ -76,6 +76,7 @@
 
         .nav-btn:hover {
             background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
         }
 
         .hero {
@@ -101,6 +102,7 @@
             max-width: 800px;
             margin-left: auto;
             margin-right: auto;
+            line-height: 1.6;
         }
 
         .hero-features {
@@ -118,6 +120,12 @@
             padding: 12px 20px;
             border-radius: 25px;
             backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .hero-feature:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
         }
 
         .auth-container {
@@ -140,6 +148,11 @@
             font-size: 2rem;
             font-weight: 700;
             margin-bottom: 10px;
+        }
+
+        .auth-header p {
+            color: #666;
+            font-size: 1rem;
         }
 
         .main-app {
@@ -185,6 +198,11 @@
             padding: 30px;
             border-radius: 20px;
             text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
         }
 
         .stat-icon {
@@ -195,6 +213,7 @@
         .stat-value {
             font-size: 2.2rem;
             font-weight: bold;
+            margin-bottom: 10px;
         }
 
         .analysis-section {
@@ -210,6 +229,12 @@
             font-size: 2.5rem;
             font-weight: 700;
             color: #333;
+            margin-bottom: 10px;
+        }
+
+        .section-header p {
+            color: #666;
+            font-size: 1.1rem;
         }
 
         .analysis-tabs {
@@ -230,14 +255,18 @@
             flex-direction: column;
             justify-content: space-between;
             color: white;
+            border: 2px solid transparent;
         }
 
         .tab-card:hover {
             transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(138, 43, 226, 0.3);
         }
 
         .tab-card.active {
             transform: translateY(-8px);
+            border-color: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 15px 35px rgba(138, 43, 226, 0.4);
         }
 
         .tab-icon {
@@ -261,17 +290,24 @@
         }
 
         .tab-description {
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             text-align: center;
             opacity: 0.9;
+            line-height: 1.4;
         }
 
         .tab-content {
             display: none;
+            animation: fadeIn 0.3s ease;
         }
 
         .tab-content.active {
             display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .chat-interface {
@@ -279,6 +315,7 @@
             border-radius: 25px;
             margin-top: 30px;
             overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
         }
 
         .chat-header {
@@ -301,6 +338,15 @@
             font-size: 1.5rem;
         }
 
+        .chat-header h3 {
+            margin-bottom: 5px;
+        }
+
+        .chat-header p {
+            opacity: 0.9;
+            font-size: 0.95rem;
+        }
+
         .chat-body {
             padding: 40px;
         }
@@ -314,11 +360,13 @@
             font-size: 16px;
             font-family: inherit;
             resize: vertical;
+            transition: all 0.3s ease;
         }
 
         .chat-textarea:focus {
             outline: none;
             border-color: #8a2be2;
+            box-shadow: 0 0 0 3px rgba(138, 43, 226, 0.1);
         }
 
         .chat-textarea-label {
@@ -330,6 +378,7 @@
             padding: 10px 20px;
             font-weight: 600;
             border-radius: 25px;
+            font-size: 0.9rem;
         }
 
         .chat-suggestions {
@@ -347,11 +396,14 @@
             cursor: pointer;
             color: #8a2be2;
             font-weight: 500;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
         }
 
         .suggestion-chip:hover {
             background: #8a2be2;
             color: white;
+            transform: translateY(-2px);
         }
 
         .chat-input-row {
@@ -366,11 +418,13 @@
             border: 2px solid rgba(138, 43, 226, 0.2);
             border-radius: 18px;
             font-size: 16px;
+            transition: all 0.3s ease;
         }
 
         .chat-input-row input:focus {
             outline: none;
             border-color: #8a2be2;
+            box-shadow: 0 0 0 3px rgba(138, 43, 226, 0.1);
         }
 
         .chat-submit-container {
@@ -392,6 +446,18 @@
             display: flex;
             align-items: center;
             gap: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .chat-submit-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(138, 43, 226, 0.3);
+        }
+
+        .chat-submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
         }
 
         .chat-features {
@@ -425,15 +491,18 @@
             border: 2px solid #e9ecef;
             border-radius: 15px;
             font-size: 16px;
+            transition: all 0.3s ease;
         }
 
         .form-control:focus {
             outline: none;
             border-color: #8a2be2;
+            box-shadow: 0 0 0 3px rgba(138, 43, 226, 0.1);
         }
 
         textarea.form-control {
             min-height: 120px;
+            resize: vertical;
         }
 
         .file-upload-area {
@@ -443,10 +512,17 @@
             text-align: center;
             cursor: pointer;
             background: white;
+            transition: all 0.3s ease;
         }
 
         .file-upload-area:hover {
             border-color: #8a2be2;
+            background: rgba(138, 43, 226, 0.02);
+        }
+
+        .file-upload-area.dragover {
+            border-color: #8a2be2;
+            background: rgba(138, 43, 226, 0.05);
         }
 
         .file-upload-icon {
@@ -465,6 +541,7 @@
             display: inline-flex;
             align-items: center;
             gap: 10px;
+            transition: all 0.3s ease;
         }
 
         .btn-primary {
@@ -472,9 +549,15 @@
             color: white;
         }
 
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(138, 43, 226, 0.3);
+        }
+
         .btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
+            transform: none;
         }
 
         .results-container {
@@ -483,6 +566,13 @@
             border-radius: 20px;
             padding: 40px;
             border-left: 5px solid #8a2be2;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .results-header {
@@ -499,6 +589,12 @@
             padding: 25px;
             margin-bottom: 20px;
             border-left: 4px solid #8a2be2;
+            transition: all 0.3s ease;
+        }
+
+        .insight-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
         }
 
         .insight-card h4 {
@@ -507,6 +603,22 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            font-size: 1.1rem;
+        }
+
+        .insight-card p {
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .insight-card ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+
+        .insight-card li {
+            margin-bottom: 8px;
+            line-height: 1.5;
         }
 
         .loading {
@@ -537,6 +649,12 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .error {
@@ -559,11 +677,17 @@
         .platform-chip {
             background: rgba(138, 43, 226, 0.1);
             border: 2px solid rgba(138, 43, 226, 0.2);
-            padding: 8px 15px;
+            padding: 12px 15px;
             border-radius: 20px;
             text-align: center;
             cursor: pointer;
             font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .platform-chip:hover {
+            background: rgba(138, 43, 226, 0.2);
         }
 
         .platform-chip.selected {
@@ -575,14 +699,79 @@
             .analysis-tabs {
                 grid-template-columns: repeat(3, 1fr);
             }
+            
+            .hero h1 {
+                font-size: 3rem;
+            }
         }
 
         @media (max-width: 768px) {
             .analysis-tabs {
                 grid-template-columns: 1fr;
             }
+            
             .chat-input-row {
                 flex-direction: column;
+            }
+            
+            .chat-submit-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .chat-features {
+                justify-content: center;
+                margin-bottom: 20px;
+            }
+            
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .hero p {
+                font-size: 1.1rem;
+            }
+            
+            .hero-features {
+                gap: 15px;
+            }
+            
+            .hero-feature {
+                font-size: 0.9rem;
+            }
+            
+            .auth-container {
+                padding: 30px;
+            }
+            
+            .main-app {
+                padding: 25px;
+            }
+            
+            .user-info {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .navbar {
+                padding: 10px 20px;
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .logo {
+                font-size: 1.3rem;
+            }
+            
+            .usage-stats {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -596,10 +785,10 @@
             <span>Market Trend Summarizer</span>
         </div>
         <div class="nav-actions">
-            <button class="nav-btn" @click="clearCache()">
+            <button class="nav-btn" @click="clearCache()" title="Clear Cache">
                 <i class="fas fa-trash"></i>
             </button>
-            <button class="nav-btn" @click="logout()">
+            <button class="nav-btn" @click="logout()" title="Logout">
                 <i class="fas fa-sign-out-alt"></i>
             </button>
         </div>
@@ -652,7 +841,7 @@
                 </form>
                 <p style="text-align: center; margin-top: 25px;">
                     Don't have an account? 
-                    <a href="#" @click="authMode = 'signup'" style="color: #8a2be2;">Create Account</a>
+                    <a href="#" @click="authMode = 'signup'" style="color: #8a2be2; text-decoration: none;">Create Account</a>
                 </p>
             </div>
 
@@ -677,7 +866,7 @@
                 </form>
                 <p style="text-align: center; margin-top: 25px;">
                     Already have an account? 
-                    <a href="#" @click="authMode = 'login'" style="color: #8a2be2;">Sign In</a>
+                    <a href="#" @click="authMode = 'login'" style="color: #8a2be2; text-decoration: none;">Sign In</a>
                 </p>
             </div>
 
@@ -721,27 +910,27 @@
 
                 <div class="analysis-tabs">
                     <div class="tab-card" :class="{ active: activeTab === 'comprehensive' }" @click="activeTab = 'comprehensive'">
-                        <i class="fas fa-brain tab-icon"></i>
+                        <div class="tab-icon"><i class="fas fa-brain"></i></div>
                         <div class="tab-title">Comprehensive Analysis</div>
                         <div class="tab-description">Full market analysis with sentiment, mentions, and hashtag suggestions.</div>
                     </div>
                     <div class="tab-card" :class="{ active: activeTab === 'social' }" @click="activeTab = 'social'">
-                        <i class="fas fa-share-alt tab-icon"></i>
+                        <div class="tab-icon"><i class="fas fa-share-alt"></i></div>
                         <div class="tab-title">Social Media Scan</div>
                         <div class="tab-description">Scan Reddit, YouTube, and Twitter for trending topics.</div>
                     </div>
                     <div class="tab-card" :class="{ active: activeTab === 'text' }" @click="activeTab = 'text'">
-                        <i class="fas fa-file-text tab-icon"></i>
+                        <div class="tab-icon"><i class="fas fa-file-text"></i></div>
                         <div class="tab-title">Text Analysis</div>
                         <div class="tab-description">Analyze text content for trends and sentiment.</div>
                     </div>
                     <div class="tab-card" :class="{ active: activeTab === 'url' }" @click="activeTab = 'url'">
-                        <i class="fas fa-globe tab-icon"></i>
+                        <div class="tab-icon"><i class="fas fa-globe"></i></div>
                         <div class="tab-title">URL Analysis</div>
                         <div class="tab-description">Extract and analyze content from websites.</div>
                     </div>
                     <div class="tab-card" :class="{ active: activeTab === 'file' }" @click="activeTab = 'file'">
-                        <i class="fas fa-cloud-upload-alt tab-icon"></i>
+                        <div class="tab-icon"><i class="fas fa-cloud-upload-alt"></i></div>
                         <div class="tab-title">Document Analysis</div>
                         <div class="tab-description">Upload and analyze documents and files.</div>
                     </div>
@@ -944,7 +1133,9 @@
                         <div class="chat-body">
                             <form @submit.prevent="analyzeFile()">
                                 <div class="form-group">
-                                    <div class="file-upload-area" @click="$refs.fileInput.click()" @drop.prevent="handleFileDrop" @dragover.prevent>
+                                    <div class="file-upload-area" @click="$refs.fileInput.click()" 
+                                         @drop.prevent="handleFileDrop" @dragover.prevent="handleDragOver"
+                                         @dragleave.prevent="handleDragLeave">
                                         <div class="file-upload-icon">
                                             <i class="fas fa-cloud-upload-alt"></i>
                                         </div>
@@ -1021,6 +1212,20 @@
                         <div x-html="formatInsights(results.recommendations)"></div>
                     </div>
                 </template>
+
+                <template x-if="results.sentiment">
+                    <div class="insight-card">
+                        <h4><i class="fas fa-heart"></i> Sentiment Analysis</h4>
+                        <p x-text="results.sentiment"></p>
+                    </div>
+                </template>
+
+                <template x-if="results.hashtags">
+                    <div class="insight-card">
+                        <h4><i class="fas fa-hashtag"></i> Suggested Hashtags</h4>
+                        <div x-html="formatHashtags(results.hashtags)"></div>
+                    </div>
+                </template>
             </div>
         </div>
     </div>
@@ -1073,6 +1278,8 @@
                         }
                     } catch (error) {
                         console.error('Session validation error:', error);
+                        localStorage.removeItem('sessionId');
+                        this.sessionId = '';
                     }
                 },
 
@@ -1095,6 +1302,7 @@
                             this.isAuthenticated = true;
                             localStorage.setItem('sessionId', this.sessionId);
                             this.showMessage('Welcome! Login successful.', 'success');
+                            this.resetCredentials();
                         } else {
                             this.showMessage(data.error || 'Login failed', 'error');
                         }
@@ -1124,6 +1332,7 @@
                             this.isAuthenticated = true;
                             localStorage.setItem('sessionId', this.sessionId);
                             this.showMessage('Account created successfully!', 'success');
+                            this.resetCredentials();
                         } else {
                             this.showMessage(data.error || 'Signup failed', 'error');
                         }
@@ -1149,6 +1358,7 @@
                     this.sessionId = '';
                     this.user = null;
                     this.results = null;
+                    this.resetForms();
                     localStorage.removeItem('sessionId');
                     this.showMessage('Logged out successfully', 'success');
                 },
@@ -1157,12 +1367,18 @@
                     await this.makeApiCall('/api/analyze/comprehensive', {
                         session_id: this.sessionId,
                         text: this.forms.comprehensive.text,
-                        url: this.forms.comprehensive.url,
-                        brands_list: this.forms.comprehensive.brands.split(',').map(b => b.trim()).filter(b => b)
+                        url: this.forms.comprehensive.url || null,
+                        brands_list: this.forms.comprehensive.brands ? 
+                            this.forms.comprehensive.brands.split(',').map(b => b.trim()).filter(b => b) : []
                     });
                 },
 
                 async analyzeSocial() {
+                    if (this.forms.social.platforms.length === 0) {
+                        this.showMessage('Please select at least one platform', 'error');
+                        return;
+                    }
+                    
                     await this.makeApiCall('/api/analyze/social', {
                         session_id: this.sessionId,
                         query: this.forms.social.query,
@@ -1174,7 +1390,7 @@
                     await this.makeApiCall('/api/analyze/text', {
                         session_id: this.sessionId,
                         text: this.forms.text.text,
-                        question: this.forms.text.question
+                        question: this.forms.text.question || null
                     });
                 },
 
@@ -1182,11 +1398,16 @@
                     await this.makeApiCall('/api/analyze/url', {
                         session_id: this.sessionId,
                         url: this.forms.url.url,
-                        question: this.forms.url.question
+                        question: this.forms.url.question || null
                     });
                 },
 
                 async analyzeFile() {
+                    if (!this.forms.file.file) {
+                        this.showMessage('Please select a file', 'error');
+                        return;
+                    }
+
                     this.loading = true;
                     this.message = '';
                     this.results = null;
@@ -1195,7 +1416,9 @@
                         const formData = new FormData();
                         formData.append('session_id', this.sessionId);
                         formData.append('file', this.forms.file.file);
-                        formData.append('question', this.forms.file.question);
+                        if (this.forms.file.question) {
+                            formData.append('question', this.forms.file.question);
+                        }
 
                         const response = await fetch(`${this.apiBase}/api/analyze/file`, {
                             method: 'POST',
@@ -1207,6 +1430,7 @@
                         if (response.ok) {
                             this.results = data;
                             await this.refreshUserInfo();
+                            this.showMessage('Analysis completed successfully!', 'success');
                         } else {
                             this.showMessage(data.error || 'Analysis failed', 'error');
                         }
@@ -1234,6 +1458,7 @@
                         if (response.ok) {
                             this.results = responseData;
                             await this.refreshUserInfo();
+                            this.showMessage('Analysis completed successfully!', 'success');
                         } else {
                             this.showMessage(responseData.error || 'Analysis failed', 'error');
                         }
@@ -1271,6 +1496,8 @@
 
                         if (response.ok) {
                             this.showMessage('Cache cleared successfully', 'success');
+                        } else {
+                            this.showMessage('Failed to clear cache', 'error');
                         }
                     } catch (error) {
                         this.showMessage('Failed to clear cache', 'error');
@@ -1292,6 +1519,7 @@
                     if (file) {
                         if (file.size > 16 * 1024 * 1024) {
                             this.showMessage('File too large. Maximum size is 16MB.', 'error');
+                            event.target.value = '';
                             return;
                         }
                         this.forms.file.file = file;
@@ -1299,6 +1527,7 @@
                 },
 
                 handleFileDrop(event) {
+                    event.target.classList.remove('dragover');
                     const files = event.dataTransfer.files;
                     if (files.length > 0) {
                         const file = files[0];
@@ -1310,11 +1539,46 @@
                     }
                 },
 
+                handleDragOver(event) {
+                    event.target.classList.add('dragover');
+                },
+
+                handleDragLeave(event) {
+                    event.target.classList.remove('dragover');
+                },
+
                 formatInsights(insights) {
                     if (Array.isArray(insights)) {
-                        return '<ul>' + insights.map(insight => `<li>${insight}</li>`).join('') + '</ul>';
+                        return '<ul>' + insights.map(insight => `<li>${this.escapeHtml(insight)}</li>`).join('') + '</ul>';
                     }
-                    return insights;
+                    return this.escapeHtml(insights);
+                },
+
+                formatHashtags(hashtags) {
+                    if (Array.isArray(hashtags)) {
+                        return hashtags.map(tag => `<span style="background: rgba(138, 43, 226, 0.1); color: #8a2be2; padding: 4px 8px; border-radius: 12px; margin: 2px; display: inline-block; font-size: 0.9rem;">#${this.escapeHtml(tag)}</span>`).join(' ');
+                    }
+                    return this.escapeHtml(hashtags);
+                },
+
+                escapeHtml(text) {
+                    const div = document.createElement('div');
+                    div.textContent = text;
+                    return div.innerHTML;
+                },
+
+                resetCredentials() {
+                    this.credentials = { email: '', password: '' };
+                },
+
+                resetForms() {
+                    this.forms = {
+                        comprehensive: { text: '', url: '', brands: '' },
+                        social: { query: '', platforms: ['reddit'] },
+                        text: { text: '', question: '' },
+                        url: { url: '', question: '' },
+                        file: { file: null, question: '' }
+                    };
                 },
 
                 showMessage(text, type) {
