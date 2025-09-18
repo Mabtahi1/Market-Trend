@@ -175,6 +175,88 @@ def validate_session():
         logger.error(f"Session validation error: {str(e)}")
         return jsonify({'valid': False, 'error': 'Validation failed'}), 500
 
+@app.route('/api/analyze/comprehensive', methods=['POST'])
+def api_comprehensive_analysis():
+    """Comprehensive trend analysis with all features"""
+    try:
+        data = request.get_json()
+        session_id = data.get('session_id')
+        text = data.get('text', '')
+        url = data.get('url', '')
+        social_platforms = data.get('social_platforms', [])
+        brands_list = data.get('brands_list', [])
+        
+        # Validate session
+        if session_id not in user_sessions:
+            return jsonify({'error': 'Invalid session'}), 401
+        
+        session_data = user_sessions[session_id]
+        email = session_data['email']
+        
+        # Check usage limits
+        can_use, message = check_usage_limits(email, "summary")
+        if not can_use:
+            return jsonify({'error': message, 'upgrade_required': True}), 429
+        
+        # If URL provided, fetch content first
+        if url and not text:
+            try:
+                response = requests.get(url, timeout=10)
+                text = response.text[:10000]  # Limit text length
+            except:
+                return jsonify({'error': 'Could not fetch URL content'}), 400
+        
+        if not text:
+            return jsonify({'error': 'Text content or URL is required'}), 400
+        
+        # Perform comprehensive analysis
+        result = analyze_comprehensive_trend(text, url, social_platforms)
+        
+        # Increment usage
+        increment_usage(email, "summary")
+        
+        # Update session user info
+        session_data['user_info'] = get_user_info(email)
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        logger.error(f"Comprehensive analysis error: {str(e)}")
+        return jsonify({'error': 'Analysis failed'}), 500
+
+@app.route('/api/analyze/social', methods=['POST'])
+def api_social_analysis():
+    """Analyze social media content"""
+    try:
+        data = request.get_json()
+        session_id = data.get('session_id')
+        platforms = data.get('platforms', ['reddit'])
+        query = data.get('query', '')
+        
+        # Validate session
+        if session_id not in user_sessions:
+            return jsonify({'error': 'Invalid session'}), 401
+        
+        if not query:
+            return jsonify({'error': 'Search query is required'}), 400
+        
+        results = {}
+        
+        if 'reddit' in platforms:
+            subreddits = ['technology', 'business', 'marketing']  # Default subreddits
+            reddit_data = scan_reddit_content(subreddits, query)
+            results['reddit'] = reddit_data
+        
+        # Add other platforms here (YouTube, Twitter, etc.)
+        
+        return jsonify(results)
+        
+    except Exception as e:
+        logger.error(f"Social analysis error: {str(e)}")
+        return jsonify({'error': 'Social analysis failed'}), 500
+
+
+
 # Analysis endpoints
 @app.route('/api/analyze/question', methods=['POST'])
 def api_analyze_question():
