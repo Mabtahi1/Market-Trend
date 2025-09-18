@@ -59,19 +59,62 @@ except Exception as e:
     APP2_AVAILABLE = False
     logger.error(f"Error importing from app2.py: {e}")
 
-# Firebase/Database functions (placeholder - you'll need to implement based on your setup)
+# Firebase/Database functions - restore your original Firebase integration
+try:
+    import pyrebase
+    
+    firebase_config = {
+        "apiKey": "AIzaSyDt6y7YRFVF_zrMTYPn4z4ViHjLbmfMsLQ",
+        "authDomain": "trend-summarizer-6f28e.firebaseapp.com",
+        "projectId": "trend-summarizer-6f28e",
+        "storageBucket": "trend-summarizer-6f28e.firebasestorage.app",
+        "messagingSenderId": "655575726457",
+        "databaseURL": "https://trend-summarizer-6f28e-default-rtdb.firebaseio.com",
+        "appId": "1:655575726457:web:9ae1d0d363c804edc9d7a8",
+        "measurementId": "G-HHY482GQKZ"
+    }
+    
+    firebase = pyrebase.initialize_app(firebase_config)
+    auth_fb = firebase.auth()
+    db = firebase.database()
+    FIREBASE_AVAILABLE = True
+    logger.info("Firebase initialized successfully")
+    
+except ImportError:
+    FIREBASE_AVAILABLE = False
+    logger.warning("Firebase/pyrebase not available")
+except Exception as e:
+    FIREBASE_AVAILABLE = False
+    logger.error(f"Firebase initialization error: {e}")
+
 def get_user_info(email):
-    """Get user information from database"""
+    """Get user information from Firebase database"""
     try:
-        # Replace this with your actual Firebase/database implementation
-        # For now, return a default user structure
-        return {
-            "email": email,
-            "subscription_type": "Free Plan",
-            "usage_limits": {"summaries_per_month": 10, "analyses_per_month": 5},
-            "current_usage": {"summaries_this_month": 0, "analyses_this_month": 0}
-        }
-    except:
+        if FIREBASE_AVAILABLE:
+            user_key = email.replace(".", "_")
+            user_data = db.child("users").child(user_key).get().val()
+            if user_data:
+                return user_data
+            else:
+                # Create default user data if not exists
+                default_data = {
+                    "email": email,
+                    "subscription_type": "Free Plan",
+                    "usage_limits": {"summaries_per_month": 10, "analyses_per_month": 5},
+                    "current_usage": {"summaries_this_month": 0, "analyses_this_month": 0}
+                }
+                db.child("users").child(user_key).set(default_data)
+                return default_data
+        else:
+            # Fallback when Firebase not available
+            return {
+                "email": email,
+                "subscription_type": "Free Plan",
+                "usage_limits": {"summaries_per_month": 10, "analyses_per_month": 5},
+                "current_usage": {"summaries_this_month": 0, "analyses_this_month": 0}
+            }
+    except Exception as e:
+        logger.error(f"Error getting user info: {e}")
         return None
 
 def check_usage_limits(email, action_type="summary"):
