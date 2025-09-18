@@ -1104,6 +1104,44 @@ def create_mock_social_data(query):
         logger.error(f"Error creating mock social data: {e}")
         return []
 
+# Original website routes (adding back the missing routes)
+@app.route('/')
+@app.route('/index')
+def hello():
+    return render_template('index.html')
+
+@app.route('/contact')
+def contact():
+    return render_template('contact.html')
+
+@app.route('/about')
+def about():
+    return render_template('about.html')
+
+@app.route('/TrendSummarizer')
+def TrendSummarizer():
+    return render_template('TrendSummarizer.html')
+
+@app.route('/DataHelp')
+def DataHelp():
+    return render_template('DataHelp.html')
+
+@app.route('/signin')
+def signin():
+    return render_template('signin.html')
+
+@app.route('/signup')
+def signup():
+    return render_template('signup.html')
+
+@app.route('/tools')
+def tools():
+    if not is_logged_in():
+        return redirect('/signin')
+    
+    user_info = get_user_info(session['user_email'])
+    return render_template('tools.html', user_info=user_info)
+
 @app.errorhandler(404)
 def not_found(error):
     return jsonify({'error': 'Not found'}), 404
