@@ -800,123 +800,187 @@
                 </div>
 
                 <div x-show="activeTab === 'social'" class="tab-content">
-                     <div class="chat-interface">
-                          <div class="chat-header">
-                               <div class="chat-header-icon">
-                                    <i class="fas fa-share-alt"></i>
-                               </div>
-                               <div>
-                                    <h3>Social Media Scanner</h3>
-                                    <p>Scan Reddit, YouTube, and Twitter for trends</p>
-                               </div>
-                          </div>
-                          <div class="chat-body">
+                    <div class="chat-interface">
+                        <div class="chat-header">
+                            <div class="chat-header-icon">
+                                <i class="fas fa-share-alt"></i>
+                            </div>
+                            <div>
+                                <h3>Social Media Scanner</h3>
+                                <p>Scan Reddit, YouTube, and Twitter for trends</p>
+                            </div>
+                        </div>
+                        <div class="chat-body">
                             <form @submit.prevent="analyzeSocial()">
-                              <div style="position: relative; margin-bottom: 30px;">
-                                  <div class="chat-textarea-label">What topic should we scan for?</div>
-                                  <input type="text" class="chat-textarea" style="min-height: auto; padding: 20px;" 
-                                         x-model="forms.social.query" 
-                                         placeholder="e.g., Tesla Model 3, iPhone 15, climate change" required>
-                              </div>
-                
-                              <div class="form-group">
-                                  <label>Select Platforms</label>
-                                  <div class="platform-selector">
-                                      <div class="platform-chip" :class="{ selected: forms.social.platforms.includes('reddit') }" 
-                                           @click="togglePlatform('reddit')">Reddit</div>
-                                      <div class="platform-chip" :class="{ selected: forms.social.platforms.includes('youtube') }" 
-                                           @click="togglePlatform('youtube')">YouTube</div>
-                                      <div class="platform-chip" :class="{ selected: forms.social.platforms.includes('twitter') }" 
-                                           @click="togglePlatform('twitter')">Twitter</div>
-                                  </div>
-                              </div>
+                                <div style="position: relative; margin-bottom: 30px;">
+                                    <div class="chat-textarea-label">What topic should we scan for?</div>
+                                    <input type="text" class="chat-textarea" style="min-height: auto; padding: 20px;" 
+                                           x-model="forms.social.query" 
+                                           placeholder="e.g., Tesla Model 3, iPhone 15, climate change" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>Select Platforms</label>
+                                    <div class="platform-selector">
+                                        <div class="platform-chip" :class="{ selected: forms.social.platforms.includes('reddit') }" 
+                                             @click="togglePlatform('reddit')">Reddit</div>
+                                        <div class="platform-chip" :class="{ selected: forms.social.platforms.includes('youtube') }" 
+                                             @click="togglePlatform('youtube')">YouTube</div>
+                                        <div class="platform-chip" :class="{ selected: forms.social.platforms.includes('twitter') }" 
+                                             @click="togglePlatform('twitter')">Twitter</div>
+                                    </div>
+                                </div>
 
-                              <div class="chat-submit-container">
-                                  <div class="chat-features">
-                                      <div class="chat-feature">
-                                          <i class="fas fa-search"></i>
-                                          <span>Multi-Platform Scan</span>
-                                      </div>
-                                  </div>
-                                  <button type="submit" class="chat-submit-btn" :disabled="loading">
-                                      <i class="fas fa-search"></i>
-                                      <span x-text="loading ? 'Scanning...' : 'Scan Social Media'"></span>
-                                  </button>
-                              </div>
+                                <div class="chat-submit-container">
+                                    <div class="chat-features">
+                                        <div class="chat-feature">
+                                            <i class="fas fa-search"></i>
+                                            <span>Multi-Platform Scan</span>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="chat-submit-btn" :disabled="loading">
+                                        <i class="fas fa-search"></i>
+                                        <span x-text="loading ? 'Scanning...' : 'Scan Social Media'"></span>
+                                    </button>
+                                </div>
                             </form>
-                          </div>
-                     </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div x-show="activeTab === 'text'" class="tab-content">
-                    <form @submit.prevent="analyzeText()">
-                        <div class="form-group">
-                            <label>Text Content</label>
-                            <textarea class="form-control" x-model="forms.text.text" 
-                                    placeholder="Paste your text content here for analysis..." required></textarea>
+                    <div class="chat-interface">
+                        <div class="chat-header">
+                            <div class="chat-header-icon">
+                                <i class="fas fa-file-text"></i>
+                            </div>
+                            <div>
+                                <h3>Text Analyzer</h3>
+                                <p>Analyze text content for trends and sentiment</p>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label>Analysis Focus (optional)</label>
-                            <input type="text" class="form-control" x-model="forms.text.question" 
-                                   placeholder="What specific insights would you like?">
+                        <div class="chat-body">
+                            <form @submit.prevent="analyzeText()">
+                                <div style="position: relative; margin-bottom: 30px;">
+                                    <div class="chat-textarea-label">Paste your text content here</div>
+                                    <textarea class="chat-textarea" x-model="forms.text.text" 
+                                            placeholder="Paste your text content here for analysis..." required></textarea>
+                                </div>
+                                
+                                <div class="chat-input-row">
+                                    <input type="text" x-model="forms.text.question" 
+                                           placeholder="Analysis focus (optional)">
+                                </div>
+
+                                <div class="chat-submit-container">
+                                    <div class="chat-features">
+                                        <div class="chat-feature">
+                                            <i class="fas fa-heart"></i>
+                                            <span>Sentiment Analysis</span>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="chat-submit-btn" :disabled="loading">
+                                        <i class="fas fa-search"></i>
+                                        <span x-text="loading ? 'Analyzing...' : 'Analyze Text'"></span>
+                                    </button>
+                                </div>
+                            </form>
                         </div>
-                        <button type="submit" class="btn btn-primary" :disabled="loading">
-                            <i class="fas fa-search"></i>
-                            <span x-text="loading ? 'Analyzing...' : 'Analyze Text'"></span>
-                        </button>
-                    </form>
+                    </div>
                 </div>
 
                 <div x-show="activeTab === 'url'" class="tab-content">
-                    <form @submit.prevent="analyzeUrl()">
-                        <div class="form-group">
-                            <label>Website URL</label>
-                            <input type="url" class="form-control" x-model="forms.url.
-                            <input type="url" class="form-control" x-model="forms.url.url" 
-                                   placeholder="https://example.com" required>
+                    <div class="chat-interface">
+                        <div class="chat-header">
+                            <div class="chat-header-icon">
+                                <i class="fas fa-globe"></i>
+                            </div>
+                            <div>
+                                <h3>URL Analyzer</h3>
+                                <p>Extract and analyze content from websites</p>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label>Analysis Focus (optional)</label>
-                            <input type="text" class="form-control" x-model="forms.url.question" 
-                                   placeholder="What information should we extract?">
+                        <div class="chat-body">
+                            <form @submit.prevent="analyzeUrl()">
+                                <div style="position: relative; margin-bottom: 30px;">
+                                    <div class="chat-textarea-label">Enter website URL</div>
+                                    <input type="url" class="chat-textarea" style="min-height: auto; padding: 20px;" 
+                                           x-model="forms.url.url" placeholder="https://example.com" required>
+                                </div>
+                                
+                                <div class="chat-input-row">
+                                    <input type="text" x-model="forms.url.question" 
+                                           placeholder="Analysis focus (optional)">
+                                </div>
+
+                                <div class="chat-submit-container">
+                                    <div class="chat-features">
+                                        <div class="chat-feature">
+                                            <i class="fas fa-link"></i>
+                                            <span>Content Extraction</span>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="chat-submit-btn" :disabled="loading">
+                                        <i class="fas fa-search"></i>
+                                        <span x-text="loading ? 'Analyzing...' : 'Analyze URL'"></span>
+                                    </button>
+                                </div>
+                            </form>
                         </div>
-                        <button type="submit" class="btn btn-primary" :disabled="loading">
-                            <i class="fas fa-search"></i>
-                            <span x-text="loading ? 'Analyzing...' : 'Analyze URL'"></span>
-                        </button>
-                    </form>
+                    </div>
                 </div>
 
                 <div x-show="activeTab === 'file'" class="tab-content">
-                    <form @submit.prevent="analyzeFile()">
-                        <div class="form-group">
-                            <label>Document Upload</label>
-                            <div class="file-upload-area" @click="$refs.fileInput.click()" @drop.prevent="handleFileDrop" @dragover.prevent>
-                                <div class="file-upload-icon">
-                                    <i class="fas fa-cloud-upload-alt"></i>
-                                </div>
-                                <p x-show="!forms.file.file">
-                                    <strong>Click to upload</strong> or drag and drop<br>
-                                    <small>PDF, DOCX, TXT, PNG, JPG (max 16MB)</small>
-                                </p>
-                                <p x-show="forms.file.file" style="color: #8a2be2;">
-                                    <i class="fas fa-check-circle"></i>
-                                    <span x-text="forms.file.file?.name"></span>
-                                </p>
-                                <input type="file" x-ref="fileInput" @change="handleFileSelect" 
-                                       accept=".pdf,.docx,.txt,.png,.jpg,.jpeg" style="display: none;">
+                    <div class="chat-interface">
+                        <div class="chat-header">
+                            <div class="chat-header-icon">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                            </div>
+                            <div>
+                                <h3>Document Analyzer</h3>
+                                <p>Upload and analyze documents and files</p>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label>Analysis Question (optional)</label>
-                            <input type="text" class="form-control" x-model="forms.file.question" 
-                                   placeholder="What insights should we extract?">
+                        <div class="chat-body">
+                            <form @submit.prevent="analyzeFile()">
+                                <div class="form-group">
+                                    <div class="file-upload-area" @click="$refs.fileInput.click()" @drop.prevent="handleFileDrop" @dragover.prevent>
+                                        <div class="file-upload-icon">
+                                            <i class="fas fa-cloud-upload-alt"></i>
+                                        </div>
+                                        <p x-show="!forms.file.file">
+                                            <strong>Click to upload</strong> or drag and drop<br>
+                                            <small>PDF, DOCX, TXT, PNG, JPG (max 16MB)</small>
+                                        </p>
+                                        <p x-show="forms.file.file" style="color: #8a2be2;">
+                                            <i class="fas fa-check-circle"></i>
+                                            <span x-text="forms.file.file?.name"></span>
+                                        </p>
+                                        <input type="file" x-ref="fileInput" @change="handleFileSelect" 
+                                               accept=".pdf,.docx,.txt,.png,.jpg,.jpeg" style="display: none;">
+                                    </div>
+                                </div>
+                                
+                                <div class="chat-input-row">
+                                    <input type="text" x-model="forms.file.question" 
+                                           placeholder="Analysis question (optional)">
+                                </div>
+
+                                <div class="chat-submit-container">
+                                    <div class="chat-features">
+                                        <div class="chat-feature">
+                                            <i class="fas fa-file-upload"></i>
+                                            <span>Document Processing</span>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="chat-submit-btn" :disabled="loading || !forms.file.file">
+                                        <i class="fas fa-search"></i>
+                                        <span x-text="loading ? 'Analyzing...' : 'Analyze Document'"></span>
+                                    </button>
+                                </div>
+                            </form>
                         </div>
-                        <button type="submit" class="btn btn-primary" :disabled="loading || !forms.file.file">
-                            <i class="fas fa-search"></i>
-                            <span x-text="loading ? 'Analyzing...' : 'Analyze Document'"></span>
-                        </button>
-                    </form>
+                    </div>
                 </div>
             </div>
 
@@ -1264,4 +1328,4 @@
         }
     </script>
 </body>
-</html>    
+</html>
