@@ -1000,68 +1000,109 @@ def api_clear_cache():
         logger.error(f"Cache clear error: {str(e)}")
         return jsonify({'error': 'Failed to clear cache'}), 500
 
-# Original website routes (your existing routes)
-@app.route('/')
-@app.route('/index')
-def hello():
-    return render_template('index.html')
-
-@app.route('/contact')
-def contact():
-    return render_template('contact.html')
-
-@app.route('/about')
-def about():
-    return render_template('about.html')
-
-@app.route('/TrendSummarizer')
-def TrendSummarizer():
-    return render_template('TrendSummarizer.html')
-
-@app.route('/DataHelp')
-def DataHelp():
-    return render_template('DataHelp.html')
-
-@app.route('/signin')
-def signin():
-    return render_template('signin.html')
-
-@app.route('/signup')
-def signup():
-    return render_template('signup.html')
-
-@app.route('/tools')
-def tools():
-    if not is_logged_in():
-        return redirect('/signin')
-    
-    user_info = get_user_info(session['user_email'])
-    return render_template('tools.html', user_info=user_info)
-
-# Authentication routes (matching your original system)
-@app.route('/api/login', methods=['POST'])
-def api_login():
+# Analysis functions (keeping these since they're needed for the new features)
+def analyze_sentiment(text):
     try:
-        data = request.get_json()
-        email = data.get('email')
-        password = data.get('password')
-        
-        # Your original Firebase authentication would go here
-        # For now, simple validation - you can replace this with your Firebase auth
-        if email and password:
-            session['user_email'] = email
-            user_info = get_user_info(email)
-            return jsonify({'success': True, 'user_info': user_info})
-        else:
-            return jsonify({'error': 'Invalid credentials'}), 401
+        if TEXTBLOB_AVAILABLE:
+            blob = TextBlob(text)
+            polarity = blob.sentiment.polarity
+            subjectivity = blob.sentiment.subjectivity
             
+            if polarity > 0.1:
+                sentiment = "Positive"
+            elif polarity < -0.1:
+                sentiment = "Negative"
+            else:
+                sentiment = "Neutral"
+                
+            return {
+                "sentiment": sentiment,
+                "polarity": round(polarity, 3),
+                "subjectivity": round(subjectivity, 3),
+                "confidence": round(abs(polarity), 3)
+            }
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        logger.error(f"TextBlob sentiment analysis error: {e}")
+    
+    try:
+        positive_words = ['good', 'great', 'excellent', 'amazing', 'positive', 'love', 'best']
+        negative_words = ['bad', 'terrible', 'awful', 'hate', 'worst', 'negative', 'poor']
+        
+        text_lower = text.lower()
+        positive_count = sum(1 for word in positive_words if word in text_lower)
+        negative_count = sum(1 for word in negative_words if word in text_lower)
+        
+        if positive_count > negative_count:
+            return {"sentiment": "Positive", "polarity": 0.5, "subjectivity": 0.6, "confidence": 0.6}
+        elif negative_count > positive_count:
+            return {"sentiment": "Negative", "polarity": -0.5, "subjectivity": 0.6, "confidence": 0.6}
+        else:
+            return {"sentiment": "Neutral", "polarity": 0.0, "subjectivity": 0.5, "confidence": 0.3}
+    except Exception as e:
+        logger.error(f"Fallback sentiment analysis error: {e}")
+        return {"sentiment": "Neutral", "polarity": 0, "subjectivity": 0, "confidence": 0}
 
-@app.route('/api/logout', methods=['POST'])
-def api_logout():
-    session.clear()
-    return jsonify({'success': True})
+def extract_hashtags_keywords(text, max_hashtags=15):
+    try:
+        if ANALYSIS_TOOLS_AVAILABLE:
+            words = re.findall(r'\b[a-zA-Z]{3,}\b', text.lower())
+            stop_words = {'the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by'}
+            filtered_words = [word for word in words if word not in stop_words and len(word) > 3]
+            word_counts = Counter(filtered_words)
+            top_words = [word for word, count in word_counts.most_common(max_hashtags)]
+            hashtags = [word.capitalize() for word in top_words]
+            return hashtags
+    except Exception as e:
+        logger.error(f"Hashtag extraction error: {e}")
+    
+    try:
+        words = text.split()[:10]
+        hashtags = [word.strip('.,!?').capitalize() for word in words if len(word) > 3]
+        return hashtags[:max_hashtags]
+    except Exception as e:
+        logger.error(f"Fallback hashtag extraction error: {e}")
+        return ['Analysis', 'Trends', 'Insights']
+
+def extract_brand_mentions(text, brands_list=None):
+    try:
+        if brands_list is None:
+            brands_list = ['Apple', 'Google', 'Microsoft', 'Amazon', 'Meta', 'Tesla', 'Netflix']
+        
+        mentions = {}
+        text_lower = text.lower()
+        
+        for brand in brands_list:
+            count = text_lower.count(brand.lower())
+            if count > 0:
+                mentions[brand] = count
+        
+        return mentions
+    except Exception as e:
+        logger.error(f"Brand mention extraction error: {e}")
+        return {}
+
+def create_mock_social_data(query):
+    try:
+        sample_posts = [
+            {
+                'title': f'Discussion about {query} trends in 2024',
+                'content': f'Great insights on {query}. The community is very positive about recent developments.',
+                'score': 156,
+                'comments': 23,
+                'url': 'https://reddit.com/r/technology/sample_post_1',
+                'subreddit': 'technology',
+                'created': datetime.now().strftime('%Y-%m-%d %H:%M')
+            }
+        ]
+        
+        for post in sample_posts:
+            combined_text = f"{post['title']} {post['content']}"
+            post['sentiment'] = analyze_sentiment(combined_text)
+        
+        return sample_posts
+    except Exception as e:
+        logger.error(f"Error creating mock social data: {e}")
+        return []
 
 @app.errorhandler(404)
 def not_found(error):
