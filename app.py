@@ -1,5 +1,5 @@
-# Fixed Flask App with All Analysis Features
-from flask import Flask, request, jsonify, render_template, session, send_from_directory
+# Fixed Flask App with Original Authentication System
+from flask import Flask, request, jsonify, render_template, session, redirect
 from flask_cors import CORS
 import logging
 from datetime import datetime, timedelta
@@ -7,11 +7,104 @@ import hashlib
 import uuid
 import os
 import tempfile
+from functools import wraps
 
 # Configure Flask to look for templates in current directory
 app = Flask(__name__, template_folder='.')
 app.secret_key = os.environ.get('SECRET_KEY', 'your-secret-key-here')
 CORS(app)
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Check for required imports
+try:
+    import textract
+    TEXTRACT_AVAILABLE = True
+except ImportError:
+    TEXTRACT_AVAILABLE = False
+    logger.warning("textract not available")
+
+try:
+    import requests
+    from bs4 import BeautifulSoup
+    WEB_SCRAPING_AVAILABLE = True
+except ImportError:
+    WEB_SCRAPING_AVAILABLE = False
+    logger.warning("requests/beautifulsoup4 not available")
+
+try:
+    from textblob import TextBlob
+    TEXTBLOB_AVAILABLE = True
+except ImportError:
+    TEXTBLOB_AVAILABLE = False
+    logger.warning("textblob not available")
+
+try:
+    from collections import Counter
+    import re
+    ANALYSIS_TOOLS_AVAILABLE = True
+except ImportError:
+    ANALYSIS_TOOLS_AVAILABLE = False
+
+try:
+    from app2 import claude_messages, analyze_question, summarize_trends, extract_text_from_file, analyze_url_content
+    APP2_AVAILABLE = True
+    logger.info("Successfully imported from app2.py")
+except ImportError as e:
+    APP2_AVAILABLE = False
+    logger.warning(f"Could not import from app2.py: {e}")
+except Exception as e:
+    APP2_AVAILABLE = False
+    logger.error(f"Error importing from app2.py: {e}")
+
+# Firebase/Database functions (placeholder - you'll need to implement based on your setup)
+def get_user_info(email):
+    """Get user information from database"""
+    try:
+        # Replace this with your actual Firebase/database implementation
+        # For now, return a default user structure
+        return {
+            "email": email,
+            "subscription_type": "Free Plan",
+            "usage_limits": {"summaries_per_month": 10, "analyses_per_month": 5},
+            "current_usage": {"summaries_this_month": 0, "analyses_this_month": 0}
+        }
+    except:
+        return None
+
+def check_usage_limits(email, action_type="summary"):
+    """Check if user can perform action based on their plan"""
+    user_info = get_user_info(email)
+    if not user_info:
+        return False, "No subscription found"
+    
+    usage_limits = user_info.get('usage_limits', {})
+    current_usage = user_info.get('current_usage', {})
+    
+    if action_type == "summary":
+        limit = usage_limits.get('summaries_per_month', 0)
+        current = current_usage.get('summaries_this_month', 0)
+        if limit != "unlimited" and current >= limit:
+            return False, f"Monthly limit of {limit} analyses reached"
+    
+    return True, "Access granted"
+
+def is_logged_in():
+    """Check if user is logged in"""
+    return 'user_email' in session
+
+def login_required(f):
+    """Decorator to require login"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not is_logged_in():
+            if request.is_json:
+                return jsonify({'error': 'Authentication required'}), 401
+            return redirect('/signin')
+        return f(*args, **kwargs)
+    return decorated_function
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -65,6 +158,12 @@ users_db = {
         "password": "demo123",
         "subscription_type": "Free Plan", 
         "usage": {"summary": 2, "analysis": 1, "question": 5},
+        "limits": {"summary": 10, "analysis": 5, "question": 20}
+    },
+    "admin@test.com": {
+        "password": "admin123",
+        "subscription_type": "Free Plan", 
+        "usage": {"summary": 0, "analysis": 0, "question": 0},
         "limits": {"summary": 10, "analysis": 5, "question": 20}
     }
 }
@@ -901,75 +1000,68 @@ def api_clear_cache():
         logger.error(f"Cache clear error: {str(e)}")
         return jsonify({'error': 'Failed to clear cache'}), 500
 
-# Web routes
+# Original website routes (your existing routes)
 @app.route('/')
-def index():
-    try:
-        return render_template('index.html')
-    except Exception as e:
-        logger.error(f"Index route error: {str(e)}")
-        return f"Error loading page: {str(e)}", 500
+@app.route('/index')
+def hello():
+    return render_template('index.html')
+
+@app.route('/contact')
+def contact():
+    return render_template('contact.html')
 
 @app.route('/about')
 def about():
-    try:
-        return render_template('about.html')
-    except Exception as e:
-        logger.error(f"About route error: {str(e)}")
-        return f"Error loading page: {str(e)}", 500
+    return render_template('about.html')
 
 @app.route('/TrendSummarizer')
 def TrendSummarizer():
-    try:
-        return render_template('TrendSummarizer.html')
-    except Exception as e:
-        logger.error(f"TrendSummarizer route error: {str(e)}")
-        return f"Error loading page: {str(e)}", 500
+    return render_template('TrendSummarizer.html')
 
 @app.route('/DataHelp')
 def DataHelp():
-    try:
-        return render_template('DataHelp.html')
-    except Exception as e:
-        logger.error(f"DataHelp route error: {str(e)}")
-        return f"Error loading page: {str(e)}", 500
+    return render_template('DataHelp.html')
 
 @app.route('/signin')
 def signin():
-    try:
-        return render_template('signin.html')
-    except Exception as e:
-        logger.error(f"Signin route error: {str(e)}")
-        return f"Error loading page: {str(e)}", 500
+    return render_template('signin.html')
 
 @app.route('/signup')
 def signup():
-    try:
-        return render_template('signup.html')
-    except Exception as e:
-        logger.error(f"Signup route error: {str(e)}")
-        return f"Error loading page: {str(e)}", 500
-
-@app.route('/health')
-def health():
-    return {
-        'status': 'healthy',
-        'service': 'Market Trend Summarizer',
-        'dependencies': {
-            'app2': APP2_AVAILABLE,
-            'textblob': TEXTBLOB_AVAILABLE,
-            'textract': TEXTRACT_AVAILABLE,
-            'web_scraping': WEB_SCRAPING_AVAILABLE
-        }
-    }
+    return render_template('signup.html')
 
 @app.route('/tools')
 def tools():
+    if not is_logged_in():
+        return redirect('/signin')
+    
+    user_info = get_user_info(session['user_email'])
+    return render_template('tools.html', user_info=user_info)
+
+# Authentication routes (matching your original system)
+@app.route('/api/login', methods=['POST'])
+def api_login():
     try:
-        return render_template('tools.html')
+        data = request.get_json()
+        email = data.get('email')
+        password = data.get('password')
+        
+        # Your original Firebase authentication would go here
+        # For now, simple validation - you can replace this with your Firebase auth
+        if email and password:
+            session['user_email'] = email
+            user_info = get_user_info(email)
+            return jsonify({'success': True, 'user_info': user_info})
+        else:
+            return jsonify({'error': 'Invalid credentials'}), 401
+            
     except Exception as e:
-        logger.error(f"Tools route error: {str(e)}")
-        return f"Error loading page: {str(e)}", 500
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/logout', methods=['POST'])
+def api_logout():
+    session.clear()
+    return jsonify({'success': True})
 
 @app.errorhandler(404)
 def not_found(error):
