@@ -783,10 +783,7 @@ def api_export_pdf():
             from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
             from reportlab.lib.units import inch
             from reportlab.lib import colors
-            from reportlab.graphics.shapes import Drawing, Rect, Circle, Line
-            from reportlab.graphics.charts.barcharts import VerticalBarChart
-            from reportlab.graphics.charts.piecharts import Pie
-            from reportlab.graphics import renderPDF
+            from reportlab.graphics.shapes import Drawing, Rect, Circle
             from io import BytesIO
         except ImportError:
             return jsonify({'error': 'PDF generation not available - reportlab package not found'}), 500
@@ -805,10 +802,6 @@ def api_export_pdf():
         title_style = ParagraphStyle('CustomTitle', parent=styles['Heading1'], 
                                    fontSize=20, textColor=colors.HexColor('#8a2be2'),
                                    spaceAfter=15, spaceBefore=15)
-        
-        subtitle_style = ParagraphStyle('SubTitle', parent=styles['Heading2'],
-                                       fontSize=14, textColor=colors.HexColor('#4b0082'),
-                                       spaceAfter=10, spaceBefore=10)
         
         content = []
         
@@ -855,8 +848,7 @@ def api_export_pdf():
                 return drawing
             
             content.append(create_summary_icon())
-            content.append(title_style.clone('SummaryTitle', textColor=colors.HexColor('#8a2be2')))
-            content.append(Paragraph("📊 EXECUTIVE SUMMARY", title_style))
+            content.append(Paragraph("EXECUTIVE SUMMARY", title_style))
             
             # Summary box with border
             summary_text = Paragraph(results['summary'], styles['Normal'])
@@ -886,7 +878,7 @@ def api_export_pdf():
         
         # Key Insights with visual elements
         if results.get('key_insights'):
-            content.append(Paragraph("💡 KEY MARKET INSIGHTS", title_style))
+            content.append(Paragraph("KEY MARKET INSIGHTS", title_style))
             
             insights = results['key_insights']
             if isinstance(insights, list):
@@ -932,7 +924,6 @@ def api_export_pdf():
             # Add insights visualization
             def create_insights_chart():
                 drawing = Drawing(400, 200)
-                # Create a simple bar chart representation
                 bars = [100, 85, 70, 95, 80]
                 colors_list = [colors.HexColor('#8a2be2'), colors.HexColor('#764ba2'), 
                              colors.HexColor('#667eea'), colors.HexColor('#4b0082'), colors.HexColor('#6a5acd')]
@@ -948,7 +939,7 @@ def api_export_pdf():
         
         # Strategic Recommendations with visual elements
         if results.get('recommendations'):
-            content.append(Paragraph("🎯 STRATEGIC RECOMMENDATIONS", title_style))
+            content.append(Paragraph("STRATEGIC RECOMMENDATIONS", title_style))
             
             recommendations = results['recommendations']
             if isinstance(recommendations, list):
@@ -991,9 +982,9 @@ def api_export_pdf():
                     
                     content.append(Spacer(1, 15))
         
-        # Sentiment Analysis with chart
+        # Sentiment Analysis
         if results.get('sentiment'):
-            content.append(Paragraph("📈 SENTIMENT ANALYSIS", title_style))
+            content.append(Paragraph("SENTIMENT ANALYSIS", title_style))
             
             sentiment_table = Table([[results['sentiment']]], colWidths=[6.5*inch])
             sentiment_table.setStyle(TableStyle([
@@ -1007,9 +998,9 @@ def api_export_pdf():
             content.append(sentiment_table)
             content.append(Spacer(1, 20))
         
-        # Hashtags with visual styling
+        # Hashtags
         if results.get('hashtags'):
-            content.append(Paragraph("🏷️ STRATEGIC HASHTAGS", title_style))
+            content.append(Paragraph("STRATEGIC HASHTAGS", title_style))
             
             hashtags_text = " ".join([f"#{tag}" for tag in results['hashtags']])
             hashtag_table = Table([[hashtags_text]], colWidths=[6.5*inch])
