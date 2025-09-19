@@ -1609,7 +1609,49 @@
                         file: { file: null, question: '' }
                     };
                 },
+                async exportToPDF() {
+                    if (!this.results) {
+                        this.showMessage('No analysis results to export', 'error');
+                        return;
+                    }
 
+                    try {
+                        this.loading = true;
+                        this.showMessage('Generating PDF report...', 'success');
+
+                        const response = await fetch(`${this.apiBase}/api/export/pdf`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                session_id: this.sessionId,
+                                results: this.results,
+                                analysis_type: this.activeTab
+                            })
+                        });
+
+                        if (response.ok) {
+                            const blob = await response.blob();
+                            const url = window.URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = `market-analysis-${new Date().toISOString().split('T')[0]}.pdf`;
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                            window.URL.revokeObjectURL(url);
+            
+                            this.showMessage('PDF report downloaded successfully!', 'success');
+                        } else {
+                            const errorData = await response.json();
+                            this.showMessage(errorData.error || 'Failed to generate PDF', 'error');
+                        }
+                    } catch (error) {
+                        this.showMessage('Error generating PDF report', 'error');
+                        console.error('PDF export error:', error);
+                    } finally {
+                        this.loading = false;
+                    }
+                },
                 showMessage(text, type) {
                     this.message = text;
                     this.messageType = type;
