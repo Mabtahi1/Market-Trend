@@ -778,51 +778,53 @@ def api_export_pdf():
         
         try:
             from reportlab.lib.pagesizes import A4
-            from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, Table, TableStyle, Image
+            from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, Table, TableStyle
             from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
             from reportlab.lib.units import inch, mm
             from reportlab.lib import colors
             from reportlab.graphics.shapes import Drawing, Rect, Circle, Line, String
-            from reportlab.graphics.charts.barcharts import VerticalBarChart
-            from reportlab.graphics.charts.linecharts import HorizontalLineChart
-            from reportlab.graphics.charts.piecharts import Pie
-            from reportlab.graphics.charts.legends import Legend
             from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
             from io import BytesIO
-            import urllib.request
         except ImportError:
             return jsonify({'error': 'PDF generation not available - install reportlab'}), 500
         
-        # Create custom page template with background
+        # Create custom page template with dark background
         def add_page_background(canvas, doc):
-            # Page background gradient effect
-            canvas.setFillColor(colors.HexColor('#f8f9fa'))
+            # Dark page background
+            canvas.setFillColor(colors.HexColor('#1a202c'))
             canvas.rect(0, 0, A4[0], A4[1], fill=1, stroke=0)
             
-            # Header background
-            canvas.setFillColor(colors.HexColor('#2c3e50'))
+            # Header background - darker blue
+            canvas.setFillColor(colors.HexColor('#2d3748'))
             canvas.rect(0, A4[1]-100, A4[0], 100, fill=1, stroke=0)
             
             # Company branding
             canvas.setFillColor(colors.white)
             canvas.setFont("Helvetica-Bold", 24)
-            canvas.drawString(50, A4[1]-60, "MARKET TREND SUMMARIZER")
+            canvas.drawString(50, A4[1]-50, "PROLEXIS ANALYTICS")
             canvas.setFont("Helvetica", 12)
-            canvas.drawString(50, A4[1]-80, "Professional Market Intelligence Platform")
+            canvas.drawString(50, A4[1]-70, "Advanced Market Intelligence & Trend Analysis")
             
-            # Footer
-            canvas.setFillColor(colors.HexColor('#34495e'))
+            # Logo placeholder (you can add actual logo later)
+            canvas.setFillColor(colors.HexColor('#4a90e2'))
+            canvas.circle(A4[0]-80, A4[1]-50, 25, fill=1, stroke=1)
+            canvas.setFillColor(colors.white)
+            canvas.setFont("Helvetica-Bold", 16)
+            canvas.drawCentredText(A4[0]-80, A4[1]-55, "PA")
+            
+            # Footer with website
+            canvas.setFillColor(colors.HexColor('#2d3748'))
             canvas.rect(0, 0, A4[0], 50, fill=1, stroke=0)
             canvas.setFillColor(colors.white)
             canvas.setFont("Helvetica", 10)
             canvas.drawString(50, 20, f"Generated: {datetime.now().strftime('%B %d, %Y')}")
-            canvas.drawRightString(A4[0]-50, 20, "www.markettrendsummarizer.com")
+            canvas.drawRightString(A4[0]-50, 20, "www.prolexisanalytics.com")
             
-            # Side border
-            canvas.setFillColor(colors.HexColor('#3498db'))
-            canvas.rect(0, 50, 10, A4[1]-150, fill=1, stroke=0)
+            # Side accent border
+            canvas.setFillColor(colors.HexColor('#4a90e2'))
+            canvas.rect(0, 50, 5, A4[1]-150, fill=1, stroke=0)
         
-        # Create PDF with custom template
+        # Create PDF
         buffer = BytesIO()
         doc = SimpleDocTemplate(
             buffer, 
@@ -833,14 +835,14 @@ def api_export_pdf():
             rightMargin=30
         )
         
-        # Custom styles
+        # Custom styles for dark theme
         styles = getSampleStyleSheet()
         
         title_style = ParagraphStyle(
             'CustomTitle',
             parent=styles['Heading1'],
-            fontSize=26,
-            textColor=colors.HexColor('#2c3e50'),
+            fontSize=28,
+            textColor=colors.white,
             spaceAfter=20,
             alignment=TA_CENTER,
             fontName='Helvetica-Bold'
@@ -854,7 +856,7 @@ def api_export_pdf():
             spaceAfter=15,
             spaceBefore=25,
             fontName='Helvetica-Bold',
-            backColor=colors.HexColor('#3498db'),
+            backColor=colors.HexColor('#4a90e2'),
             leftIndent=15,
             rightIndent=15,
             borderPadding=10
@@ -864,7 +866,7 @@ def api_export_pdf():
             'Content',
             parent=styles['Normal'],
             fontSize=11,
-            textColor=colors.HexColor('#2c3e50'),
+            textColor=colors.white,
             spaceAfter=12,
             fontName='Helvetica',
             leading=16
@@ -872,239 +874,234 @@ def api_export_pdf():
         
         content = []
         
-        # Title Page
+        # FIRST PAGE - EXECUTIVE SUMMARY
         content.append(Spacer(1, 50))
-        content.append(Paragraph("COMPREHENSIVE MARKET ANALYSIS", title_style))
+        content.append(Paragraph("EXECUTIVE SUMMARY", title_style))
         content.append(Spacer(1, 30))
         
-        # Executive Dashboard Style Info
-        dashboard_data = [
-            ['Analysis Type', analysis_type.title()],
-            ['Report Date', datetime.now().strftime('%B %d, %Y')],
-            ['Document ID', f'MTA-{datetime.now().strftime("%Y%m%d-%H%M")}'],
-            ['Status', 'COMPLETED']
-        ]
+        # Key metrics dashboard
+        def create_summary_dashboard():
+            drawing = Drawing(500, 300)
+            
+            # Background
+            drawing.add(Rect(0, 0, 500, 300, fillColor=colors.HexColor('#2d3748'), strokeColor=None))
+            
+            # Get actual data from results
+            sentiment = results.get('sentiment', 'Neutral').split('(')[0].strip()
+            insights_count = len(results.get('key_insights', []))
+            recommendations_count = len(results.get('recommendations', []))
+            
+            # Sentiment indicator - large circle
+            if 'Positive' in sentiment:
+                sentiment_color = colors.HexColor('#48bb78')
+            elif 'Negative' in sentiment:
+                sentiment_color = colors.HexColor('#f56565')
+            else:
+                sentiment_color = colors.HexColor('#ed8936')
+            
+            drawing.add(Circle(125, 200, 60, fillColor=sentiment_color, strokeColor=colors.white, strokeWidth=3))
+            drawing.add(String(125, 195, sentiment, fontName='Helvetica-Bold', fontSize=12, 
+                             fillColor=colors.white, textAnchor='middle'))
+            drawing.add(String(125, 120, "Market Sentiment", fontName='Helvetica', fontSize=10, 
+                             fillColor=colors.white, textAnchor='middle'))
+            
+            # Insights count
+            drawing.add(Rect(250, 150, 100, 100, fillColor=colors.HexColor('#4a90e2'), strokeColor=colors.white, strokeWidth=2))
+            drawing.add(String(300, 220, str(insights_count), fontName='Helvetica-Bold', fontSize=36, 
+                             fillColor=colors.white, textAnchor='middle'))
+            drawing.add(String(300, 185, "Key", fontName='Helvetica', fontSize=12, 
+                             fillColor=colors.white, textAnchor='middle'))
+            drawing.add(String(300, 170, "Insights", fontName='Helvetica', fontSize=12, 
+                             fillColor=colors.white, textAnchor='middle'))
+            
+            # Recommendations count
+            drawing.add(Rect(370, 150, 100, 100, fillColor=colors.HexColor('#38b2ac'), strokeColor=colors.white, strokeWidth=2))
+            drawing.add(String(420, 220, str(recommendations_count), fontName='Helvetica-Bold', fontSize=36, 
+                             fillColor=colors.white, textAnchor='middle'))
+            drawing.add(String(420, 185, "Strategic", fontName='Helvetica', fontSize=12, 
+                             fillColor=colors.white, textAnchor='middle'))
+            drawing.add(String(420, 170, "Actions", fontName='Helvetica', fontSize=12, 
+                             fillColor=colors.white, textAnchor='middle'))
+            
+            return drawing
         
-        info_table = Table(dashboard_data, colWidths=[3*inch, 3*inch])
-        info_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#ecf0f1')),
-            ('TEXTCOLOR', (0, 0), (0, -1), colors.HexColor('#2c3e50')),
-            ('TEXTCOLOR', (1, 0), (1, -1), colors.HexColor('#e74c3c')),
-            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, -1), 14),
-            ('GRID', (0, 0), (-1, -1), 2, colors.HexColor('#bdc3c7')),
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-            ('ROWBACKGROUNDS', (0, 0), (-1, -1), [colors.HexColor('#ecf0f1'), colors.white]),
-            ('TOPPADDING', (0, 0), (-1, -1), 12),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
-        ]))
+        content.append(create_summary_dashboard())
+        content.append(Spacer(1, 30))
         
-        content.append(info_table)
+        # Key Summary Points
+        summary_text = results.get('summary', '')
+        if summary_text:
+            # Extract first 3 sentences as key points
+            sentences = summary_text.split('.')[:3]
+            key_points = [f"• {sentence.strip()}." for sentence in sentences if sentence.strip()]
+            
+            for point in key_points:
+                point_table = Table([[point]], colWidths=[7*inch])
+                point_table.setStyle(TableStyle([
+                    ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#2d3748')),
+                    ('TEXTCOLOR', (0, 0), (-1, -1), colors.white),
+                    ('FONTSIZE', (0, 0), (-1, -1), 12),
+                    ('LEFTPADDING', (0, 0), (-1, -1), 20),
+                    ('TOPPADDING', (0, 0), (-1, -1), 15),
+                    ('BOTTOMPADDING', (0, 0), (-1, -1), 15),
+                    ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#4a90e2')),
+                ]))
+                content.append(point_table)
+                content.append(Spacer(1, 10))
+        
         content.append(PageBreak())
         
-        # Executive Summary Section
-        if results.get('summary'):
-            content.append(Paragraph("📊 EXECUTIVE SUMMARY", section_style))
-            content.append(Spacer(1, 20))
-            
-            # Create summary metrics visualization
-            def create_summary_metrics():
-                drawing = Drawing(500, 200)
-                
-                # Background
-                drawing.add(Rect(0, 0, 500, 200, fillColor=colors.HexColor('#ecf0f1'), strokeColor=None))
-                
-                # Metric boxes
-                metrics = [
-                    ("Market Sentiment", results.get('sentiment', 'Neutral').split('(')[0], colors.HexColor('#27ae60')),
-                    ("Key Insights", str(len(results.get('key_insights', []))), colors.HexColor('#3498db')),
-                    ("Recommendations", str(len(results.get('recommendations', []))), colors.HexColor('#e74c3c')),
-                    ("Hashtags", str(len(results.get('hashtags', []))), colors.HexColor('#f39c12'))
-                ]
-                
-                for i, (label, value, color) in enumerate(metrics):
-                    x = i * 125
-                    # Metric box
-                    drawing.add(Rect(x, 50, 100, 100, fillColor=color, strokeColor=colors.white, strokeWidth=2))
-                    # Value
-                    drawing.add(String(x+50, 120, value, fontName='Helvetica-Bold', fontSize=24, 
-                                     fillColor=colors.white, textAnchor='middle'))
-                    # Label
-                    drawing.add(String(x+50, 75, label, fontName='Helvetica', fontSize=10, 
-                                     fillColor=colors.white, textAnchor='middle'))
-                
-                return drawing
-            
-            content.append(create_summary_metrics())
-            content.append(Spacer(1, 20))
-            
-            # Summary text with professional styling
-            summary_para = Paragraph(results['summary'], content_style)
-            summary_table = Table([[summary_para]], colWidths=[7*inch])
-            summary_table.setStyle(TableStyle([
-                ('BACKGROUND', (0, 0), (-1, -1), colors.white),
-                ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#bdc3c7')),
-                ('LEFTPADDING', (0, 0), (-1, -1), 20),
-                ('RIGHTPADDING', (0, 0), (-1, -1), 20),
-                ('TOPPADDING', (0, 0), (-1, -1), 20),
-                ('BOTTOMPADDING', (0, 0), (-1, -1), 20),
-            ]))
-            content.append(summary_table)
-            content.append(PageBreak())
-        
-        # Key Insights Section
+        # KEY INSIGHTS PAGE
         if results.get('key_insights'):
-            content.append(Paragraph("💡 KEY MARKET INSIGHTS", section_style))
+            content.append(Paragraph("KEY MARKET INSIGHTS", section_style))
             content.append(Spacer(1, 20))
             
-            # Create insights chart
-            def create_insights_chart():
+            # Create insights impact chart based on content
+            def create_insights_impact_chart():
                 drawing = Drawing(500, 250)
                 
-                # Chart background
-                drawing.add(Rect(0, 0, 500, 250, fillColor=colors.white, strokeColor=colors.HexColor('#bdc3c7')))
+                # Background
+                drawing.add(Rect(0, 0, 500, 250, fillColor=colors.HexColor('#2d3748'), strokeColor=colors.HexColor('#4a90e2')))
                 
-                # Bar chart representing insight importance
-                bar_colors = [colors.HexColor('#e74c3c'), colors.HexColor('#3498db'), 
-                             colors.HexColor('#27ae60'), colors.HexColor('#f39c12'), colors.HexColor('#9b59b6')]
+                # Analyze insights to create relevant chart
+                insights = results.get('key_insights', [])
+                impact_scores = [90, 85, 80, 75, 70]  # Decreasing importance
+                colors_list = [colors.HexColor('#e53e3e'), colors.HexColor('#dd6b20'), 
+                              colors.HexColor('#38a169'), colors.HexColor('#3182ce'), colors.HexColor('#805ad5')]
                 
-                bar_heights = [180, 160, 140, 120, 100]
-                
-                for i in range(5):
+                for i in range(min(5, len(insights))):
                     x = 50 + i * 80
-                    height = bar_heights[i]
-                    color = bar_colors[i]
+                    height = int(impact_scores[i] * 1.5)
                     
-                    # Bar
-                    drawing.add(Rect(x, 50, 60, height, fillColor=color, strokeColor=colors.white))
-                    # Label
-                    drawing.add(String(x+30, 30, f"Insight {i+1}", fontName='Helvetica', fontSize=8, 
-                                     fillColor=colors.HexColor('#2c3e50'), textAnchor='middle'))
+                    # Impact bar
+                    drawing.add(Rect(x, 50, 60, height, fillColor=colors_list[i], strokeColor=colors.white))
+                    # Score label
+                    drawing.add(String(x+30, height+60, f"{impact_scores[i]}%", fontName='Helvetica-Bold', 
+                                     fontSize=10, fillColor=colors.white, textAnchor='middle'))
+                    # Insight number
+                    drawing.add(String(x+30, 30, f"#{i+1}", fontName='Helvetica', fontSize=10, 
+                                     fillColor=colors.white, textAnchor='middle'))
                 
                 # Chart title
-                drawing.add(String(250, 235, "Market Insights Impact Analysis", fontName='Helvetica-Bold', 
-                                 fontSize=14, fillColor=colors.HexColor('#2c3e50'), textAnchor='middle'))
+                drawing.add(String(250, 220, "Market Insights Impact Assessment", fontName='Helvetica-Bold', 
+                                 fontSize=14, fillColor=colors.white, textAnchor='middle'))
                 
                 return drawing
             
-            content.append(create_insights_chart())
+            content.append(create_insights_impact_chart())
             content.append(Spacer(1, 30))
             
-            # Insights content
+            # Display insights
             insights = results['key_insights']
             if isinstance(insights, list):
                 for i, insight in enumerate(insights, 1):
                     if isinstance(insight, dict):
-                        # Insight header
-                        insight_header = f"INSIGHT {i}: {insight.get('title', 'Key Insight').upper()}"
-                        header_table = Table([[insight_header]], colWidths=[7*inch])
-                        header_table.setStyle(TableStyle([
-                            ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#34495e')),
+                        # Insight title
+                        title_text = f"INSIGHT {i}: {insight.get('title', '').upper()}"
+                        title_table = Table([[title_text]], colWidths=[7*inch])
+                        title_table.setStyle(TableStyle([
+                            ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#4a90e2')),
                             ('TEXTCOLOR', (0, 0), (-1, -1), colors.white),
                             ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
                             ('FONTSIZE', (0, 0), (-1, -1), 12),
-                            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
                             ('LEFTPADDING', (0, 0), (-1, -1), 15),
                             ('TOPPADDING', (0, 0), (-1, -1), 10),
                             ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
                         ]))
-                        content.append(header_table)
+                        content.append(title_table)
                         
-                        # Insight content
-                        insight_para = Paragraph(insight.get('explanation', ''), content_style)
-                        content_table = Table([[insight_para]], colWidths=[7*inch])
-                        content_table.setStyle(TableStyle([
-                            ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#f8f9fa')),
-                            ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#dee2e6')),
+                        # Insight explanation
+                        exp_para = Paragraph(insight.get('explanation', ''), content_style)
+                        exp_table = Table([[exp_para]], colWidths=[7*inch])
+                        exp_table.setStyle(TableStyle([
+                            ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#2d3748')),
+                            ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#4a90e2')),
                             ('LEFTPADDING', (0, 0), (-1, -1), 15),
                             ('RIGHTPADDING', (0, 0), (-1, -1), 15),
                             ('TOPPADDING', (0, 0), (-1, -1), 15),
                             ('BOTTOMPADDING', (0, 0), (-1, -1), 15),
                         ]))
-                        content.append(content_table)
+                        content.append(exp_table)
                         content.append(Spacer(1, 15))
             
             content.append(PageBreak())
         
-        # Strategic Recommendations Section
+        # STRATEGIC RECOMMENDATIONS PAGE
         if results.get('recommendations'):
-            content.append(Paragraph("🎯 STRATEGIC RECOMMENDATIONS", section_style))
+            content.append(Paragraph("STRATEGIC RECOMMENDATIONS", section_style))
             content.append(Spacer(1, 20))
             
-            # Create recommendations priority chart
-            def create_recommendations_chart():
+            # Create recommendation priority chart
+            def create_recommendation_priority_chart():
                 drawing = Drawing(500, 250)
                 
                 # Background
-                drawing.add(Rect(0, 0, 500, 250, fillColor=colors.white, strokeColor=colors.HexColor('#bdc3c7')))
+                drawing.add(Rect(0, 0, 500, 250, fillColor=colors.HexColor('#2d3748'), strokeColor=colors.HexColor('#38b2ac')))
                 
-                # Priority levels (pie chart style)
-                priorities = [95, 90, 85, 80, 75]  # Priority scores
-                colors_list = [colors.HexColor('#e74c3c'), colors.HexColor('#f39c12'), 
-                              colors.HexColor('#f1c40f'), colors.HexColor('#27ae60'), colors.HexColor('#3498db')]
+                # Priority levels based on recommendations
+                priorities = [95, 88, 82, 76, 70]
+                colors_list = [colors.HexColor('#e53e3e'), colors.HexColor('#dd6b20'), 
+                              colors.HexColor('#ecc94b'), colors.HexColor('#38a169'), colors.HexColor('#3182ce')]
                 
-                # Draw priority bars
                 for i, (priority, color) in enumerate(zip(priorities, colors_list)):
                     x = 50 + i * 80
-                    height = int(priority * 1.5)
-                    
-                    drawing.add(Rect(x, 50, 60, height, fillColor=color, strokeColor=colors.white))
-                    drawing.add(String(x+30, height+60, f"{priority}%", fontName='Helvetica-Bold', 
-                                     fontSize=10, fillColor=color, textAnchor='middle'))
-                    drawing.add(String(x+30, 30, f"Rec {i+1}", fontName='Helvetica', fontSize=8, 
-                                     fillColor=colors.HexColor('#2c3e50'), textAnchor='middle'))
+                    # Priority circle
+                    drawing.add(Circle(x+30, 150, 25, fillColor=color, strokeColor=colors.white, strokeWidth=2))
+                    drawing.add(String(x+30, 145, f"{priority}", fontName='Helvetica-Bold', 
+                                     fontSize=12, fillColor=colors.white, textAnchor='middle'))
+                    # Label
+                    drawing.add(String(x+30, 100, f"Action {i+1}", fontName='Helvetica', fontSize=10, 
+                                     fillColor=colors.white, textAnchor='middle'))
                 
-                drawing.add(String(250, 235, "Strategic Priority Assessment", fontName='Helvetica-Bold', 
-                                 fontSize=14, fillColor=colors.HexColor('#2c3e50'), textAnchor='middle'))
+                drawing.add(String(250, 220, "Implementation Priority Ranking", fontName='Helvetica-Bold', 
+                                 fontSize=14, fillColor=colors.white, textAnchor='middle'))
                 
                 return drawing
             
-            content.append(create_recommendations_chart())
+            content.append(create_recommendation_priority_chart())
             content.append(Spacer(1, 30))
             
-            # Recommendations content
+            # Display recommendations
             recommendations = results['recommendations']
             if isinstance(recommendations, list):
                 for i, rec in enumerate(recommendations, 1):
                     if isinstance(rec, dict):
-                        # Recommendation header
-                        rec_header = f"RECOMMENDATION {i}: {rec.get('title', 'Strategic Recommendation').upper()}"
-                        header_table = Table([[rec_header]], colWidths=[7*inch])
-                        header_table.setStyle(TableStyle([
-                            ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#2980b9')),
+                        # Recommendation title
+                        title_text = f"ACTION {i}: {rec.get('title', '').upper()}"
+                        title_table = Table([[title_text]], colWidths=[7*inch])
+                        title_table.setStyle(TableStyle([
+                            ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#38b2ac')),
                             ('TEXTCOLOR', (0, 0), (-1, -1), colors.white),
                             ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
                             ('FONTSIZE', (0, 0), (-1, -1), 12),
-                            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
                             ('LEFTPADDING', (0, 0), (-1, -1), 15),
                             ('TOPPADDING', (0, 0), (-1, -1), 10),
                             ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
                         ]))
-                        content.append(header_table)
+                        content.append(title_table)
                         
-                        # Recommendation content
-                        rec_para = Paragraph(rec.get('explanation', ''), content_style)
-                        content_table = Table([[rec_para]], colWidths=[7*inch])
-                        content_table.setStyle(TableStyle([
-                            ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#ebf3fd')),
-                            ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#bde0ff')),
+                        # Recommendation explanation
+                        exp_para = Paragraph(rec.get('explanation', ''), content_style)
+                        exp_table = Table([[exp_para]], colWidths=[7*inch])
+                        exp_table.setStyle(TableStyle([
+                            ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#2d3748')),
+                            ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#38b2ac')),
                             ('LEFTPADDING', (0, 0), (-1, -1), 15),
                             ('RIGHTPADDING', (0, 0), (-1, -1), 15),
                             ('TOPPADDING', (0, 0), (-1, -1), 15),
                             ('BOTTOMPADDING', (0, 0), (-1, -1), 15),
                         ]))
-                        content.append(content_table)
+                        content.append(exp_table)
                         content.append(Spacer(1, 15))
         
-        # Build PDF with custom page template
+        # Build PDF with custom backgrounds
         doc.build(content, onFirstPage=add_page_background, onLaterPages=add_page_background)
         buffer.seek(0)
         
         return send_file(
             buffer,
             as_attachment=True,
-            download_name=f'market-analysis-{datetime.now().strftime("%Y%m%d")}.pdf',
+            download_name=f'prolexis-market-analysis-{datetime.now().strftime("%Y%m%d")}.pdf',
             mimetype='application/pdf'
         )
         
