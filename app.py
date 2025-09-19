@@ -998,16 +998,25 @@ def api_export_pdf():
                 for i, insight in enumerate(insights, 1):
                     if isinstance(insight, dict):
                         # Insight title
+                        # Insight title with proper text wrapping
                         title_text = f"INSIGHT {i}: {insight.get('title', '').upper()}"
-                        title_table = Table([[title_text]], colWidths=[7*inch])
+                        title_para = Paragraph(title_text, ParagraphStyle(
+                            'InsightTitle',
+                            parent=styles['Normal'],
+                            fontSize=12,
+                            textColor=colors.white,
+                            fontName='Helvetica-Bold',
+                            alignment=TA_LEFT
+                        ))
+
+                        title_table = Table([[title_para]], colWidths=[7*inch])
                         title_table.setStyle(TableStyle([
                             ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#4a90e2')),
-                            ('TEXTCOLOR', (0, 0), (-1, -1), colors.white),
-                            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
-                            ('FONTSIZE', (0, 0), (-1, -1), 12),
                             ('LEFTPADDING', (0, 0), (-1, -1), 15),
+                            ('RIGHTPADDING', (0, 0), (-1, -1), 15),
                             ('TOPPADDING', (0, 0), (-1, -1), 10),
                             ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+                            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
                         ]))
                         content.append(title_table)
                         
@@ -1068,17 +1077,27 @@ def api_export_pdf():
                 for i, rec in enumerate(recommendations, 1):
                     if isinstance(rec, dict):
                         # Recommendation title
+                        # Recommendation title with proper text wrapping
                         title_text = f"ACTION {i}: {rec.get('title', '').upper()}"
-                        title_table = Table([[title_text]], colWidths=[7*inch])
+                        title_para = Paragraph(title_text, ParagraphStyle(
+                            'RecommendationTitle',
+                            parent=styles['Normal'],
+                            fontSize=12,
+                            textColor=colors.white,
+                            fontName='Helvetica-Bold',
+                            alignment=TA_LEFT
+                        ))
+
+                        title_table = Table([[title_para]], colWidths=[7*inch])
                         title_table.setStyle(TableStyle([
-                            ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#38b2ac')),
-                            ('TEXTCOLOR', (0, 0), (-1, -1), colors.white),
-                            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
-                            ('FONTSIZE', (0, 0), (-1, -1), 12),
-                            ('LEFTPADDING', (0, 0), (-1, -1), 15),
-                            ('TOPPADDING', (0, 0), (-1, -1), 10),
-                            ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+                           ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#38b2ac')),
+                           ('LEFTPADDING', (0, 0), (-1, -1), 15),
+                           ('RIGHTPADDING', (0, 0), (-1, -1), 15),
+                           ('TOPPADDING', (0, 0), (-1, -1), 10),
+                           ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+                           ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
                         ]))
+                        
                         content.append(title_table)
                         
                         # Recommendation explanation
