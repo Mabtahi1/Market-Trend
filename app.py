@@ -766,9 +766,94 @@ from flask import send_file
 @app.route('/api/export/pdf', methods=['POST'])
 def api_export_pdf():
     try:
-        return jsonify({'error': 'PDF export coming soon - install reportlab first'}), 501
+        data = request.get_json()
+        results = data.get('results', {})
+        
+        from reportlab.lib.pagesizes import A4
+        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image, PageBreak
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.lib.units import inch
+        from reportlab.lib import colors
+        from reportlab.graphics.shapes import Drawing, Rect
+        from reportlab.graphics import renderPDF
+        from io import BytesIO
+        import requests
+        
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=1*inch, leftMargin=0.75*inch, rightMargin=0.75*inch)
+        
+        styles = getSampleStyleSheet()
+        title_style = ParagraphStyle('CustomTitle', parent=styles['Heading1'], 
+                                   fontSize=28, textColor=colors.HexColor('#8a2be2'),
+                                   spaceAfter=30, alignment=1)  # Center aligned
+        
+        content = []
+        
+        # Title Page
+        content.append(Spacer(1, 2*inch))
+        content.append(Paragraph("AI Healthcare Market", title_style))
+        content.append(Paragraph("Comprehensive Trend Analysis Report", title_style))
+        content.append(Spacer(1, 1*inch))
+        content.append(Paragraph(f"Generated: {datetime.now().strftime('%B %d, %Y')}", styles['Normal']))
+        content.append(PageBreak())
+        
+        # Summary with chart placeholder
+        content.append(Paragraph("Executive Summary", styles['Heading1']))
+        content.append(Paragraph(results.get('summary', ''), styles['Normal']))
+        content.append(Spacer(1, 30))
+        
+        # Add a simple chart/graphic for summary
+        drawing = Drawing(400, 200)
+        drawing.add(Rect(50, 150, 300, 30, fillColor=colors.HexColor('#8a2be2'), strokeColor=colors.black))
+        drawing.add(Rect(50, 100, 250, 30, fillColor=colors.HexColor('#764ba2'), strokeColor=colors.black))
+        drawing.add(Rect(50, 50, 200, 30, fillColor=colors.HexColor('#667eea'), strokeColor=colors.black))
+        content.append(drawing)
+        content.append(Spacer(1, 30))
+        
+        # Key Insights with icons
+        if results.get('key_insights'):
+            content.append(Paragraph("Key Market Insights", styles['Heading1']))
+            for i, insight in enumerate(results['key_insights'], 1):
+                if isinstance(insight, dict):
+                    # Add insight icon/graphic
+                    insight_drawing = Drawing(50, 50)
+                    insight_drawing.add(Rect(10, 10, 30, 30, fillColor=colors.HexColor('#8a2be2'), strokeColor=colors.white))
+                    content.append(insight_drawing)
+                    
+                    content.append(Paragraph(f"<b>Insight {i}: {insight['title']}</b>", styles['Heading2']))
+                    content.append(Paragraph(insight['explanation'], styles['Normal']))
+                    content.append(Spacer(1, 20))
+        
+        # Strategic Recommendations with graphics
+        if results.get('recommendations'):
+            content.append(PageBreak())
+            content.append(Paragraph("Strategic Recommendations", styles['Heading1']))
+            for i, rec in enumerate(results['recommendations'], 1):
+                if isinstance(rec, dict):
+                    # Add recommendation graphic
+                    rec_drawing = Drawing(50, 50)
+                    rec_drawing.add(Rect(10, 10, 30, 30, fillColor=colors.HexColor('#4b0082'), strokeColor=colors.white))
+                    content.append(rec_drawing)
+                    
+                    content.append(Paragraph(f"<b>Recommendation {i}: {rec['title']}</b>", styles['Heading2']))
+                    content.append(Paragraph(rec['explanation'], styles['Normal']))
+                    content.append(Spacer(1, 20))
+        
+        # Build PDF
+        doc.build(content)
+        buffer.seek(0)
+        
+        from flask import send_file
+        return send_file(
+            buffer,
+            as_attachment=True,
+            download_name=f'ai-healthcare-analysis-{datetime.now().strftime("%Y%m%d")}.pdf',
+            mimetype='application/pdf'
+        )
+        
     except Exception as e:
-        return jsonify({'error': 'PDF generation failed'}), 500
+        logger.error(f"PDF export error: {str(e)}")
+        return jsonify({'error': f'PDF generation failed: {str(e)}'}), 500
 
 
 if __name__ == '__main__':
