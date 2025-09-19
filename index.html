@@ -1561,10 +1561,16 @@
                 },
 
                 formatInsights(insights) {
-                    if (Array.isArray(insights)) {
-                        return '<ul>' + insights.map(insight => `<li>${this.escapeHtml(insight)}</li>`).join('') + '</ul>';
-                    }
-                    return this.escapeHtml(insights);
+                                  if (Array.isArray(insights)) {
+                                      return '<ul>' + insights.map(insight => {
+                                          if (typeof insight === 'object' && insight.title) {
+                                              return `<li><strong>${this.escapeHtml(insight.title)}</strong><br><em>${this.escapeHtml(insight.explanation)}</em></li>`;
+                                          } else {
+                                              return `<li>${this.escapeHtml(insight)}</li>`;
+                                          }
+                                      }).join('') + '</ul>';
+                                  }
+                                  return this.escapeHtml(insights);
                 },
 
                 formatHashtags(hashtags) {
