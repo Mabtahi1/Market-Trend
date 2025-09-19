@@ -1250,16 +1250,20 @@
 
                 init() {
                     console.log('App initializing...');
+                    // Force show login form initially - don't auto-validate
+                    this.isAuthenticated = false;
+                    
+                    // Only try to validate if we explicitly want to restore session
+                    // Comment out the auto-validation for now:
+                    /*
                     const savedSessionId = localStorage.getItem('sessionId');
                     console.log('Saved session ID:', savedSessionId);
                     
                     if (savedSessionId) {
                         this.sessionId = savedSessionId;
                         this.validateSession();
-                    } else {
-                        console.log('No saved session, showing login form');
-                        this.isAuthenticated = false;
                     }
+                    */
                 },
 
                 async validateSession() {
