@@ -810,7 +810,8 @@ def api_export_pdf():
             canvas.circle(A4[0]-80, A4[1]-50, 25, fill=1, stroke=1)
             canvas.setFillColor(colors.white)
             canvas.setFont("Helvetica-Bold", 16)
-            canvas.drawCentredText(A4[0]-80, A4[1]-55, "PA")
+            text_width = canvas.stringWidth("PA", "Helvetica-Bold", 16)
+            canvas.drawString(A4[0]-80 - text_width/2, A4[1]-55, "PA")
             
             # Footer with website
             canvas.setFillColor(colors.HexColor('#2d3748'))
