@@ -767,97 +767,105 @@ from flask import send_file
 def api_export_pdf():
     try:
         data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+            
         results = data.get('results', {})
-        # For now, return a simple message until you install reportlab
+        analysis_type = data.get('analysis_type', 'comprehensive')
+        
         if not results:
             return jsonify({'error': 'No analysis results to export'}), 400
-            
-        # Temporary response - you can install reportlab later
-        return jsonify({'error': 'PDF generation requires reportlab package. Install with: pip install reportlab'}), 501
         
-    except Exception as e:
-        logger.error(f"PDF export error: {str(e)}")
-        return jsonify({'error': f'PDF generation failed: {str(e)}'}), 500
+        # Import reportlab components
+        try:
+            from reportlab.lib.pagesizes import A4
+            from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak
+            from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+            from reportlab.lib.units import inch
+            from reportlab.lib import colors
+            from io import BytesIO
+        except ImportError:
+            return jsonify({'error': 'PDF generation not available - reportlab package not found'}), 500
         
-        from reportlab.lib.pagesizes import A4
-        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image, PageBreak
-        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-        from reportlab.lib.units import inch
-        from reportlab.lib import colors
-        from reportlab.graphics.shapes import Drawing, Rect
-        from reportlab.graphics import renderPDF
-        from io import BytesIO
-        import requests
-        
+        # Create PDF in memory
         buffer = BytesIO()
-        doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=1*inch, leftMargin=0.75*inch, rightMargin=0.75*inch)
-        
+        doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=1*inch)
         styles = getSampleStyleSheet()
+        
+        # Custom styles
         title_style = ParagraphStyle('CustomTitle', parent=styles['Heading1'], 
-                                   fontSize=28, textColor=colors.HexColor('#8a2be2'),
-                                   spaceAfter=30, alignment=1)  # Center aligned
+                                   fontSize=24, textColor=colors.HexColor('#8a2be2'),
+                                   spaceAfter=30)
+        
+        heading_style = ParagraphStyle('CustomHeading', parent=styles['Heading2'],
+                                     fontSize=16, textColor=colors.HexColor('#4b0082'),
+                                     spaceAfter=12)
         
         content = []
         
-        # Title Page
-        content.append(Spacer(1, 2*inch))
-        content.append(Paragraph("AI Healthcare Market", title_style))
-        content.append(Paragraph("Comprehensive Trend Analysis Report", title_style))
-        content.append(Spacer(1, 1*inch))
-        content.append(Paragraph(f"Generated: {datetime.now().strftime('%B %d, %Y')}", styles['Normal']))
-        content.append(PageBreak())
+        # Title
+        content.append(Paragraph("Market Trend Analysis Report", title_style))
+        content.append(Spacer(1, 20))
         
-        # Summary with chart placeholder
-        content.append(Paragraph("Executive Summary", styles['Heading1']))
-        content.append(Paragraph(results.get('summary', ''), styles['Normal']))
+        # Analysis type and date
+        content.append(Paragraph(f"Analysis Type: {analysis_type.title()}", styles['Normal']))
+        content.append(Paragraph(f"Generated: {datetime.now().strftime('%B %d, %Y at %I:%M %p')}", styles['Normal']))
         content.append(Spacer(1, 30))
         
-        # Add a simple chart/graphic for summary
-        drawing = Drawing(400, 200)
-        drawing.add(Rect(50, 150, 300, 30, fillColor=colors.HexColor('#8a2be2'), strokeColor=colors.black))
-        drawing.add(Rect(50, 100, 250, 30, fillColor=colors.HexColor('#764ba2'), strokeColor=colors.black))
-        drawing.add(Rect(50, 50, 200, 30, fillColor=colors.HexColor('#667eea'), strokeColor=colors.black))
-        content.append(drawing)
-        content.append(Spacer(1, 30))
+        # Summary
+        if results.get('summary'):
+            content.append(Paragraph("Executive Summary", heading_style))
+            content.append(Paragraph(results['summary'], styles['Normal']))
+            content.append(Spacer(1, 20))
         
-        # Key Insights with icons
+        # Key Insights
         if results.get('key_insights'):
-            content.append(Paragraph("Key Market Insights", styles['Heading1']))
-            for i, insight in enumerate(results['key_insights'], 1):
-                if isinstance(insight, dict):
-                    # Add insight icon/graphic
-                    insight_drawing = Drawing(50, 50)
-                    insight_drawing.add(Rect(10, 10, 30, 30, fillColor=colors.HexColor('#8a2be2'), strokeColor=colors.white))
-                    content.append(insight_drawing)
-                    
-                    content.append(Paragraph(f"<b>Insight {i}: {insight['title']}</b>", styles['Heading2']))
-                    content.append(Paragraph(insight['explanation'], styles['Normal']))
-                    content.append(Spacer(1, 20))
+            content.append(Paragraph("Key Insights", heading_style))
+            insights = results['key_insights']
+            if isinstance(insights, list):
+                for i, insight in enumerate(insights, 1):
+                    if isinstance(insight, dict):
+                        content.append(Paragraph(f"<b>{i}. {insight.get('title', 'Insight')}</b>", styles['Normal']))
+                        content.append(Paragraph(insight.get('explanation', ''), styles['Normal']))
+                    else:
+                        content.append(Paragraph(f"• {insight}", styles['Normal']))
+                    content.append(Spacer(1, 10))
+            content.append(Spacer(1, 20))
         
-        # Strategic Recommendations with graphics
+        # Recommendations  
         if results.get('recommendations'):
-            content.append(PageBreak())
-            content.append(Paragraph("Strategic Recommendations", styles['Heading1']))
-            for i, rec in enumerate(results['recommendations'], 1):
-                if isinstance(rec, dict):
-                    # Add recommendation graphic
-                    rec_drawing = Drawing(50, 50)
-                    rec_drawing.add(Rect(10, 10, 30, 30, fillColor=colors.HexColor('#4b0082'), strokeColor=colors.white))
-                    content.append(rec_drawing)
-                    
-                    content.append(Paragraph(f"<b>Recommendation {i}: {rec['title']}</b>", styles['Heading2']))
-                    content.append(Paragraph(rec['explanation'], styles['Normal']))
-                    content.append(Spacer(1, 20))
+            content.append(Paragraph("Strategic Recommendations", heading_style))
+            recommendations = results['recommendations']
+            if isinstance(recommendations, list):
+                for i, rec in enumerate(recommendations, 1):
+                    if isinstance(rec, dict):
+                        content.append(Paragraph(f"<b>{i}. {rec.get('title', 'Recommendation')}</b>", styles['Normal']))
+                        content.append(Paragraph(rec.get('explanation', ''), styles['Normal']))
+                    else:
+                        content.append(Paragraph(f"• {rec}", styles['Normal']))
+                    content.append(Spacer(1, 10))
+            content.append(Spacer(1, 20))
+        
+        # Sentiment Analysis
+        if results.get('sentiment'):
+            content.append(Paragraph("Sentiment Analysis", heading_style))
+            content.append(Paragraph(results['sentiment'], styles['Normal']))
+            content.append(Spacer(1, 20))
+        
+        # Hashtags
+        if results.get('hashtags'):
+            content.append(Paragraph("Suggested Hashtags", heading_style))
+            hashtags_text = " ".join([f"#{tag}" for tag in results['hashtags']])
+            content.append(Paragraph(hashtags_text, styles['Normal']))
         
         # Build PDF
         doc.build(content)
         buffer.seek(0)
         
-        from flask import send_file
         return send_file(
             buffer,
             as_attachment=True,
-            download_name=f'ai-healthcare-analysis-{datetime.now().strftime("%Y%m%d")}.pdf',
+            download_name=f'market-analysis-{datetime.now().strftime("%Y%m%d")}.pdf',
             mimetype='application/pdf'
         )
         
