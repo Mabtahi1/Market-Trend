@@ -1229,7 +1229,7 @@
     <script>
         function app() {
             return {
-                isAuthenticated: false,
+                isAuthenticated: false, // Force this to false initially
                 authMode: 'login',
                 credentials: { email: '', password: '' },
                 sessionId: '',
@@ -1249,14 +1249,21 @@
                 apiBase: window.location.origin,
 
                 init() {
+                    console.log('App initializing...');
                     const savedSessionId = localStorage.getItem('sessionId');
+                    console.log('Saved session ID:', savedSessionId);
+                    
                     if (savedSessionId) {
                         this.sessionId = savedSessionId;
                         this.validateSession();
+                    } else {
+                        console.log('No saved session, showing login form');
+                        this.isAuthenticated = false;
                     }
                 },
 
                 async validateSession() {
+                    console.log('Validating session...');
                     try {
                         const response = await fetch(`${this.apiBase}/api/auth/validate`, {
                             method: 'POST',
@@ -1264,18 +1271,24 @@
                             body: JSON.stringify({ session_id: this.sessionId })
                         });
 
+                        console.log('Session validation response:', response.status);
+
                         if (response.ok) {
                             const data = await response.json();
+                            console.log('Session valid, user data:', data.user);
                             this.isAuthenticated = true;
                             this.user = data.user;
                         } else {
+                            console.log('Session invalid, clearing localStorage');
                             localStorage.removeItem('sessionId');
                             this.sessionId = '';
+                            this.isAuthenticated = false;
                         }
                     } catch (error) {
                         console.error('Session validation error:', error);
                         localStorage.removeItem('sessionId');
                         this.sessionId = '';
+                        this.isAuthenticated = false;
                     }
                 },
 
