@@ -768,6 +768,16 @@ def api_export_pdf():
     try:
         data = request.get_json()
         results = data.get('results', {})
+        # For now, return a simple message until you install reportlab
+        if not results:
+            return jsonify({'error': 'No analysis results to export'}), 400
+            
+        # Temporary response - you can install reportlab later
+        return jsonify({'error': 'PDF generation requires reportlab package. Install with: pip install reportlab'}), 501
+        
+    except Exception as e:
+        logger.error(f"PDF export error: {str(e)}")
+        return jsonify({'error': f'PDF generation failed: {str(e)}'}), 500
         
         from reportlab.lib.pagesizes import A4
         from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image, PageBreak
