@@ -363,7 +363,7 @@ def api_social_analysis():
         if not query:
             return jsonify({'error': 'Search query is required'}), 400
         
-        # Create mock social media data
+        # Create more detailed mock social media data
         results = {
             'query': query,
             'platforms_scanned': platforms,
@@ -371,30 +371,96 @@ def api_social_analysis():
             'data': {}
         }
         
+        all_content = []
+        
+        # Generate data for each requested platform
         for platform in platforms:
-            if platform in ['reddit', 'youtube', 'twitter']:
-                results['data'][platform] = create_mock_social_data(query)
+            if platform == 'reddit':
+                reddit_data = [
+                    {
+                        'title': f'Discussion about {query} trends in 2024',
+                        'content': f'Great insights on {query}. The community is very positive about recent developments and growth potential.',
+                        'score': 156,
+                        'comments': 23,
+                        'url': 'https://reddit.com/r/technology/sample_post_1',
+                        'subreddit': 'technology',
+                        'created': datetime.now().strftime('%Y-%m-%d %H:%M'),
+                        'sentiment': analyze_sentiment(f'Great insights on {query}. Very positive about developments.')
+                    },
+                    {
+                        'title': f'{query} market analysis and predictions',
+                        'content': f'Interesting analysis of {query} market trends. Some concerns but overall optimistic outlook.',
+                        'score': 89,
+                        'comments': 15,
+                        'url': 'https://reddit.com/r/business/sample_post_2', 
+                        'subreddit': 'business',
+                        'created': datetime.now().strftime('%Y-%m-%d %H:%M'),
+                        'sentiment': analyze_sentiment(f'Interesting analysis of {query} market trends.')
+                    }
+                ]
+                results['data']['reddit'] = reddit_data
+                all_content.extend([post['title'] + ' ' + post['content'] for post in reddit_data])
+                
+            elif platform == 'youtube':
+                youtube_data = [
+                    {
+                        'title': f'{query} Explained: Complete Guide 2024',
+                        'description': f'Comprehensive overview of {query} trends, applications, and future prospects.',
+                        'views': '45.2K',
+                        'likes': '1.8K',
+                        'url': 'https://youtube.com/watch?v=sample1',
+                        'channel': 'Tech Insights',
+                        'published': datetime.now().strftime('%Y-%m-%d'),
+                        'sentiment': analyze_sentiment(f'Comprehensive overview of {query} trends. Positive outlook.')
+                    }
+                ]
+                results['data']['youtube'] = youtube_data
+                all_content.extend([video['title'] + ' ' + video['description'] for video in youtube_data])
+                
+            elif platform == 'twitter':
+                twitter_data = [
+                    {
+                        'text': f'Just discovered this amazing {query} application! Game-changing potential 🚀 #innovation #tech',
+                        'author': '@techexplorer',
+                        'retweets': 45,
+                        'likes': 128,
+                        'url': 'https://twitter.com/sample/status/1',
+                        'created': datetime.now().strftime('%Y-%m-%d %H:%M'),
+                        'sentiment': analyze_sentiment('Amazing application! Game-changing potential.')
+                    }
+                ]
+                results['data']['twitter'] = twitter_data
+                all_content.extend([tweet['text'] for tweet in twitter_data])
         
         # Overall analysis
-        total_posts = sum(len(data) for data in results['data'].values())
-        overall_sentiment = analyze_sentiment(f"Great insights on {query}. Positive community response.")
-        hashtag_suggestions = extract_hashtags(f"{query} trends analysis insights")
+        combined_text = ' '.join(all_content)
         
-        results.update({
-            'summary': f"Found {total_posts} posts across {len(platforms)} platforms about '{query}'. Overall sentiment is {overall_sentiment['sentiment']}.",
-            'overall_sentiment': overall_sentiment,
-            'hashtags': hashtag_suggestions,
-            'key_insights': [
-                f"Scanned {total_posts} posts across {', '.join(platforms)}",
-                f"Overall sentiment: {overall_sentiment['sentiment']}",
-                f"Most discussed topics: {', '.join(hashtag_suggestions[:3])}"
-            ],
-            'recommendations': [
-                "Monitor trending hashtags for engagement opportunities",
-                "Engage with positive sentiment posts",
-                "Create content around trending topics"
-            ]
-        })
+        if combined_text:
+            overall_sentiment = analyze_sentiment(combined_text)
+            hashtag_suggestions = extract_hashtags(combined_text)
+            
+            total_posts = sum(len(data) for data in results['data'].values())
+            positive_sentiment = sum(1 for platform_data in results['data'].values() 
+                                   for item in platform_data 
+                                   if item.get('sentiment', {}).get('sentiment') == 'Positive')
+            
+            results.update({
+                'summary': f"Found {total_posts} posts across {len(platforms)} platforms about '{query}'. Overall sentiment is {overall_sentiment['sentiment']} with {positive_sentiment} positive mentions.",
+                'overall_sentiment': overall_sentiment,
+                'hashtags': hashtag_suggestions,
+                'key_insights': [
+                    f"Scanned {total_posts} posts across {', '.join(platforms)}",
+                    f"Overall sentiment: {overall_sentiment['sentiment']} (polarity: {overall_sentiment['polarity']})",
+                    f"Positive mentions: {positive_sentiment}/{total_posts}",
+                    f"Most discussed topics: {', '.join(hashtag_suggestions[:5])}"
+                ],
+                'recommendations': [
+                    "Monitor trending hashtags for engagement opportunities",
+                    "Engage with positive sentiment posts", 
+                    "Address any negative sentiment concerns",
+                    "Create content around trending topics"
+                ]
+            })
         
         return jsonify(results)
         
