@@ -879,77 +879,126 @@ def api_export_pdf():
         content.append(Spacer(1, 50))
         content.append(Paragraph("EXECUTIVE SUMMARY", title_style))
         content.append(Spacer(1, 30))
-        
-        # Key metrics dashboard
-        def create_summary_dashboard():
-            drawing = Drawing(500, 300)
-            
-            # Background
-            drawing.add(Rect(0, 0, 500, 300, fillColor=colors.HexColor('#2d3748'), strokeColor=None))
-            
-            # Get actual data from results
-            sentiment = results.get('sentiment', 'Neutral').split('(')[0].strip()
-            insights_count = len(results.get('key_insights', []))
-            recommendations_count = len(results.get('recommendations', []))
-            
-            # Sentiment indicator - large circle
-            if 'Positive' in sentiment:
-                sentiment_color = colors.HexColor('#48bb78')
-            elif 'Negative' in sentiment:
-                sentiment_color = colors.HexColor('#f56565')
-            else:
-                sentiment_color = colors.HexColor('#ed8936')
-            
-            drawing.add(Circle(125, 200, 60, fillColor=sentiment_color, strokeColor=colors.white, strokeWidth=3))
-            drawing.add(String(125, 195, sentiment, fontName='Helvetica-Bold', fontSize=12, 
-                             fillColor=colors.white, textAnchor='middle'))
-            drawing.add(String(125, 120, "Market Sentiment", fontName='Helvetica', fontSize=10, 
-                             fillColor=colors.white, textAnchor='middle'))
-            
-            # Insights count
-            drawing.add(Rect(250, 150, 100, 100, fillColor=colors.HexColor('#4a90e2'), strokeColor=colors.white, strokeWidth=2))
-            drawing.add(String(300, 220, str(insights_count), fontName='Helvetica-Bold', fontSize=36, 
-                             fillColor=colors.white, textAnchor='middle'))
-            drawing.add(String(300, 185, "Key", fontName='Helvetica', fontSize=12, 
-                             fillColor=colors.white, textAnchor='middle'))
-            drawing.add(String(300, 170, "Insights", fontName='Helvetica', fontSize=12, 
-                             fillColor=colors.white, textAnchor='middle'))
-            
-            # Recommendations count
-            drawing.add(Rect(370, 150, 100, 100, fillColor=colors.HexColor('#38b2ac'), strokeColor=colors.white, strokeWidth=2))
-            drawing.add(String(420, 220, str(recommendations_count), fontName='Helvetica-Bold', fontSize=36, 
-                             fillColor=colors.white, textAnchor='middle'))
-            drawing.add(String(420, 185, "Strategic", fontName='Helvetica', fontSize=12, 
-                             fillColor=colors.white, textAnchor='middle'))
-            drawing.add(String(420, 170, "Actions", fontName='Helvetica', fontSize=12, 
-                             fillColor=colors.white, textAnchor='middle'))
-            
-            return drawing
-        
-        content.append(create_summary_dashboard())
-        content.append(Spacer(1, 30))
-        
-        # Key Summary Points
+
+        # Summary section with colored title box
         summary_text = results.get('summary', '')
         if summary_text:
-            # Extract first 3 sentences as key points
-            sentences = summary_text.split('.')[:3]
-            key_points = [f"• {sentence.strip()}." for sentence in sentences if sentence.strip()]
-            
-            for point in key_points:
-                point_table = Table([[point]], colWidths=[7*inch])
-                point_table.setStyle(TableStyle([
-                    ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#2d3748')),
-                    ('TEXTCOLOR', (0, 0), (-1, -1), colors.white),
-                    ('FONTSIZE', (0, 0), (-1, -1), 12),
-                    ('LEFTPADDING', (0, 0), (-1, -1), 20),
-                    ('TOPPADDING', (0, 0), (-1, -1), 15),
-                    ('BOTTOMPADDING', (0, 0), (-1, -1), 15),
-                    ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#4a90e2')),
-                ]))
-                content.append(point_table)
-                content.append(Spacer(1, 10))
-        
+            # Summary title in colored box
+            summary_title = Paragraph("MARKET ANALYSIS SUMMARY", ParagraphStyle(
+                'SummaryTitle',
+                parent=styles['Normal'],
+                fontSize=14,
+                textColor=colors.white,
+                fontName='Helvetica-Bold',
+                alignment=TA_LEFT
+            ))
+    
+            summary_title_table = Table([[summary_title]], colWidths=[7*inch])
+            summary_title_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#4a90e2')),
+                ('LEFTPADDING', (0, 0), (-1, -1), 15),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 15),
+                ('TOPPADDING', (0, 0), (-1, -1), 12),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
+            ]))
+            content.append(summary_title_table)
+    
+            # Summary content box
+            summary_para = Paragraph(summary_text, content_style)
+            summary_content_table = Table([[summary_para]], colWidths=[7*inch])
+            summary_content_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#2d3748')),
+                ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#4a90e2')),
+                ('LEFTPADDING', (0, 0), (-1, -1), 15),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 15),
+                ('TOPPADDING', (0, 0), (-1, -1), 15),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 15),
+            ]))
+            content.append(summary_content_table)
+            content.append(Spacer(1, 25))
+
+        # Key Insights titles in colored boxes
+        if results.get('key_insights'):
+            insights_title = Paragraph("KEY INSIGHTS", ParagraphStyle(
+                'InsightsTitle',
+                parent=styles['Normal'],
+                fontSize=14,
+                textColor=colors.white,
+                fontName='Helvetica-Bold',
+                alignment=TA_LEFT
+            ))
+    
+            insights_title_table = Table([[insights_title]], colWidths=[7*inch])
+            insights_title_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#38a169')),
+                ('LEFTPADDING', (0, 0), (-1, -1), 15),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 15),
+                ('TOPPADDING', (0, 0), (-1, -1), 12),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
+            ]))
+            content.append(insights_title_table)
+    
+            # Display insight titles only
+            insights = results['key_insights']
+            if isinstance(insights, list):
+                for i, insight in enumerate(insights, 1):
+                    if isinstance(insight, dict):
+                        insight_title = f"{i}. {insight.get('title', 'Key Insight')}"
+                        insight_para = Paragraph(insight_title, content_style)
+                        insight_table = Table([[insight_para]], colWidths=[7*inch])
+                        insight_table.setStyle(TableStyle([
+                            ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#2d3748')),
+                            ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#38a169')),
+                            ('LEFTPADDING', (0, 0), (-1, -1), 15),
+                            ('RIGHTPADDING', (0, 0), (-1, -1), 15),
+                            ('TOPPADDING', (0, 0), (-1, -1), 10),
+                            ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+                        ]))
+                        content.append(insight_table)
+                        content.append(Spacer(1, 5))
+    
+            content.append(Spacer(1, 20))
+
+        # Recommendations titles in colored boxes
+        if results.get('recommendations'):
+            recommendations_title = Paragraph("STRATEGIC RECOMMENDATIONS", ParagraphStyle(
+                'RecommendationsTitle',
+                parent=styles['Normal'],
+                fontSize=14,
+                textColor=colors.white,
+                fontName='Helvetica-Bold',
+                alignment=TA_LEFT
+            ))
+    
+            recommendations_title_table = Table([[recommendations_title]], colWidths=[7*inch])
+            recommendations_title_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#e53e3e')),
+                ('LEFTPADDING', (0, 0), (-1, -1), 15),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 15),
+                ('TOPPADDING', (0, 0), (-1, -1), 12),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
+            ]))
+            content.append(recommendations_title_table)
+    
+            # Display recommendation titles only
+            recommendations = results['recommendations']
+            if isinstance(recommendations, list):
+                for i, rec in enumerate(recommendations, 1):
+                    if isinstance(rec, dict):
+                        rec_title = f"{i}. {rec.get('title', 'Strategic Recommendation')}"
+                        rec_para = Paragraph(rec_title, content_style)
+                        rec_table = Table([[rec_para]], colWidths=[7*inch])
+                        rec_table.setStyle(TableStyle([
+                            ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#2d3748')),
+                            ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#e53e3e')),
+                            ('LEFTPADDING', (0, 0), (-1, -1), 15),
+                            ('RIGHTPADDING', (0, 0), (-1, -1), 15),
+                            ('TOPPADDING', (0, 0), (-1, -1), 10),
+                            ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+                        ]))
+                        content.append(rec_table)
+                        content.append(Spacer(1, 5))
+
         content.append(PageBreak())
         
         # KEY INSIGHTS PAGE
