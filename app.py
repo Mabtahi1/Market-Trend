@@ -5,6 +5,7 @@ from flask_cors import CORS
 import os
 import logging
 import tempfile
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, Table, TableStyle, KeepTogether
 
 # Import your app2.py functions
 try:
@@ -1198,11 +1199,13 @@ def api_export_pdf():
                             ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
                             ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
                         ]))
-                        content.append(title_table)
+                        # Create content list for KeepTogether
+                        insight_content = [title_table]
                         
                         # Insight explanation
                         exp_para = Paragraph(insight.get('explanation', ''), content_style)
                         exp_table = Table([[exp_para]], colWidths=[7*inch])
+                        exp_table.setStyle(TableStyle([...]))
                         exp_table.setStyle(TableStyle([
                             ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#2d3748')),
                             ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#4a90e2')),
@@ -1211,7 +1214,10 @@ def api_export_pdf():
                             ('TOPPADDING', (0, 0), (-1, -1), 15),
                             ('BOTTOMPADDING', (0, 0), (-1, -1), 15),
                         ]))
-                        content.append(exp_table)
+                        insight_content.append(exp_table)
+
+                        # Keep title and explanation together
+                        content.append(KeepTogether(insight_content))
                         content.append(Spacer(1, 15))
             
             content.append(PageBreak())
@@ -1278,7 +1284,8 @@ def api_export_pdf():
                            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
                         ]))
                         
-                        content.append(title_table)
+                        # Create content list for KeepTogether
+                        rec_content = [title_table]
                         
                         # Recommendation explanation
                         exp_para = Paragraph(rec.get('explanation', ''), content_style)
@@ -1291,7 +1298,10 @@ def api_export_pdf():
                             ('TOPPADDING', (0, 0), (-1, -1), 15),
                             ('BOTTOMPADDING', (0, 0), (-1, -1), 15),
                         ]))
-                        content.append(exp_table)
+                        rec_content.append(exp_table)
+
+                        # Keep title and explanation together
+                        content.append(KeepTogether(rec_content))
                         content.append(Spacer(1, 15))
         
         # Build PDF with custom backgrounds
