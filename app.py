@@ -934,13 +934,41 @@ def api_export_pdf():
                 # Get insights
                 insights = results.get('key_insights', [])
                 
-                # Fixed box width and spacing
+                # Calculate the maximum height needed for all boxes
+                max_box_height = 70  # minimum height
                 box_width = 85
+                max_chars_per_line = 10
+                
+                for i in range(min(5, len(insights))):
+                    if isinstance(insights[i], dict):
+                        title = insights[i].get('title', f'Insight {i+1}')
+                        
+                        # Calculate how many lines this title needs
+                        words = title.split()
+                        lines_needed = 0
+                        current_line = ""
+                        
+                        for word in words:
+                            if len(current_line + " " + word) <= max_chars_per_line:
+                                current_line = current_line + " " + word if current_line else word
+                            else:
+                                if current_line:
+                                    lines_needed += 1
+                                current_line = word
+                        
+                        if current_line:
+                            lines_needed += 1
+                        
+                        # Calculate height needed for this title
+                        height_needed = max(70, lines_needed * 12 + 30)
+                        max_box_height = max(max_box_height, height_needed)
+                
+                # Fixed spacing
                 spacing = 10
                 total_width = 5 * box_width + 4 * spacing
                 start_x = (500 - total_width) / 2
                 
-                # Draw 5 connecting lines and boxes
+                # Draw 5 connecting lines and boxes (all same height)
                 for i in range(5):
                     x = start_x + i * (box_width + spacing)
                     box_center = x + box_width/2
@@ -949,19 +977,11 @@ def api_export_pdf():
                     drawing.add(Line(250, 350, box_center, 300, strokeColor=colors.white, strokeWidth=2))
                     drawing.add(Line(box_center, 300, box_center, 250, strokeColor=colors.white, strokeWidth=2))
                     
-                    # Calculate box height based on title length
-                    box_height = 60  # Default height
-                    if i < len(insights) and isinstance(insights[i], dict):
-                        title = insights[i].get('title', f'Insight {i+1}')
-                        # Estimate lines needed
-                        estimated_lines = max(2, min(5, len(title) // 15 + 1))
-                        box_height = max(60, estimated_lines * 15 + 20)
-                    
-                    # Insight box colors
+                    # Insight box colors (all same height now)
                     box_colors = [colors.HexColor('#4a90e2'), colors.HexColor('#e53e3e'), colors.HexColor('#38a169'), 
                                  colors.HexColor('#ed8936'), colors.HexColor('#805ad5')]
                     
-                    drawing.add(Rect(x, 250 - box_height, box_width, box_height, fillColor=box_colors[i], strokeColor=colors.white, strokeWidth=2))
+                    drawing.add(Rect(x, 250 - max_box_height, box_width, max_box_height, fillColor=box_colors[i], strokeColor=colors.white, strokeWidth=2))
                     
                     # Add insight title with line wrapping
                     if i < len(insights) and isinstance(insights[i], dict):
@@ -971,7 +991,6 @@ def api_export_pdf():
                         words = title.split()
                         lines = []
                         current_line = ""
-                        max_chars_per_line = 12  # Fixed chars per line for consistent width
                         
                         for word in words:
                             if len(current_line + " " + word) <= max_chars_per_line:
@@ -984,20 +1003,20 @@ def api_export_pdf():
                         if current_line:
                             lines.append(current_line)
                         
-                        # Limit to 4 lines maximum
-                        lines = lines[:4]
-                        
                         # Draw each line centered in the box
-                        line_height = 12
+                        line_height = 10
+                        font_size = 8
                         total_text_height = len(lines) * line_height
-                        start_y = 250 - box_height/2 + total_text_height/2
+                        start_y = 250 - max_box_height/2 + total_text_height/2
                         
                         for j, line in enumerate(lines):
-                            drawing.add(String(box_center, start_y - j * line_height, line, 
-                                             fontName='Helvetica-Bold', fontSize=8, 
+                            y_position = start_y - j * line_height
+                            drawing.add(String(box_center, y_position, line, 
+                                             fontName='Helvetica-Bold', fontSize=font_size, 
                                              fillColor=colors.white, textAnchor='middle'))
                     else:
-                        drawing.add(String(box_center, 250 - box_height/2, f"Insight {i+1}", fontName='Helvetica-Bold', fontSize=8, 
+                        drawing.add(String(box_center, 250 - max_box_height/2, f"Insight {i+1}", 
+                                         fontName='Helvetica-Bold', fontSize=8, 
                                          fillColor=colors.white, textAnchor='middle'))
                 
                 return drawing
@@ -1021,13 +1040,41 @@ def api_export_pdf():
                 # Get recommendations
                 recommendations = results.get('recommendations', [])
                 
-                # Fixed box width and spacing
+                # Calculate the maximum height needed for all boxes
+                max_box_height = 70  # minimum height
                 box_width = 85
+                max_chars_per_line = 10
+                
+                for i in range(min(5, len(recommendations))):
+                    if isinstance(recommendations[i], dict):
+                        title = recommendations[i].get('title', f'Action {i+1}')
+                        
+                        # Calculate how many lines this title needs
+                        words = title.split()
+                        lines_needed = 0
+                        current_line = ""
+                        
+                        for word in words:
+                            if len(current_line + " " + word) <= max_chars_per_line:
+                                current_line = current_line + " " + word if current_line else word
+                            else:
+                                if current_line:
+                                    lines_needed += 1
+                                current_line = word
+                        
+                        if current_line:
+                            lines_needed += 1
+                        
+                        # Calculate height needed for this title
+                        height_needed = max(70, lines_needed * 12 + 30)
+                        max_box_height = max(max_box_height, height_needed)
+                
+                # Fixed spacing
                 spacing = 10
                 total_width = 5 * box_width + 4 * spacing
                 start_x = (500 - total_width) / 2
                 
-                # Draw 5 connecting lines and boxes
+                # Draw 5 connecting lines and boxes (all same height)
                 for i in range(5):
                     x = start_x + i * (box_width + spacing)
                     box_center = x + box_width/2
@@ -1036,19 +1083,11 @@ def api_export_pdf():
                     drawing.add(Line(250, 350, box_center, 300, strokeColor=colors.white, strokeWidth=2))
                     drawing.add(Line(box_center, 300, box_center, 250, strokeColor=colors.white, strokeWidth=2))
                     
-                    # Calculate box height based on title length
-                    box_height = 60  # Default height
-                    if i < len(recommendations) and isinstance(recommendations[i], dict):
-                        title = recommendations[i].get('title', f'Action {i+1}')
-                        # Estimate lines needed
-                        estimated_lines = max(2, min(5, len(title) // 15 + 1))
-                        box_height = max(60, estimated_lines * 15 + 20)
-                    
-                    # Recommendation box colors
+                    # Recommendation box colors (all same height now)
                     box_colors = [colors.HexColor('#e53e3e'), colors.HexColor('#dd6b20'), colors.HexColor('#ecc94b'), 
                                  colors.HexColor('#38a169'), colors.HexColor('#3182ce')]
                     
-                    drawing.add(Rect(x, 250 - box_height, box_width, box_height, fillColor=box_colors[i], strokeColor=colors.white, strokeWidth=2))
+                    drawing.add(Rect(x, 250 - max_box_height, box_width, max_box_height, fillColor=box_colors[i], strokeColor=colors.white, strokeWidth=2))
                     
                     # Add recommendation title with line wrapping
                     if i < len(recommendations) and isinstance(recommendations[i], dict):
@@ -1058,7 +1097,6 @@ def api_export_pdf():
                         words = title.split()
                         lines = []
                         current_line = ""
-                        max_chars_per_line = 12  # Fixed chars per line for consistent width
                         
                         for word in words:
                             if len(current_line + " " + word) <= max_chars_per_line:
@@ -1071,20 +1109,20 @@ def api_export_pdf():
                         if current_line:
                             lines.append(current_line)
                         
-                        # Limit to 4 lines maximum
-                        lines = lines[:4]
-                        
                         # Draw each line centered in the box
-                        line_height = 12
+                        line_height = 10
+                        font_size = 8
                         total_text_height = len(lines) * line_height
-                        start_y = 250 - box_height/2 + total_text_height/2
+                        start_y = 250 - max_box_height/2 + total_text_height/2
                         
                         for j, line in enumerate(lines):
-                            drawing.add(String(box_center, start_y - j * line_height, line, 
-                                             fontName='Helvetica-Bold', fontSize=8, 
+                            y_position = start_y - j * line_height
+                            drawing.add(String(box_center, y_position, line, 
+                                             fontName='Helvetica-Bold', fontSize=font_size, 
                                              fillColor=colors.white, textAnchor='middle'))
                     else:
-                        drawing.add(String(box_center, 250 - box_height/2, f"Action {i+1}", fontName='Helvetica-Bold', fontSize=8, 
+                        drawing.add(String(box_center, 250 - max_box_height/2, f"Action {i+1}", 
+                                         fontName='Helvetica-Bold', fontSize=8, 
                                          fillColor=colors.white, textAnchor='middle'))
                 
                 return drawing
