@@ -917,87 +917,90 @@ def api_export_pdf():
             content.append(summary_content_table)
             content.append(Spacer(1, 25))
 
-        # Key Insights titles in colored boxes
+        # Key Insights with flowchart
         if results.get('key_insights'):
-            insights_title = Paragraph("KEY INSIGHTS", ParagraphStyle(
-                'InsightsTitle',
-                parent=styles['Normal'],
-                fontSize=14,
-                textColor=colors.white,
-                fontName='Helvetica-Bold',
-                alignment=TA_LEFT
-            ))
+            def create_insights_flowchart():
+                drawing = Drawing(500, 300)
+        
+                # Background
+                drawing.add(Rect(0, 0, 500, 300, fillColor=colors.HexColor('#2d3748'), strokeColor=None))
+        
+                # Main header box
+                drawing.add(Rect(175, 250, 150, 40, fillColor=colors.HexColor('#38a169'), strokeColor=colors.white, strokeWidth=2))
+                drawing.add(String(250, 265, "KEY INSIGHTS", fontName='Helvetica-Bold', fontSize=12, 
+                                 fillColor=colors.white, textAnchor='middle'))
+        
+                # Get insights
+                insights = results.get('key_insights', [])
+        
+                # Draw 5 connecting lines and boxes
+                for i in range(5):
+                    x = 20 + i * 92
+                    # Vertical line from header to box
+                    drawing.add(Line(250, 250, x + 46, 200, strokeColor=colors.white, strokeWidth=2))
+                    drawing.add(Line(x + 46, 200, x + 46, 150, strokeColor=colors.white, strokeWidth=2))
+            
+                    # Insight box (same size for all)
+                    box_colors = [colors.HexColor('#4a90e2'), colors.HexColor('#e53e3e'), colors.HexColor('#38a169'), 
+                                 colors.HexColor('#ed8936'), colors.HexColor('#805ad5')]
+            
+                    drawing.add(Rect(x, 100, 92, 50, fillColor=box_colors[i], strokeColor=colors.white, strokeWidth=2))
+            
+                    # Add insight title
+                    if i < len(insights) and isinstance(insights[i], dict):
+                        title = insights[i].get('title', f'Insight {i+1}')[:25] + ("..." if len(insights[i].get('title', '')) > 25 else '')
+                        drawing.add(String(x + 46, 125, title, fontName='Helvetica-Bold', fontSize=7, 
+                                         fillColor=colors.white, textAnchor='middle'))
+                    else:
+                        drawing.add(String(x + 46, 125, f"Insight {i+1}", fontName='Helvetica-Bold', fontSize=8, 
+                                         fillColor=colors.white, textAnchor='middle'))
+        
+                return drawing
     
-            insights_title_table = Table([[insights_title]], colWidths=[7*inch])
-            insights_title_table.setStyle(TableStyle([
-                ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#38a169')),
-                ('LEFTPADDING', (0, 0), (-1, -1), 15),
-                ('RIGHTPADDING', (0, 0), (-1, -1), 15),
-                ('TOPPADDING', (0, 0), (-1, -1), 12),
-                ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
-            ]))
-            content.append(insights_title_table)
-    
-            # Display insight titles only
-            insights = results['key_insights']
-            if isinstance(insights, list):
-                for i, insight in enumerate(insights, 1):
-                    if isinstance(insight, dict):
-                        insight_title = f"{i}. {insight.get('title', 'Key Insight')}"
-                        insight_para = Paragraph(insight_title, content_style)
-                        insight_table = Table([[insight_para]], colWidths=[7*inch])
-                        insight_table.setStyle(TableStyle([
-                            ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#2d3748')),
-                            ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#38a169')),
-                            ('LEFTPADDING', (0, 0), (-1, -1), 15),
-                            ('RIGHTPADDING', (0, 0), (-1, -1), 15),
-                            ('TOPPADDING', (0, 0), (-1, -1), 10),
-                            ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
-                        ]))
-                        content.append(insight_table)
-                        content.append(Spacer(1, 5))
-    
-            content.append(Spacer(1, 20))
+            content.append(create_insights_flowchart())
+            content.append(Spacer(1, 25))
 
-        # Recommendations titles in colored boxes
+        # Recommendations with flowchart
         if results.get('recommendations'):
-            recommendations_title = Paragraph("STRATEGIC RECOMMENDATIONS", ParagraphStyle(
-                'RecommendationsTitle',
-                parent=styles['Normal'],
-                fontSize=14,
-                textColor=colors.white,
-                fontName='Helvetica-Bold',
-                alignment=TA_LEFT
-            ))
+            def create_recommendations_flowchart():
+                drawing = Drawing(500, 300)
+        
+                # Background
+                drawing.add(Rect(0, 0, 500, 300, fillColor=colors.HexColor('#2d3748'), strokeColor=None))
+        
+                # Main header box
+                drawing.add(Rect(125, 250, 250, 40, fillColor=colors.HexColor('#e53e3e'), strokeColor=colors.white, strokeWidth=2))
+                drawing.add(String(250, 265, "STRATEGIC RECOMMENDATIONS", fontName='Helvetica-Bold', fontSize=12, 
+                                 fillColor=colors.white, textAnchor='middle'))
+        
+                # Get recommendations
+                recommendations = results.get('recommendations', [])
+        
+                # Draw 5 connecting lines and boxes
+                for i in range(5):
+                    x = 20 + i * 92
+                    # Vertical line from header to box
+                    drawing.add(Line(250, 250, x + 46, 200, strokeColor=colors.white, strokeWidth=2))
+                    drawing.add(Line(x + 46, 200, x + 46, 150, strokeColor=colors.white, strokeWidth=2))
+            
+                    # Recommendation box (same size for all)
+                    box_colors = [colors.HexColor('#e53e3e'), colors.HexColor('#dd6b20'), colors.HexColor('#ecc94b'), 
+                                 colors.HexColor('#38a169'), colors.HexColor('#3182ce')]
+            
+                    drawing.add(Rect(x, 100, 92, 50, fillColor=box_colors[i], strokeColor=colors.white, strokeWidth=2))
+            
+                    # Add recommendation title
+                    if i < len(recommendations) and isinstance(recommendations[i], dict):
+                        title = recommendations[i].get('title', f'Action {i+1}')[:25] + ("..." if len(recommendations[i].get('title', '')) > 25 else '')
+                        drawing.add(String(x + 46, 125, title, fontName='Helvetica-Bold', fontSize=7, 
+                                         fillColor=colors.white, textAnchor='middle'))
+                    else:
+                        drawing.add(String(x + 46, 125, f"Action {i+1}", fontName='Helvetica-Bold', fontSize=8, 
+                                         fillColor=colors.white, textAnchor='middle'))
+        
+                return drawing
     
-            recommendations_title_table = Table([[recommendations_title]], colWidths=[7*inch])
-            recommendations_title_table.setStyle(TableStyle([
-                ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#e53e3e')),
-                ('LEFTPADDING', (0, 0), (-1, -1), 15),
-                ('RIGHTPADDING', (0, 0), (-1, -1), 15),
-                ('TOPPADDING', (0, 0), (-1, -1), 12),
-                ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
-            ]))
-            content.append(recommendations_title_table)
-    
-            # Display recommendation titles only
-            recommendations = results['recommendations']
-            if isinstance(recommendations, list):
-                for i, rec in enumerate(recommendations, 1):
-                    if isinstance(rec, dict):
-                        rec_title = f"{i}. {rec.get('title', 'Strategic Recommendation')}"
-                        rec_para = Paragraph(rec_title, content_style)
-                        rec_table = Table([[rec_para]], colWidths=[7*inch])
-                        rec_table.setStyle(TableStyle([
-                            ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#2d3748')),
-                            ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#e53e3e')),
-                            ('LEFTPADDING', (0, 0), (-1, -1), 15),
-                            ('RIGHTPADDING', (0, 0), (-1, -1), 15),
-                            ('TOPPADDING', (0, 0), (-1, -1), 10),
-                            ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
-                        ]))
-                        content.append(rec_table)
-                        content.append(Spacer(1, 5))
+            content.append(create_recommendations_flowchart())
 
         content.append(PageBreak())
         
