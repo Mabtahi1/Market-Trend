@@ -917,180 +917,180 @@ def api_export_pdf():
             content.append(summary_content_table)
             content.append(Spacer(1, 25))
 
-        '''python
+        
         # Key Insights with flowchart
-if results.get('key_insights'):
-    def create_insights_flowchart():
-        drawing = Drawing(500, 350)
-        
-        # Background
-        drawing.add(Rect(0, 0, 500, 350, fillColor=colors.HexColor('#2d3748'), strokeColor=None))
-        
-        # Get insights and calculate max box width needed
-        insights = results.get('key_insights', [])
-        max_width = 80  # minimum width
-        
-        # Calculate the width needed for the longest title
-        for i in range(min(5, len(insights))):
-            if isinstance(insights[i], dict):
-                title = insights[i].get('title', f'Insight {i+1}')
-                # Estimate width needed (rough calculation)
-                estimated_width = max(60, min(120, len(title) * 3))
-                max_width = max(max_width, estimated_width)
-        
-        # Calculate spacing between boxes
-        total_boxes_width = max_width * 5
-        available_space = 480  # total width minus margins
-        spacing = max(5, (available_space - total_boxes_width) / 6)  # space between boxes
-        
-        # Main header box
-        drawing.add(Rect(175, 300, 150, 40, fillColor=colors.HexColor('#38a169'), strokeColor=colors.white, strokeWidth=2))
-        drawing.add(String(250, 315, "KEY INSIGHTS", fontName='Helvetica-Bold', fontSize=12, 
-                         fillColor=colors.white, textAnchor='middle'))
-        
-        # Draw 5 connecting lines and boxes
-        for i in range(5):
-            x = spacing + i * (max_width + spacing)
-            box_center = x + max_width/2
-            
-            # Vertical line from header to box
-            drawing.add(Line(250, 300, box_center, 250, strokeColor=colors.white, strokeWidth=2))
-            drawing.add(Line(box_center, 250, box_center, 200, strokeColor=colors.white, strokeWidth=2))
-            
-            # Insight box (all same size based on longest title)
-            box_colors = [colors.HexColor('#4a90e2'), colors.HexColor('#e53e3e'), colors.HexColor('#38a169'), 
-                         colors.HexColor('#ed8936'), colors.HexColor('#805ad5')]
-            
-            box_height = 60  # Increased height for multi-line text
-            drawing.add(Rect(x, 120, max_width, box_height, fillColor=box_colors[i], strokeColor=colors.white, strokeWidth=2))
-            
-            # Add insight title with line wrapping
-            if i < len(insights) and isinstance(insights[i], dict):
-                title = insights[i].get('title', f'Insight {i+1}')
+        if results.get('key_insights'):
+            def create_insights_flowchart():
+                drawing = Drawing(500, 350)
                 
-                # Split title into words and create lines that fit
-                words = title.split()
-                lines = []
-                current_line = ""
-                max_chars_per_line = int(max_width / 4)  # Rough estimate
+                # Background
+                drawing.add(Rect(0, 0, 500, 350, fillColor=colors.HexColor('#2d3748'), strokeColor=None))
                 
-                for word in words:
-                    if len(current_line + " " + word) <= max_chars_per_line:
-                        current_line = current_line + " " + word if current_line else word
-                    else:
+                # Get insights and calculate max box width needed
+                insights = results.get('key_insights', [])
+                max_width = 80  # minimum width
+                
+                # Calculate the width needed for the longest title
+                for i in range(min(5, len(insights))):
+                    if isinstance(insights[i], dict):
+                        title = insights[i].get('title', f'Insight {i+1}')
+                        # Estimate width needed (rough calculation)
+                        estimated_width = max(60, min(120, len(title) * 3))
+                        max_width = max(max_width, estimated_width)
+                
+                # Calculate spacing between boxes
+                total_boxes_width = max_width * 5
+                available_space = 480  # total width minus margins
+                spacing = max(5, (available_space - total_boxes_width) / 6)  # space between boxes
+                
+                # Main header box
+                drawing.add(Rect(175, 300, 150, 40, fillColor=colors.HexColor('#38a169'), strokeColor=colors.white, strokeWidth=2))
+                drawing.add(String(250, 315, "KEY INSIGHTS", fontName='Helvetica-Bold', fontSize=12, 
+                                 fillColor=colors.white, textAnchor='middle'))
+                
+                # Draw 5 connecting lines and boxes
+                for i in range(5):
+                    x = spacing + i * (max_width + spacing)
+                    box_center = x + max_width/2
+                    
+                    # Vertical line from header to box
+                    drawing.add(Line(250, 300, box_center, 250, strokeColor=colors.white, strokeWidth=2))
+                    drawing.add(Line(box_center, 250, box_center, 200, strokeColor=colors.white, strokeWidth=2))
+                    
+                    # Insight box (all same size based on longest title)
+                    box_colors = [colors.HexColor('#4a90e2'), colors.HexColor('#e53e3e'), colors.HexColor('#38a169'), 
+                                 colors.HexColor('#ed8936'), colors.HexColor('#805ad5')]
+                    
+                    box_height = 60  # Increased height for multi-line text
+                    drawing.add(Rect(x, 120, max_width, box_height, fillColor=box_colors[i], strokeColor=colors.white, strokeWidth=2))
+                    
+                    # Add insight title with line wrapping
+                    if i < len(insights) and isinstance(insights[i], dict):
+                        title = insights[i].get('title', f'Insight {i+1}')
+                        
+                        # Split title into words and create lines that fit
+                        words = title.split()
+                        lines = []
+                        current_line = ""
+                        max_chars_per_line = int(max_width / 4)  # Rough estimate
+                        
+                        for word in words:
+                            if len(current_line + " " + word) <= max_chars_per_line:
+                                current_line = current_line + " " + word if current_line else word
+                            else:
+                                if current_line:
+                                    lines.append(current_line)
+                                current_line = word
+                        
                         if current_line:
                             lines.append(current_line)
-                        current_line = word
+                        
+                        # Limit to 3 lines maximum
+                        lines = lines[:3]
+                        
+                        # Draw each line
+                        line_height = 10
+                        start_y = 150 + (len(lines) - 1) * line_height / 2
+                        
+                        for j, line in enumerate(lines):
+                            drawing.add(String(box_center, start_y - j * line_height, line, 
+                                             fontName='Helvetica-Bold', fontSize=8, 
+                                             fillColor=colors.white, textAnchor='middle'))
+                    else:
+                        drawing.add(String(box_center, 150, f"Insight {i+1}", fontName='Helvetica-Bold', fontSize=8, 
+                                         fillColor=colors.white, textAnchor='middle'))
                 
-                if current_line:
-                    lines.append(current_line)
-                
-                # Limit to 3 lines maximum
-                lines = lines[:3]
-                
-                # Draw each line
-                line_height = 10
-                start_y = 150 + (len(lines) - 1) * line_height / 2
-                
-                for j, line in enumerate(lines):
-                    drawing.add(String(box_center, start_y - j * line_height, line, 
-                                     fontName='Helvetica-Bold', fontSize=8, 
-                                     fillColor=colors.white, textAnchor='middle'))
-            else:
-                drawing.add(String(box_center, 150, f"Insight {i+1}", fontName='Helvetica-Bold', fontSize=8, 
-                                 fillColor=colors.white, textAnchor='middle'))
+                return drawing
+            
+            content.append(create_insights_flowchart())
+            content.append(Spacer(1, 25))
         
-        return drawing
-    
-    content.append(create_insights_flowchart())
-    content.append(Spacer(1, 25))
+        # Recommendations with flowchart
+        if results.get('recommendations'):
+            def create_recommendations_flowchart():
+                drawing = Drawing(500, 350)
+                
+                # Background
+                drawing.add(Rect(0, 0, 500, 350, fillColor=colors.HexColor('#2d3748'), strokeColor=None))
+                
+                # Get recommendations and calculate max box width needed
+                recommendations = results.get('recommendations', [])
+                max_width = 80  # minimum width
+                
+                # Calculate the width needed for the longest title
+                for i in range(min(5, len(recommendations))):
+                    if isinstance(recommendations[i], dict):
+                        title = recommendations[i].get('title', f'Action {i+1}')
+                        # Estimate width needed (rough calculation)
+                        estimated_width = max(60, min(120, len(title) * 3))
+                        max_width = max(max_width, estimated_width)
+                
+                # Calculate spacing between boxes
+                total_boxes_width = max_width * 5
+                available_space = 480  # total width minus margins
+                spacing = max(5, (available_space - total_boxes_width) / 6)  # space between boxes
+                
+                # Main header box
+                drawing.add(Rect(125, 300, 250, 40, fillColor=colors.HexColor('#e53e3e'), strokeColor=colors.white, strokeWidth=2))
+                drawing.add(String(250, 315, "STRATEGIC RECOMMENDATIONS", fontName='Helvetica-Bold', fontSize=12, 
+                                 fillColor=colors.white, textAnchor='middle'))
+                
+                # Draw 5 connecting lines and boxes
+                for i in range(5):
+                    x = spacing + i * (max_width + spacing)
+                    box_center = x + max_width/2
+                    
+                    # Vertical line from header to box
+                    drawing.add(Line(250, 300, box_center, 250, strokeColor=colors.white, strokeWidth=2))
+                    drawing.add(Line(box_center, 250, box_center, 200, strokeColor=colors.white, strokeWidth=2))
+                    
+                    # Recommendation box (all same size based on longest title)
+                    box_colors = [colors.HexColor('#e53e3e'), colors.HexColor('#dd6b20'), colors.HexColor('#ecc94b'), 
+                                 colors.HexColor('#38a169'), colors.HexColor('#3182ce')]
+                    
+                    box_height = 60  # Increased height for multi-line text
+                    drawing.add(Rect(x, 120, max_width, box_height, fillColor=box_colors[i], strokeColor=colors.white, strokeWidth=2))
+                    
+                    # Add recommendation title with line wrapping
+                    if i < len(recommendations) and isinstance(recommendations[i], dict):
+                        title = recommendations[i].get('title', f'Action {i+1}')
+                        
+                        # Split title into words and create lines that fit
+                        words = title.split()
+                        lines = []
+                        current_line = ""
+                        max_chars_per_line = int(max_width / 4)  # Rough estimate
+                        
+                        for word in words:
+                            if len(current_line + " " + word) <= max_chars_per_line:
+                                current_line = current_line + " " + word if current_line else word
+                            else:
+                                if current_line:
+                                    lines.append(current_line)
+                                current_line = word
+                        
+                        if current_line:
+                            lines.append(current_line)
+                        
+                        # Limit to 3 lines maximum
+                        lines = lines[:3]
+                        
+                        # Draw each line
+                        line_height = 10
+                        start_y = 150 + (len(lines) - 1) * line_height / 2
+                        
+                        for j, line in enumerate(lines):
+                            drawing.add(String(box_center, start_y - j * line_height, line, 
+                                             fontName='Helvetica-Bold', fontSize=8, 
+                                             fillColor=colors.white, textAnchor='middle'))
+                    else:
+                        drawing.add(String(box_center, 150, f"Action {i+1}", fontName='Helvetica-Bold', fontSize=8, 
+                                         fillColor=colors.white, textAnchor='middle'))
+                
+                return drawing
+            
+            content.append(create_recommendations_flowchart())
 
-# Recommendations with flowchart
-if results.get('recommendations'):
-    def create_recommendations_flowchart():
-        drawing = Drawing(500, 350)
-        
-        # Background
-        drawing.add(Rect(0, 0, 500, 350, fillColor=colors.HexColor('#2d3748'), strokeColor=None))
-        
-        # Get recommendations and calculate max box width needed
-        recommendations = results.get('recommendations', [])
-        max_width = 80  # minimum width
-        
-        # Calculate the width needed for the longest title
-        for i in range(min(5, len(recommendations))):
-            if isinstance(recommendations[i], dict):
-                title = recommendations[i].get('title', f'Action {i+1}')
-                # Estimate width needed (rough calculation)
-                estimated_width = max(60, min(120, len(title) * 3))
-                max_width = max(max_width, estimated_width)
-        
-        # Calculate spacing between boxes
-        total_boxes_width = max_width * 5
-        available_space = 480  # total width minus margins
-        spacing = max(5, (available_space - total_boxes_width) / 6)  # space between boxes
-        
-        # Main header box
-        drawing.add(Rect(125, 300, 250, 40, fillColor=colors.HexColor('#e53e3e'), strokeColor=colors.white, strokeWidth=2))
-        drawing.add(String(250, 315, "STRATEGIC RECOMMENDATIONS", fontName='Helvetica-Bold', fontSize=12, 
-                         fillColor=colors.white, textAnchor='middle'))
-        
-        # Draw 5 connecting lines and boxes
-        for i in range(5):
-            x = spacing + i * (max_width + spacing)
-            box_center = x + max_width/2
-            
-            # Vertical line from header to box
-            drawing.add(Line(250, 300, box_center, 250, strokeColor=colors.white, strokeWidth=2))
-            drawing.add(Line(box_center, 250, box_center, 200, strokeColor=colors.white, strokeWidth=2))
-            
-            # Recommendation box (all same size based on longest title)
-            box_colors = [colors.HexColor('#e53e3e'), colors.HexColor('#dd6b20'), colors.HexColor('#ecc94b'), 
-                         colors.HexColor('#38a169'), colors.HexColor('#3182ce')]
-            
-            box_height = 60  # Increased height for multi-line text
-            drawing.add(Rect(x, 120, max_width, box_height, fillColor=box_colors[i], strokeColor=colors.white, strokeWidth=2))
-            
-            # Add recommendation title with line wrapping
-            if i < len(recommendations) and isinstance(recommendations[i], dict):
-                title = recommendations[i].get('title', f'Action {i+1}')
-                
-                # Split title into words and create lines that fit
-                words = title.split()
-                lines = []
-                current_line = ""
-                max_chars_per_line = int(max_width / 4)  # Rough estimate
-                
-                for word in words:
-                    if len(current_line + " " + word) <= max_chars_per_line:
-                        current_line = current_line + " " + word if current_line else word
-                    else:
-                        if current_line:
-                            lines.append(current_line)
-                        current_line = word
-                
-                if current_line:
-                    lines.append(current_line)
-                
-                # Limit to 3 lines maximum
-                lines = lines[:3]
-                
-                # Draw each line
-                line_height = 10
-                start_y = 150 + (len(lines) - 1) * line_height / 2
-                
-                for j, line in enumerate(lines):
-                    drawing.add(String(box_center, start_y - j * line_height, line, 
-                                     fontName='Helvetica-Bold', fontSize=8, 
-                                     fillColor=colors.white, textAnchor='middle'))
-            else:
-                drawing.add(String(box_center, 150, f"Action {i+1}", fontName='Helvetica-Bold', fontSize=8, 
-                                 fillColor=colors.white, textAnchor='middle'))
-        
-        return drawing
-    
-    content.append(create_recommendations_flowchart())
-    '''
 
         content.append(PageBreak())
         
