@@ -1205,7 +1205,6 @@ def api_export_pdf():
                         # Insight explanation
                         exp_para = Paragraph(insight.get('explanation', ''), content_style)
                         exp_table = Table([[exp_para]], colWidths=[7*inch])
-                        exp_table.setStyle(TableStyle([...]))
                         exp_table.setStyle(TableStyle([
                             ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#2d3748')),
                             ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#4a90e2')),
