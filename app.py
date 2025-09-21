@@ -367,7 +367,7 @@ def api_comprehensive_analysis():
                 if not analysis_result.get('error') and analysis_result.get('full_response'):
                     app2_response = analysis_result.get('full_response', '')
                     if len(app2_response) > 300:  # Only use if substantial
-                        summary = app2_response[:800] + "..." if len(app2_response) > 800 else app2_response
+                        summary = app2_response  # Remove truncation
             except Exception as e:
                 logger.error(f"app2.py analysis error: {e}")
         
@@ -545,7 +545,7 @@ def api_text_analysis():
         
         # Fallback
         if not summary:
-            summary = text[:200] + "..." if len(text) > 200 else text
+            summary = text
             
         if not key_insights:
             key_insights = [
@@ -618,7 +618,7 @@ def api_url_analysis():
         sentiment_analysis = analyze_sentiment(text)
         hashtags = extract_hashtags(text)
         
-        summary = text[:200] + "..." if len(text) > 200 else text
+        summary = text
         
         result = {
             'url': url,
@@ -712,7 +712,7 @@ def api_file_analysis():
         sentiment_analysis = analyze_sentiment(text)
         hashtags = extract_hashtags(text)
         
-        summary = text[:200] + "..." if len(text) > 200 else text
+        summary = text
         
         result = {
             'filename': file.filename,
