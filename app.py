@@ -232,6 +232,123 @@ def get_news_data(query, days_back=180):
     return []
 
 
+def create_enhanced_reddit_mock(query):
+    """Enhanced Reddit mock data with more realistic posts"""
+    return [
+        {
+            'title': f'{query} - Initial thoughts and review',
+            'content': f'Just got my hands on {query}. Initial impressions are positive, though there are some concerns about pricing and feature set compared to alternatives.',
+            'score': 234,
+            'comments': 89,
+            'subreddit': 'technology',
+            'url': 'https://reddit.com/r/technology/sample1',
+            'created': datetime.now().strftime('%Y-%m-%d %H:%M'),
+            'platform': 'reddit',
+            'sentiment': analyze_sentiment(f'Initial impressions positive, concerns about pricing')
+        },
+        {
+            'title': f'Is {query} worth the investment? Market analysis',
+            'content': f'Looking at {query} from investment perspective. Market trends show mixed signals but overall trajectory seems positive.',
+            'score': 156,
+            'comments': 67,
+            'subreddit': 'investing',
+            'url': 'https://reddit.com/r/investing/sample2',
+            'created': datetime.now().strftime('%Y-%m-%d %H:%M'),
+            'platform': 'reddit',
+            'sentiment': analyze_sentiment(f'Mixed signals but overall positive trajectory')
+        },
+        {
+            'title': f'{query} performance review after 3 months',
+            'content': f'Been using {query} for 3 months now. Performance has been solid, some minor issues but generally satisfied with the results.',
+            'score': 189,
+            'comments': 43,
+            'subreddit': 'reviews',
+            'url': 'https://reddit.com/r/reviews/sample3',
+            'created': datetime.now().strftime('%Y-%m-%d %H:%M'),
+            'platform': 'reddit',
+            'sentiment': analyze_sentiment(f'Performance solid, generally satisfied')
+        },
+        {
+            'title': f'Problems with {query} - anyone else experiencing this?',
+            'content': f'Having some issues with {query}. Customer service has been unresponsive and the product isnt meeting expectations.',
+            'score': 67,
+            'comments': 124,
+            'subreddit': 'complaints',
+            'url': 'https://reddit.com/r/complaints/sample4',
+            'created': datetime.now().strftime('%Y-%m-%d %H:%M'),
+            'platform': 'reddit',
+            'sentiment': analyze_sentiment(f'Having issues, unresponsive service, not meeting expectations')
+        },
+        {
+            'title': f'{query} vs competitors - detailed comparison',
+            'content': f'Comprehensive comparison of {query} against major competitors. Results show advantages in some areas but falls short in others.',
+            'score': 312,
+            'comments': 78,
+            'subreddit': 'comparisons',
+            'url': 'https://reddit.com/r/comparisons/sample5',
+            'created': datetime.now().strftime('%Y-%m-%d %H:%M'),
+            'platform': 'reddit',
+            'sentiment': analyze_sentiment(f'Advantages in some areas, falls short in others')
+        }
+    ]
+
+def create_enhanced_youtube_mock(query):
+    """Enhanced YouTube mock data"""
+    return [
+        {
+            'title': f'{query} - Complete Review and Analysis 2024',
+            'description': f'Comprehensive review of {query} covering all major features, pricing, and market positioning against competitors.',
+            'views': '245K',
+            'likes': '12.3K',
+            'channel': 'Tech Analysis Pro',
+            'published': datetime.now().strftime('%Y-%m-%d'),
+            'platform': 'youtube',
+            'sentiment': analyze_sentiment(f'Comprehensive review covering features and pricing')
+        },
+        {
+            'title': f'Why {query} is Changing the Game',
+            'description': f'Deep dive into how {query} is disrupting the market and what it means for consumers and businesses.',
+            'views': '98K',
+            'likes': '4.2K',
+            'channel': 'Market Insights',
+            'published': datetime.now().strftime('%Y-%m-%d'),
+            'platform': 'youtube',
+            'sentiment': analyze_sentiment(f'Changing the game, disrupting the market')
+        }
+    ]
+
+def create_enhanced_twitter_mock(query):
+    """Enhanced Twitter mock data"""
+    return [
+        {
+            'text': f'Just tried {query} and honestly impressed with the performance improvements! Game changer for productivity',
+            'author': '@tech_reviewer',
+            'retweets': 89,
+            'likes': 456,
+            'created': datetime.now().strftime('%Y-%m-%d %H:%M'),
+            'platform': 'twitter',
+            'sentiment': analyze_sentiment('impressed with performance improvements, game changer')
+        },
+        {
+            'text': f'{query} pricing is getting out of hand. Not sure if the premium is justified anymore',
+            'author': '@budget_conscious',
+            'retweets': 34,
+            'likes': 167,
+            'created': datetime.now().strftime('%Y-%m-%d %H:%M'),
+            'platform': 'twitter',
+            'sentiment': analyze_sentiment('pricing out of hand, premium not justified')
+        },
+        {
+            'text': f'Been comparing {query} with alternatives. Mixed results but overall satisfied with the choice',
+            'author': '@comparison_guru',
+            'retweets': 67,
+            'likes': 234,
+            'created': datetime.now().strftime('%Y-%m-%d %H:%M'),
+            'platform': 'twitter',
+            'sentiment': analyze_sentiment('mixed results but overall satisfied')
+        }
+    ]
+
 
 # YOUR ORIGINAL ROUTES (exactly as they were)
 @app.route('/')
