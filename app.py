@@ -809,7 +809,7 @@ def api_export_pdf():
             
             # Add actual Prolexis Analytics logo
             try:
-                logo_path = "prolexis_logo.png"  # Make sure this file is in your project directory
+                logo_path = "Prolexis_logo.png"  # Make sure this file is in your project directory
                 canvas.drawImage(logo_path, A4[0]-100, A4[1]-70, width=40, height=40, mask='auto')
             except:
                 # Fallback if logo file not found
