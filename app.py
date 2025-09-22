@@ -79,22 +79,54 @@ def analyze_sentiment(text):
                 "confidence": round(abs(polarity), 3)
             }
     except Exception as e:
-        logger.error(f"Sentiment analysis error: {e}")
+        logger.error(f"TextBlob sentiment analysis error: {e}")
     
-    # Simple fallback
-    positive_words = ['good', 'great', 'excellent', 'amazing', 'positive', 'love', 'best']
-    negative_words = ['bad', 'terrible', 'awful', 'hate', 'worst', 'negative', 'poor']
+    # Enhanced fallback with more words
+    positive_words = [
+        'good', 'great', 'excellent', 'amazing', 'positive', 'love', 'best', 
+        'outstanding', 'fantastic', 'wonderful', 'success', 'growth', 'opportunity',
+        'strong', 'bullish', 'optimistic', 'confident', 'favorable', 'promising',
+        'increase', 'gain', 'profit', 'advance', 'improve', 'boost', 'surge'
+    ]
+    negative_words = [
+        'bad', 'terrible', 'awful', 'hate', 'worst', 'negative', 'poor',
+        'decline', 'loss', 'drop', 'fall', 'weak', 'bearish', 'pessimistic',
+        'concern', 'risk', 'threat', 'problem', 'crisis', 'failure', 'decrease'
+    ]
     
     text_lower = text.lower()
-    positive_count = sum(1 for word in positive_words if word in text_lower)
-    negative_count = sum(1 for word in negative_words if word in text_lower)
     
-    if positive_count > negative_count:
-        return {"sentiment": "Positive", "polarity": 0.5, "confidence": 0.6}
-    elif negative_count > positive_count:
-        return {"sentiment": "Negative", "polarity": -0.5, "confidence": 0.6}
+    # Count words with weights
+    positive_count = 0
+    negative_count = 0
+    
+    for word in positive_words:
+        positive_count += text_lower.count(word)
+    
+    for word in negative_words:
+        negative_count += text_lower.count(word)
+    
+    # Calculate polarity
+    total_sentiment_words = positive_count + negative_count
+    if total_sentiment_words == 0:
+        polarity = 0.0
     else:
-        return {"sentiment": "Neutral", "polarity": 0.0, "confidence": 0.3}
+        polarity = (positive_count - negative_count) / max(total_sentiment_words, 1)
+        polarity = max(-1.0, min(1.0, polarity))  # Clamp between -1 and 1
+    
+    # Determine sentiment
+    if polarity > 0.2:
+        sentiment = "Positive"
+    elif polarity < -0.2:
+        sentiment = "Negative"
+    else:
+        sentiment = "Neutral"
+    
+    return {
+        "sentiment": sentiment,
+        "polarity": round(polarity, 3),
+        "confidence": round(abs(polarity), 3)
+    }
 
 def extract_hashtags(text, max_hashtags=10):
     try:
