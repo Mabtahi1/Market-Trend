@@ -6,6 +6,7 @@ import os
 import logging
 import tempfile
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, Table, TableStyle, KeepTogether
+from PIL import Image
 
 # Import your app2.py functions
 try:
@@ -806,13 +807,18 @@ def api_export_pdf():
             canvas.setFont("Helvetica", 12)
             canvas.drawString(50, A4[1]-70, "Advanced Market Intelligence & Trend Analysis")
             
-            # Logo placeholder (you can add actual logo later)
-            canvas.setFillColor(colors.HexColor('#4a90e2'))
-            canvas.circle(A4[0]-80, A4[1]-50, 25, fill=1, stroke=1)
-            canvas.setFillColor(colors.white)
-            canvas.setFont("Helvetica-Bold", 16)
-            text_width = canvas.stringWidth("PA", "Helvetica-Bold", 16)
-            canvas.drawString(A4[0]-80 - text_width/2, A4[1]-55, "PA")
+            # Add actual Prolexis Analytics logo
+            try:
+                logo_path = "prolexis_logo.png"  # Make sure this file is in your project directory
+                canvas.drawImage(logo_path, A4[0]-100, A4[1]-70, width=40, height=40, mask='auto')
+            except:
+                # Fallback if logo file not found
+                canvas.setFillColor(colors.HexColor('#4a90e2'))
+                canvas.circle(A4[0]-80, A4[1]-50, 25, fill=1, stroke=1)
+                canvas.setFillColor(colors.white)
+                canvas.setFont("Helvetica-Bold", 16)
+                text_width = canvas.stringWidth("PA", "Helvetica-Bold", 16)
+                canvas.drawString(A4[0]-80 - text_width/2, A4[1]-55, "PA")
             
             # Footer with website
             canvas.setFillColor(colors.HexColor('#2d3748'))
