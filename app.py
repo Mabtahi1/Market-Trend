@@ -61,10 +61,15 @@ CORS(app)
 
 # Simple analysis functions for the new features
 def analyze_sentiment(text):
+    print(f"DEBUG: Analyzing text: {text[:100]}...")  # Print first 100 chars
+    print(f"DEBUG: TEXTBLOB_AVAILABLE: {TEXTBLOB_AVAILABLE}")
+    
     try:
         if TEXTBLOB_AVAILABLE:
+            from textblob import TextBlob
             blob = TextBlob(text)
             polarity = blob.sentiment.polarity
+            print(f"DEBUG: TextBlob polarity: {polarity}")
             
             if polarity > 0.1:
                 sentiment = "Positive"
@@ -79,9 +84,10 @@ def analyze_sentiment(text):
                 "confidence": round(abs(polarity), 3)
             }
     except Exception as e:
+        print(f"DEBUG: TextBlob error: {e}")
         logger.error(f"TextBlob sentiment analysis error: {e}")
     
-    # Enhanced fallback with more words
+    # Enhanced fallback
     positive_words = [
         'good', 'great', 'excellent', 'amazing', 'positive', 'love', 'best', 
         'outstanding', 'fantastic', 'wonderful', 'success', 'growth', 'opportunity',
@@ -96,25 +102,22 @@ def analyze_sentiment(text):
     
     text_lower = text.lower()
     
-    # Count words with weights
-    positive_count = 0
-    negative_count = 0
+    positive_count = sum(1 for word in positive_words if word in text_lower)
+    negative_count = sum(1 for word in negative_words if word in text_lower)
     
-    for word in positive_words:
-        positive_count += text_lower.count(word)
-    
-    for word in negative_words:
-        negative_count += text_lower.count(word)
+    print(f"DEBUG: Positive words found: {positive_count}")
+    print(f"DEBUG: Negative words found: {negative_count}")
     
     # Calculate polarity
     total_sentiment_words = positive_count + negative_count
     if total_sentiment_words == 0:
         polarity = 0.0
     else:
-        polarity = (positive_count - negative_count) / max(total_sentiment_words, 1)
-        polarity = max(-1.0, min(1.0, polarity))  # Clamp between -1 and 1
+        polarity = (positive_count - negative_count) / max(len(text.split()) / 100, 1)
+        polarity = max(-1.0, min(1.0, polarity))
     
-    # Determine sentiment
+    print(f"DEBUG: Calculated polarity: {polarity}")
+    
     if polarity > 0.2:
         sentiment = "Positive"
     elif polarity < -0.2:
