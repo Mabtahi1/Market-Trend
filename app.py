@@ -7,6 +7,18 @@ import logging
 import tempfile
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, Table, TableStyle, KeepTogether
 from PIL import Image
+try:
+    import praw
+    REDDIT_AVAILABLE = True
+except ImportError:
+    REDDIT_AVAILABLE = False
+
+try:
+    from pytrends.request import TrendReq
+    TRENDS_AVAILABLE = True
+except ImportError:
+    TRENDS_AVAILABLE = False
+
 
 # Import your app2.py functions
 try:
@@ -163,6 +175,63 @@ def create_mock_social_data(query):
             'sentiment': analyze_sentiment(f'Interesting analysis of {query} market trends.')
         }
     ]
+
+def get_reddit_data(query, limit=50, days_back=180):
+    """Get Reddit posts for the query from the last 6 months"""
+    if not REDDIT_AVAILABLE:
+        return []
+    
+    try:
+        reddit = praw.Reddit(
+            client_id="ytUzn85b-efZSukCNNoYIQ",
+            client_secret="H5Aq4YW-n1Ut3TiEeQ-EF7QtZFmFng",
+            user_agent="MarketTrendSummarizer/1.0"
+        )
+        
+        posts = []
+        cutoff_date = datetime.now() - timedelta(days=days_back)
+        cutoff_timestamp = cutoff_date.timestamp()
+        
+        # Search across multiple subreddits
+        subreddits = ["all", "technology", "business", "investing", "apple", "android"]
+        
+        for subreddit_name in subreddits:
+            try:
+                subreddit = reddit.subreddit(subreddit_name)
+                for submission in subreddit.search(query, time_filter="year", limit=limit//len(subreddits)):
+                    if submission.created_utc >= cutoff_timestamp:
+                        posts.append({
+                            'title': submission.title,
+                            'content': submission.selftext or submission.title,
+                            'score': submission.score,
+                            'comments': submission.num_comments,
+                            'subreddit': submission.subreddit.display_name,
+                            'url': f"https://reddit.com{submission.permalink}",
+                            'created': datetime.fromtimestamp(submission.created_utc).strftime('%Y-%m-%d %H:%M'),
+                            'platform': 'reddit'
+                        })
+                        
+                        if len(posts) >= limit:
+                            break
+            except Exception as e:
+                logger.error(f"Subreddit {subreddit_name} error: {e}")
+                continue
+                
+            if len(posts) >= limit:
+                break
+        
+        return posts[:limit]
+        
+    except Exception as e:
+        logger.error(f"Reddit API error: {e}")
+        return []
+
+def get_news_data(query, days_back=180):
+    """Get news articles (placeholder for NewsAPI integration)"""
+    # You can add NewsAPI integration here later
+    return []
+
+
 
 # YOUR ORIGINAL ROUTES (exactly as they were)
 @app.route('/')
@@ -453,65 +522,33 @@ def api_social_analysis():
         }
         
         all_content = []
+        total_posts = 0
         
-        # Generate data for each requested platform
-        for platform in platforms:
-            if platform == 'reddit':
-                reddit_data = [
-                    {
-                        'title': f'Discussion about {query} trends in 2024',
-                        'content': f'Great insights on {query}. The community is very positive about recent developments and growth potential.',
-                        'score': 156,
-                        'comments': 23,
-                        'url': 'https://reddit.com/r/technology/sample_post_1',
-                        'subreddit': 'technology',
-                        'created': datetime.now().strftime('%Y-%m-%d %H:%M'),
-                        'sentiment': analyze_sentiment(f'Great insights on {query}. Very positive about developments.')
-                    },
-                    {
-                        'title': f'{query} market analysis and predictions',
-                        'content': f'Interesting analysis of {query} market trends. Some concerns but overall optimistic outlook.',
-                        'score': 89,
-                        'comments': 15,
-                        'url': 'https://reddit.com/r/business/sample_post_2', 
-                        'subreddit': 'business',
-                        'created': datetime.now().strftime('%Y-%m-%d %H:%M'),
-                        'sentiment': analyze_sentiment(f'Interesting analysis of {query} market trends.')
-                    }
-                ]
+        # Get real Reddit data if available
+        if 'reddit' in platforms and REDDIT_AVAILABLE:
+            reddit_data = get_reddit_data(query, limit=100)
+            if reddit_data:
                 results['data']['reddit'] = reddit_data
+                total_posts += len(reddit_data)
                 all_content.extend([post['title'] + ' ' + post['content'] for post in reddit_data])
-                
-            elif platform == 'youtube':
-                youtube_data = [
-                    {
-                        'title': f'{query} Explained: Complete Guide 2024',
-                        'description': f'Comprehensive overview of {query} trends, applications, and future prospects.',
-                        'views': '45.2K',
-                        'likes': '1.8K',
-                        'url': 'https://youtube.com/watch?v=sample1',
-                        'channel': 'Tech Insights',
-                        'published': datetime.now().strftime('%Y-%m-%d'),
-                        'sentiment': analyze_sentiment(f'Comprehensive overview of {query} trends. Positive outlook.')
-                    }
-                ]
-                results['data']['youtube'] = youtube_data
-                all_content.extend([video['title'] + ' ' + video['description'] for video in youtube_data])
-                
-            elif platform == 'twitter':
-                twitter_data = [
-                    {
-                        'text': f'Just discovered this amazing {query} application! Game-changing potential 🚀 #innovation #tech',
-                        'author': '@techexplorer',
-                        'retweets': 45,
-                        'likes': 128,
-                        'url': 'https://twitter.com/sample/status/1',
-                        'created': datetime.now().strftime('%Y-%m-%d %H:%M'),
-                        'sentiment': analyze_sentiment('Amazing application! Game-changing potential.')
-                    }
-                ]
-                results['data']['twitter'] = twitter_data
-                all_content.extend([tweet['text'] for tweet in twitter_data])
+            else:
+                # Fallback to enhanced mock data if Reddit fails
+                results['data']['reddit'] = create_enhanced_reddit_mock(query)
+                total_posts += len(results['data']['reddit'])
+                all_content.extend([post['title'] + ' ' + post['content'] for post in results['data']['reddit']])
+        
+        # Keep existing mock data for other platforms as fallback
+        if 'youtube' in platforms:
+            youtube_data = create_enhanced_youtube_mock(query)
+            results['data']['youtube'] = youtube_data
+            total_posts += len(youtube_data)
+            all_content.extend([video['title'] + ' ' + video['description'] for video in youtube_data])
+        
+        if 'twitter' in platforms:
+            twitter_data = create_enhanced_twitter_mock(query)
+            results['data']['twitter'] = twitter_data
+            total_posts += len(twitter_data)
+            all_content.extend([tweet['text'] for tweet in twitter_data])
         
         # Overall analysis
         combined_text = ' '.join(all_content)
@@ -520,7 +557,6 @@ def api_social_analysis():
             overall_sentiment = analyze_sentiment(combined_text)
             hashtag_suggestions = extract_hashtags(combined_text)
             
-            total_posts = sum(len(data) for data in results['data'].values())
             positive_sentiment = sum(1 for platform_data in results['data'].values() 
                                    for item in platform_data 
                                    if item.get('sentiment', {}).get('sentiment') == 'Positive')
