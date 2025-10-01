@@ -404,30 +404,38 @@ def generate_content_based_insights(text, hashtags, sentiment_analysis):
     ]
 
 def generate_content_based_recommendations(text, hashtags, sentiment_analysis):
-    """Generate recommendations based on actual content without numbers"""
+    """Generate specific, actionable recommendations with clear paths"""
     themes = hashtags[:3] if len(hashtags) >= 3 else hashtags
     theme_str = ', '.join(themes)
+    text_lower = text.lower()
+    
+    # Identify potential niche markets from content
+    niche_indicators = []
+    if themes:
+        for theme in themes:
+            if theme.lower() in text_lower:
+                niche_indicators.append(theme)
     
     return [
         {
-            "title": f"Develop focused capabilities in {themes[0] if themes else 'identified areas'}",
-            "explanation": f"Build expertise and resources specifically around {theme_str} to align with the strategic priorities evident in the analysis."
+            "title": f"Target {themes[0] if themes else 'identified niche'} market segment with specialized offering",
+            "explanation": f"ACTION PLAN: 1) Develop a specialized product/service specifically for {themes[0] if themes else 'this segment'} 2) Research competitors currently serving this niche to identify gaps 3) Create tailored messaging that speaks directly to {themes[0] if themes else 'segment'}-specific pain points 4) Launch pilot program with 5-10 customers in this niche 5) Iterate based on feedback before full rollout. This segment appears underserved based on content emphasis without proportional market solutions."
         },
         {
-            "title": f"Address sentiment considerations in {sentiment_analysis['sentiment'].lower()} context",
-            "explanation": f"Develop approaches that acknowledge the {sentiment_analysis['sentiment'].lower()} orientation identified in the content and adjust strategies accordingly."
+            "title": f"Enter {hashtags[1] if len(hashtags) > 1 else 'secondary market'} as differentiation strategy",
+            "explanation": f"ACTION PLAN: 1) Conduct market sizing analysis for {hashtags[1] if len(hashtags) > 1 else 'this market'} 2) Identify 3-5 key decision makers or influencers in this space 3) Develop minimum viable offering tailored to this segment's specific needs 4) Establish partnerships with complementary providers already serving this market 5) Position as specialist rather than generalist. The content suggests this area has attention but limited specialized providers."
         },
         {
-            "title": f"Integrate {hashtags[1] if len(hashtags) > 1 else 'secondary themes'} into planning processes",
-            "explanation": f"Ensure strategic planning incorporates insights related to {hashtags[1] if len(hashtags) > 1 else 'key themes'} identified as important in the analysis."
+            "title": f"Build strategic positioning around {themes[0] if themes else 'primary theme'}-{hashtags[2] if len(hashtags) > 2 else 'related area'} intersection",
+            "explanation": f"ACTION PLAN: 1) Map the overlap between {themes[0] if themes else 'primary area'} and {hashtags[2] if len(hashtags) > 2 else 'secondary area'} - this intersection is typically underserved 2) Interview 10-15 potential customers operating in this overlap 3) Design offering that explicitly addresses both dimensions 4) Create thought leadership content demonstrating expertise in this specific intersection 5) Price at premium given specialized positioning. Most competitors focus on one dimension only."
         },
         {
-            "title": "Establish monitoring systems for identified theme areas",
-            "explanation": f"Create ongoing awareness mechanisms for developments related to {theme_str} to maintain strategic relevance."
+            "title": f"Leverage {sentiment_analysis['sentiment'].lower()} sentiment to capture timing advantage",
+            "explanation": f"ACTION PLAN: 1) If sentiment is positive - move quickly to capture momentum before market saturates; if negative - position as solution to identified problems 2) Develop messaging that directly addresses current sentiment drivers 3) Launch within next 60-90 days while sentiment context remains relevant 4) Use current sentiment in marketing to show market awareness and timely solution 5) Build customer testimonials that reference current market conditions. Timing is critical when sentiment is directional."
         },
         {
-            "title": "Build cross-functional coordination for integrated execution",
-            "explanation": f"Since the content reveals interconnected themes around {theme_str}, establish collaboration mechanisms across relevant functions."
+            "title": f"Create vertical-specific solution for {hashtags[3] if len(hashtags) > 3 else themes[0] if themes else 'identified vertical'} industry",
+            "explanation": f"ACTION PLAN: 1) Choose one specific vertical within {hashtags[3] if len(hashtags) > 3 else themes[0] if themes else 'this space'} (e.g., if 'healthcare', choose 'dental practices' specifically) 2) Customize solution for that vertical's unique workflow and compliance needs 3) Hire or partner with someone from that vertical for credibility 4) Attend 2-3 industry conferences to establish presence 5) Build 5 case studies from early adopters in that vertical 6) Expand to adjacent verticals only after achieving 20+ customers in first vertical. Vertical specialization reduces competition and increases willingness to pay."
         }
     ]
 
@@ -643,18 +651,29 @@ def api_comprehensive_analysis():
         # Generate content-specific recommendations using LLM
         if APP2_AVAILABLE:
             try:
-                rec_question = """Based on this content, provide exactly 5 specific, actionable strategic recommendations.
+                rec_question = """Based on this content, provide exactly 5 specific, ACTIONABLE strategic recommendations.
                 
-                Requirements for each recommendation:
-                - Be directly relevant to the actual topics discussed in the content
-                - Avoid generic business advice
-                - Do NOT include percentages, ROI claims, or unverifiable statistics
-                - Focus on qualitative strategic actions based on content themes
-                - Each recommendation should logically follow from the content analysis
+                Each recommendation MUST include:
+                1. A clear target market or niche segment to pursue
+                2. Specific underserved areas or gaps to address  
+                3. A step-by-step action plan (5-7 concrete steps)
+                4. Why this path is viable based on content analysis
+                5. NO generic advice - be specific about WHAT to do and HOW
+                
+                Think like a strategy consultant giving a client their implementation roadmap.
+                
+                Examples of GOOD recommendations:
+                - "Target mid-sized law firms (50-200 employees) in healthcare litigation niche. Step 1: Research top 50 firms, Step 2:..."
+                - "Enter the B2B SaaS market for dental practice management. Step 1: Interview 20 dentists, Step 2:..."
+                
+                Examples of BAD recommendations:
+                - "Improve customer experience" (too generic)
+                - "Leverage technology" (not actionable)
+                - "Focus on quality" (no specific path)
                 
                 Format each recommendation as:
-                TITLE: [Specific action title based on content]
-                EXPLANATION: [How to implement this based on content insights]
+                TITLE: [Specific target market/action]
+                EXPLANATION: [Complete action plan with numbered steps and reasoning]
                 
                 Separate each recommendation with ---"""
                 
