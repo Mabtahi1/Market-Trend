@@ -349,6 +349,88 @@ def create_enhanced_twitter_mock(query):
         }
     ]
 
+def parse_structured_response(response_text, expected_count=5):
+    """Parse LLM structured response into insights/recommendations"""
+    items = []
+    sections = response_text.split('---')
+    
+    for section in sections[:expected_count]:
+        section = section.strip()
+        if 'TITLE:' in section and 'EXPLANATION:' in section:
+            parts = section.split('EXPLANATION:', 1)
+            title = parts[0].replace('TITLE:', '').strip()
+            explanation = parts[1].strip() if len(parts) > 1 else ''
+            
+            items.append({
+                'title': title,
+                'explanation': explanation
+            })
+    
+    # Fill remaining slots if needed
+    while len(items) < expected_count:
+        items.append({
+            'title': f'Additional analysis point {len(items) + 1}',
+            'explanation': 'Further content analysis would provide additional insights specific to this material.'
+        })
+    
+    return items[:expected_count]
+
+def generate_content_based_insights(text, hashtags, sentiment_analysis):
+    """Generate insights based on actual content without numbers"""
+    themes = hashtags[:3] if len(hashtags) >= 3 else hashtags
+    theme_str = ', '.join(themes)
+    
+    return [
+        {
+            "title": f"Content emphasizes {themes[0] if themes else 'primary themes'} as central focus area",
+            "explanation": f"Analysis reveals consistent emphasis on {theme_str}, indicating these represent core strategic considerations within the discussed context."
+        },
+        {
+            "title": f"Sentiment orientation suggests {sentiment_analysis['sentiment'].lower()} market perspective",
+            "explanation": f"The overall {sentiment_analysis['sentiment'].lower()} tone throughout the content provides context for understanding stakeholder perspectives and market positioning considerations."
+        },
+        {
+            "title": f"Thematic patterns around {hashtags[1] if len(hashtags) > 1 else 'secondary themes'} reveal strategic priorities",
+            "explanation": f"Discussion patterns indicate particular attention to {hashtags[1] if len(hashtags) > 1 else 'related areas'}, suggesting areas of strategic importance for consideration."
+        },
+        {
+            "title": "Content structure indicates specific domain focus and expertise requirements",
+            "explanation": f"The material's focus on {theme_str} suggests specialized knowledge and capabilities would be valuable for effective engagement in these areas."
+        },
+        {
+            "title": "Analysis reveals interconnected themes requiring integrated approach",
+            "explanation": f"The relationship between {theme_str} in the content suggests benefits from coordinated strategies that address multiple dimensions simultaneously."
+        }
+    ]
+
+def generate_content_based_recommendations(text, hashtags, sentiment_analysis):
+    """Generate recommendations based on actual content without numbers"""
+    themes = hashtags[:3] if len(hashtags) >= 3 else hashtags
+    theme_str = ', '.join(themes)
+    
+    return [
+        {
+            "title": f"Develop focused capabilities in {themes[0] if themes else 'identified areas'}",
+            "explanation": f"Build expertise and resources specifically around {theme_str} to align with the strategic priorities evident in the analysis."
+        },
+        {
+            "title": f"Address sentiment considerations in {sentiment_analysis['sentiment'].lower()} context",
+            "explanation": f"Develop approaches that acknowledge the {sentiment_analysis['sentiment'].lower()} orientation identified in the content and adjust strategies accordingly."
+        },
+        {
+            "title": f"Integrate {hashtags[1] if len(hashtags) > 1 else 'secondary themes'} into planning processes",
+            "explanation": f"Ensure strategic planning incorporates insights related to {hashtags[1] if len(hashtags) > 1 else 'key themes'} identified as important in the analysis."
+        },
+        {
+            "title": "Establish monitoring systems for identified theme areas",
+            "explanation": f"Create ongoing awareness mechanisms for developments related to {theme_str} to maintain strategic relevance."
+        },
+        {
+            "title": "Build cross-functional coordination for integrated execution",
+            "explanation": f"Since the content reveals interconnected themes around {theme_str}, establish collaboration mechanisms across relevant functions."
+        }
+    ]
+
 
 # YOUR ORIGINAL ROUTES (exactly as they were)
 @app.route('/')
@@ -520,7 +602,6 @@ def api_comprehensive_analysis():
             return jsonify({'error': 'Content too short for analysis'}), 400
         
         # Perform basic analysis
-        # Perform basic analysis
         sentiment_analysis = analyze_sentiment(text)
         hashtags = extract_hashtags(text, max_hashtags=12)
         
@@ -529,74 +610,81 @@ def api_comprehensive_analysis():
         word_count = len(text.split())
         main_themes = ', '.join([hashtag.lower() for hashtag in hashtags[:5]])
         
-        
-        # Always generate exactly 5 key insights for any topic
-        key_insights = [
-            {
-                "title": f"Market sentiment analysis reveals {sentiment_analysis['sentiment'].lower()} outlook with strategic implications",
-                "explanation": f"Content analysis shows {sentiment_analysis['sentiment'].lower()} sentiment (polarity: {sentiment_analysis['polarity']}) across {word_count} words of market intelligence. This sentiment pattern indicates market confidence levels and suggests optimal timing for strategic initiatives, investment decisions, and market entry strategies. The analysis provides directional guidance for resource allocation and competitive positioning."
-            },
-            {
-                "title": f"Competitive landscape analysis identifies {len(hashtags)} key differentiation opportunities",
-                "explanation": f"Market analysis reveals primary focus areas around {', '.join(hashtags[:3])} with secondary themes in {', '.join(hashtags[3:6]) if len(hashtags) > 3 else 'emerging market segments'}. Competitive positioning opportunities exist in underserved segments, suggesting potential for market leadership through innovation, customer experience improvements, and strategic partnerships that address unmet market needs."
-            },
-            {
-                "title": "Technology and innovation trends indicate digital transformation acceleration opportunities",
-                "explanation": f"Content patterns show emphasis on technological advancement and innovation with key themes including {', '.join(hashtags[6:9]) if len(hashtags) > 6 else 'digital solutions, automation, and emerging technologies'}. This indicates opportunities for technology-driven competitive advantages, operational efficiency gains, and new revenue streams through digital transformation initiatives."
-            },
-            {
-                "title": "Customer demand patterns reveal evolving market requirements and strategic positioning needs", 
-                "explanation": f"Analysis identifies shifting customer expectations and market demands around {', '.join(hashtags[9:12]) if len(hashtags) > 9 else 'value delivery, service quality, and user experience'}. These patterns suggest opportunities for customer-centric innovation, personalized solutions, and enhanced user experiences that drive market differentiation and customer loyalty."
-            },
-            {
-                "title": "Financial and investment indicators suggest strong growth potential and ROI optimization opportunities",
-                "explanation": f"Market conditions indicate favorable investment climate with focus on sustainable growth and profitability across identified market segments. Financial patterns suggest opportunities for capital deployment, revenue optimization, and cost efficiency improvements that enhance competitive positioning while maintaining healthy unit economics and scalable business models."
-            }
-        ]
-        
-        # Always generate exactly 5 strategic recommendations for any topic
-        recommendations = [
-            {
-                "title": "Develop comprehensive market positioning strategy based on competitive gap analysis",
-                "explanation": "Focus on identified market gaps and create unique value propositions that address unmet customer needs. Conduct detailed competitor analysis, identify underserved segments, and position offerings to capture market share through differentiation and superior customer value delivery. Implement brand positioning that resonates with target audiences and creates sustainable competitive advantages."
-            },
-            {
-                "title": "Implement technology-driven operational excellence and innovation programs",
-                "explanation": "Invest in technology infrastructure that supports scalable growth and operational efficiency. Prioritize automation, digital transformation, and innovation initiatives that reduce costs, improve customer experience, and create sustainable competitive advantages. Focus on technologies that enhance core business processes and enable data-driven decision making."
-            },
-            {
-                "title": "Build strategic partnership ecosystem to accelerate market penetration and growth",
-                "explanation": "Develop partnerships with complementary businesses, technology providers, and distribution channels. Focus on alliances that provide access to new markets, enhance technical capabilities, and reduce time-to-market for new products and services. Create partnership frameworks that generate mutual value and accelerate business growth objectives."
-            },
-            {
-                "title": "Execute data-driven customer acquisition and retention optimization strategy",
-                "explanation": "Implement analytics-driven approach to customer acquisition, focusing on high-value segments identified in market analysis. Develop personalized customer experiences, optimize conversion funnels, and create loyalty programs that increase customer lifetime value. Use data insights to improve targeting, messaging, and customer journey optimization."
-            },
-            {
-                "title": "Establish performance measurement framework with clear ROI metrics and success KPIs",
-                "explanation": "Create comprehensive performance tracking system that measures business impact, customer satisfaction, and competitive positioning. Establish clear ROI models, implement regular performance reviews, and use data insights to optimize strategy execution and resource allocation. Focus on metrics that drive business value and support strategic decision making."
-            }
-        ]
-        
-        # Try app2.py for enhanced analysis if available
-        # Generate comprehensive summary using LLM with appropriate length control
+        # Generate content-specific key insights using LLM
         if APP2_AVAILABLE:
             try:
-                summary_question = "Provide a comprehensive market analysis summary in 3-4 paragraphs (300-500 words) covering key findings, market implications, competitive landscape, and strategic opportunities based on this content."
+                insights_question = """Analyze this content and provide exactly 5 specific key insights based on what is actually discussed. 
+                
+                Requirements for each insight:
+                - Be specific to the actual topics and themes in the content
+                - Avoid generic business advice that could apply to anything
+                - Do NOT include percentages, statistics, or numbers unless they appear in the source content
+                - Focus on qualitative analysis of themes, patterns, and implications
+                - Each insight should be directly traceable to content themes
+                
+                Format each insight as:
+                TITLE: [Specific insight title based on content]
+                EXPLANATION: [Detailed explanation referencing actual content themes]
+                
+                Separate each insight with ---"""
+                
+                insights_result = summarize_trends(text=text, question=insights_question, return_format="dict")
+                
+                if not insights_result.get('error') and insights_result.get('full_response'):
+                    key_insights = parse_structured_response(insights_result.get('full_response'), 5)
+                else:
+                    key_insights = generate_content_based_insights(text, hashtags, sentiment_analysis)
+            except Exception as e:
+                logger.error(f"Insights generation error: {e}")
+                key_insights = generate_content_based_insights(text, hashtags, sentiment_analysis)
+        else:
+            key_insights = generate_content_based_insights(text, hashtags, sentiment_analysis)
+        
+        # Generate content-specific recommendations using LLM
+        if APP2_AVAILABLE:
+            try:
+                rec_question = """Based on this content, provide exactly 5 specific, actionable strategic recommendations.
+                
+                Requirements for each recommendation:
+                - Be directly relevant to the actual topics discussed in the content
+                - Avoid generic business advice
+                - Do NOT include percentages, ROI claims, or unverifiable statistics
+                - Focus on qualitative strategic actions based on content themes
+                - Each recommendation should logically follow from the content analysis
+                
+                Format each recommendation as:
+                TITLE: [Specific action title based on content]
+                EXPLANATION: [How to implement this based on content insights]
+                
+                Separate each recommendation with ---"""
+                
+                rec_result = summarize_trends(text=text, question=rec_question, return_format="dict")
+                
+                if not rec_result.get('error') and rec_result.get('full_response'):
+                    recommendations = parse_structured_response(rec_result.get('full_response'), 5)
+                else:
+                    recommendations = generate_content_based_recommendations(text, hashtags, sentiment_analysis)
+            except Exception as e:
+                logger.error(f"Recommendations generation error: {e}")
+                recommendations = generate_content_based_recommendations(text, hashtags, sentiment_analysis)
+        else:
+            recommendations = generate_content_based_recommendations(text, hashtags, sentiment_analysis)
+        
+        # Generate comprehensive summary using LLM
+        if APP2_AVAILABLE:
+            try:
+                summary_question = "Provide a comprehensive analysis summary in 3-4 paragraphs covering key findings, implications, and strategic considerations based on this specific content. Avoid generic statements."
                 summary_result = summarize_trends(text=text, question=summary_question, return_format="dict")
                 
                 if not summary_result.get('error') and summary_result.get('full_response'):
                     summary = summary_result.get('full_response', '')
                 else:
-                    # Enhanced fallback summary
-                    summary = f"Comprehensive market analysis of {word_count} words reveals {sentiment_analysis['sentiment'].lower()} market sentiment across key areas including {main_themes}. The analysis identifies significant opportunities for strategic positioning, competitive differentiation, and growth acceleration within the current market environment. Market dynamics indicate evolving customer preferences and competitive landscapes that create strategic opportunities for businesses able to leverage identified trends and insights for competitive advantage."
+                    summary = f"Analysis of content reveals {sentiment_analysis['sentiment'].lower()} sentiment with focus on {main_themes}. The material addresses specific themes and patterns that provide strategic context for decision-making and positioning."
             except Exception as e:
-                logger.error(f"Comprehensive summary generation error: {e}")
-                # Fallback summary
-                summary = f"Market intelligence analysis of {word_count} words reveals {sentiment_analysis['sentiment'].lower()} sentiment patterns across primary themes including {main_themes}. Strategic analysis indicates opportunities for competitive positioning and market development based on identified trends, customer preferences, and market dynamics that favor innovative approaches to business strategy and market penetration."
+                logger.error(f"Summary generation error: {e}")
+                summary = f"Content analysis identifies key themes around {main_themes} with {sentiment_analysis['sentiment'].lower()} sentiment orientation, providing strategic insights for relevant stakeholders."
         else:
-            # Non-LLM fallback
-            summary = f"Comprehensive market analysis of {word_count} words reveals {sentiment_analysis['sentiment'].lower()} market sentiment across key strategic areas including {main_themes}. The analysis provides actionable insights for competitive positioning, strategic planning, and market development opportunities based on identified patterns and market intelligence indicators."
+            summary = f"Analysis reveals focus on {main_themes} with {sentiment_analysis['sentiment'].lower()} sentiment, offering strategic considerations based on identified themes and patterns."
         
         strategic_hashtags = hashtags[:10] if len(hashtags) >= 10 else hashtags + ['Business', 'Strategy', 'Innovation', 'Growth'][:10-len(hashtags)]
         
