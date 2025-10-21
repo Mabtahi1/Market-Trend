@@ -682,7 +682,7 @@
             submitBtn.textContent = 'Redirecting to payment...';
             
             try {
-                // Create Stripe checkout session
+                // THIS IS THE KEY - must call /api/create-checkout-session, NOT /api/auth/signup
                 const response = await fetch('/api/create-checkout-session', {
                     method: 'POST',
                     headers: {
@@ -699,26 +699,25 @@
                 const data = await response.json();
                 
                 if (response.ok && data.sessionId) {
-                    // Redirect to Stripe's checkout page
+                    // Redirect to Stripe
                     const result = await stripe.redirectToCheckout({
                         sessionId: data.sessionId
                     });
                     
                     if (result.error) {
-                        // If there's an error, show it
                         showError(result.error.message);
                         submitBtn.disabled = false;
-                        submitBtn.textContent = 'Complete Signup';
+                        submitBtn.textContent = 'Proceed to Payment';
                     }
                 } else {
-                    showError(data.error || 'Payment setup failed. Please try again.');
+                    showError(data.error || 'Payment setup failed');
                     submitBtn.disabled = false;
-                    submitBtn.textContent = 'Complete Signup';
+                    submitBtn.textContent = 'Proceed to Payment';
                 }
             } catch (error) {
                 showError('Network error. Please try again.');
                 submitBtn.disabled = false;
-                submitBtn.textContent = 'Complete Signup';
+                submitBtn.textContent = 'Proceed to Payment';
             }
         });
 
