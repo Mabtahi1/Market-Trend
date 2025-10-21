@@ -1,6 +1,6 @@
 # Your Original Flask App with Added Analysis Features
 from datetime import datetime, timedelta  # ADD timedelta here
-from flask import Flask, render_template, request, jsonify, session, redirect
+from flask import Flask, render_template, request, jsonify, session, redirect, make_response
 from flask_cors import CORS
 import os
 import logging
