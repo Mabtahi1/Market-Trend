@@ -103,8 +103,20 @@ logger = logging.getLogger(__name__)
 
 # Initialize Flask app (your original configuration)
 app = Flask(__name__, template_folder='.')
-app.config['SECRET_KEY'] = 'your-secret-key-here'
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
 CORS(app)
+
+# Stripe configuration
+stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
+STRIPE_PUBLISHABLE_KEY = os.environ.get('STRIPE_PUBLISHABLE_KEY')
+
+# Validate critical keys are present
+if not stripe.api_key:
+    logger.error("❌ STRIPE_SECRET_KEY not found in .env file!")
+if not STRIPE_PUBLISHABLE_KEY:
+    logger.error("❌ STRIPE_PUBLISHABLE_KEY not found in .env file!")
+if app.config['SECRET_KEY'] == 'dev-key-only-for-testing':
+    logger.warning("⚠️ Using default SECRET_KEY! Set SECRET_KEY in .env file for production!")
 
 # Simple analysis functions for the new features
 def analyze_sentiment(text):
