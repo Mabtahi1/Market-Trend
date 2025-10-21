@@ -379,6 +379,7 @@
             }
         }
     </style>
+    <script src="https://js.stripe.com/v3/"></script>
 </head>
 <body>
     <div class="signup-container">
@@ -531,6 +532,21 @@
     </div>
 
     <script>
+        let stripe = null;
+
+        async function initStripe() {
+            try {
+                const response = await fetch('/api/stripe/config');
+                const config = await response.json();
+                stripe = Stripe(config.publishableKey);
+            } catch (error) {
+                console.error('Error loading Stripe:', error);
+            }
+        }
+    
+        // Initialize Stripe when page loads
+        initStripe();
+        
         let currentStep = 1;
         let selectedPlan = null;
         let selectedPayment = 'card';
@@ -657,15 +673,17 @@
         }
 
         // Form submission
+        // Form submission - NEW VERSION WITH STRIPE
         document.getElementById('signupForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const submitBtn = document.getElementById('submitBtn');
             submitBtn.disabled = true;
-            submitBtn.textContent = 'Processing...';
+            submitBtn.textContent = 'Redirecting to payment...';
             
             try {
-                const response = await fetch('/api/auth/signup', {
+                // Create Stripe checkout session
+                const response = await fetch('/api/create-checkout-session', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -680,13 +698,20 @@
                 
                 const data = await response.json();
                 
-                if (response.ok) {
-                    showSuccess('Account created successfully! Redirecting...');
-                    setTimeout(() => {
-                        window.location.href = '/dashboard';
-                    }, 2000);
+                if (response.ok && data.sessionId) {
+                    // Redirect to Stripe's checkout page
+                    const result = await stripe.redirectToCheckout({
+                        sessionId: data.sessionId
+                    });
+                    
+                    if (result.error) {
+                        // If there's an error, show it
+                        showError(result.error.message);
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Complete Signup';
+                    }
                 } else {
-                    showError(data.error || 'Signup failed. Please try again.');
+                    showError(data.error || 'Payment setup failed. Please try again.');
                     submitBtn.disabled = false;
                     submitBtn.textContent = 'Complete Signup';
                 }
