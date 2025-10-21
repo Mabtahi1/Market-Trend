@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Prolexis Analytics</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .signup-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 1200px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .signup-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .signup-header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .signup-header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .signup-content {
+            padding: 40px;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+            gap: 20px;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            color: #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .step.active .step-number {
+            background: #667eea;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .step.completed .step-number {
+            background: #4caf50;
+            color: white;
+        }
+
+        .step-label {
+            font-weight: 500;
+            color: #666;
+        }
+
+        .step.active .step-label {
+            color: #667eea;
+        }
+
+        .form-section {
+            display: none;
+        }
+
+        .form-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .plans-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .plan-card {
+            border: 3px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            background: white;
+        }
+
+        .plan-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .plan-card.selected {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #f5f7ff 0%, #eef2ff 100%);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .plan-card.recommended {
+            border-color: #4caf50;
+        }
+
+        .plan-card.recommended::before {
+            content: "RECOMMENDED";
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #4caf50;
+            color: white;
+            padding: 5px 20px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .plan-name {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .plan-price {
+            font-size: 3em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .plan-price span {
+            font-size: 0.4em;
+            color: #666;
+        }
+
+        .plan-features {
+            list-style: none;
+            margin: 25px 0;
+            text-align: left;
+        }
+
+        .plan-features li {
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .plan-features li:last-child {
+            border-bottom: none;
+        }
+
+        .check-icon {
+            color: #4caf50;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .alert-error {
+            background: #fee;
+            color: #c33;
+            border-left: 4px solid #c33;
+        }
+
+        .alert-success {
+            background: #efe;
+            color: #3c3;
+            border-left: 4px solid #3c3;
+        }
+
+        .signin-link {
+            text-align: center;
+            margin-top: 25px;
+            color: #666;
+        }
+
+        .signin-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .signin-link a:hover {
+            text-decoration: underline;
+        }
+
+        .summary-section {
+            background: #f9f9f9;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+            font-weight: bold;
+            font-size: 1.2em;
+            color: #667eea;
+        }
+
+        .payment-methods {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .payment-method {
+            flex: 1;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .payment-method:hover {
+            border-color: #667eea;
+        }
+
+        .payment-method.selected {
+            border-color: #667eea;
+            background: #f5f7ff;
+        }
+
+        @media (max-width: 768px) {
+            .signup-header h1 {
+                font-size: 1.8em;
+            }
+
+            .plans-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .step-indicator {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="signup-container">
+        <div class="signup-header">
+            <h1>Join Prolexis Analytics</h1>
+            <p>Choose your plan and start analyzing market trends today</p>
+        </div>
+
+        <div class="signup-content">
+            <div class="step-indicator">
+                <div class="step active" data-step="1">
+                    <div class="step-number">1</div>
+                    <div class="step-label">Choose Plan</div>
+                </div>
+                <div class="step" data-step="2">
+                    <div class="step-number">2</div>
+                    <div class="step-label">Account Info</div>
+                </div>
+                <div class="step" data-step="3">
+                    <div class="step-number">3</div>
+                    <div class="step-label">Payment</div>
+                </div>
+            </div>
+
+            <div class="alert alert-error" id="errorAlert"></div>
+            <div class="alert alert-success" id="successAlert"></div>
+
+            <form id="signupForm">
+                <!-- Step 1: Choose Plan -->
+                <div class="form-section active" data-section="1">
+                    <h2 style="margin-bottom: 30px; text-align: center; color: #333;">Select Your Plan</h2>
+                    <div class="plans-grid" style="max-width: 900px; margin: 0 auto;">
+                        <div class="plan-card" data-plan="basic" onclick="selectPlan('basic')">
+                            <div class="plan-name">Basic</div>
+                            <div class="plan-price">$10<span>/month</span></div>
+                            <ul class="plan-features">
+                                <li><span class="check-icon">✓</span> 5 Market Summaries/month</li>
+                                <li><span class="check-icon">✓</span> 3 Comprehensive Analyses</li>
+                                <li><span class="check-icon">✓</span> 15 AI Questions</li>
+                                <li><span class="check-icon">✓</span> 2 Social Media Scans</li>
+                                <li><span class="check-icon">✓</span> Priority Support</li>
+                                <li><span class="check-icon">✓</span> PDF Export</li>
+                            </ul>
+                        </div>
+
+                        <div class="plan-card recommended" data-plan="unlimited" onclick="selectPlan('unlimited')">
+                            <div class="plan-name">Unlimited</div>
+                            <div class="plan-price">$49<span>/month</span></div>
+                            <ul class="plan-features">
+                                <li><span class="check-icon">✓</span> Unlimited Market Summaries</li>
+                                <li><span class="check-icon">✓</span> Unlimited Comprehensive Analyses</li>
+                                <li><span class="check-icon">✓</span> Unlimited AI Questions</li>
+                                <li><span class="check-icon">✓</span> Unlimited Social Media Scans</li>
+                                <li><span class="check-icon">✓</span> Premium Support 24/7</li>
+                                <li><span class="check-icon">✓</span> Priority Processing</li>
+                                <li><span class="check-icon">✓</span> Advanced Features</li>
+                                <li><span class="check-icon">✓</span> API Access</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="button-group">
+                        <button type="button" class="btn btn-primary" onclick="nextStep()" id="planNextBtn" disabled>Continue</button>
+                    </div>
+                </div>
+
+                <!-- Step 2: Account Information -->
+                <div class="form-section" data-section="2">
+                    <h2 style="margin-bottom: 30px; text-align: center; color: #333;">Create Your Account</h2>
+                    <div class="form-group">
+                        <label for="fullName">Full Name</label>
+                        <input type="text" id="fullName" placeholder="John Doe" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" placeholder="john@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" placeholder="Minimum 6 characters" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm Password</label>
+                        <input type="password" id="confirmPassword" placeholder="Re-enter password" required>
+                    </div>
+                    <div class="button-group">
+                        <button type="button" class="btn btn-secondary" onclick="previousStep()">Back</button>
+                        <button type="button" class="btn btn-primary" onclick="nextStep()">Continue</button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Payment -->
+                <div class="form-section" data-section="3">
+                    <h2 style="margin-bottom: 30px; text-align: center; color: #333;">Complete Your Order</h2>
+                    
+                    <div class="summary-section">
+                        <div class="summary-item">
+                            <span>Selected Plan:</span>
+                            <span id="summaryPlanName">-</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>Monthly Price:</span>
+                            <span id="summaryPrice">-</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>Total:</span>
+                            <span id="summaryTotal">-</span>
+                        </div>
+                    </div>
+
+                    <div id="paymentSection" style="display: none;">
+                        <h3 style="margin-bottom: 20px; color: #333;">Payment Method</h3>
+                        <div class="payment-methods">
+                            <div class="payment-method selected" onclick="selectPayment('card')">
+                                <div style="font-size: 2em; margin-bottom: 10px;">💳</div>
+                                <div>Credit Card</div>
+                            </div>
+                            <div class="payment-method" onclick="selectPayment('paypal')">
+                                <div style="font-size: 2em; margin-bottom: 10px;">🅿️</div>
+                                <div>PayPal</div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="cardNumber">Card Number</label>
+                            <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19">
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            <div class="form-group">
+                                <label for="expiry">Expiry Date</label>
+                                <input type="text" id="expiry" placeholder="MM/YY" maxlength="5">
+                            </div>
+                            <div class="form-group">
+                                <label for="cvv">CVV</label>
+                                <input type="text" id="cvv" placeholder="123" maxlength="3">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="button" class="btn btn-secondary" onclick="previousStep()">Back</button>
+                        <button type="submit" class="btn btn-primary" id="submitBtn">Complete Signup</button>
+                    </div>
+                </div>
+            </form>
+
+            <div class="signin-link">
+                Already have an account? <a href="/signin">Sign In</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        let selectedPlan = null;
+        let selectedPayment = 'card';
+
+        const plans = {
+            basic: { name: 'Basic Plan', price: 10 },
+            unlimited: { name: 'Unlimited Plan', price: 49 }
+        };
+
+        function selectPlan(plan) {
+            selectedPlan = plan;
+            
+            // Update UI
+            document.querySelectorAll('.plan-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            document.querySelector(`[data-plan="${plan}"]`).classList.add('selected');
+            
+            // Enable next button
+            document.getElementById('planNextBtn').disabled = false;
+            
+            // Update summary
+            updateSummary();
+        }
+
+        function selectPayment(method) {
+            selectedPayment = method;
+            document.querySelectorAll('.payment-method').forEach(pm => {
+                pm.classList.remove('selected');
+            });
+            event.currentTarget.classList.add('selected');
+        }
+
+        function updateSummary() {
+            if (selectedPlan) {
+                const plan = plans[selectedPlan];
+                document.getElementById('summaryPlanName').textContent = plan.name;
+                document.getElementById('summaryPrice').textContent = `${plan.price}`;
+                document.getElementById('summaryTotal').textContent = `${plan.price}/month`;
+                
+                // Always show payment section since all plans require payment
+                const paymentSection = document.getElementById('paymentSection');
+                paymentSection.style.display = 'block';
+            }
+        }
+
+        function nextStep() {
+            // Validate current step
+            if (currentStep === 1) {
+                if (!selectedPlan) {
+                    showError('Please select a plan');
+                    return;
+                }
+            } else if (currentStep === 2) {
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                const fullName = document.getElementById('fullName').value;
+                
+                if (!fullName || !email || !password || !confirmPassword) {
+                    showError('Please fill in all fields');
+                    return;
+                }
+                
+                if (password.length < 6) {
+                    showError('Password must be at least 6 characters');
+                    return;
+                }
+                
+                if (password !== confirmPassword) {
+                    showError('Passwords do not match');
+                    return;
+                }
+            }
+
+            // Move to next step
+            if (currentStep < 3) {
+                currentStep++;
+                updateStepUI();
+            }
+        }
+
+        function previousStep() {
+            if (currentStep > 1) {
+                currentStep--;
+                updateStepUI();
+            }
+        }
+
+        function updateStepUI() {
+            // Update step indicators
+            document.querySelectorAll('.step').forEach((step, index) => {
+                const stepNum = index + 1;
+                step.classList.remove('active', 'completed');
+                
+                if (stepNum === currentStep) {
+                    step.classList.add('active');
+                } else if (stepNum < currentStep) {
+                    step.classList.add('completed');
+                }
+            });
+
+            // Update form sections
+            document.querySelectorAll('.form-section').forEach((section, index) => {
+                section.classList.remove('active');
+                if (index + 1 === currentStep) {
+                    section.classList.add('active');
+                }
+            });
+        }
+
+        function showError(message) {
+            const alert = document.getElementById('errorAlert');
+            alert.textContent = message;
+            alert.classList.add('show');
+            setTimeout(() => alert.classList.remove('show'), 5000);
+        }
+
+        function showSuccess(message) {
+            const alert = document.getElementById('successAlert');
+            alert.textContent = message;
+            alert.classList.add('show');
+            setTimeout(() => alert.classList.remove('show'), 5000);
+        }
+
+        // Form submission
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Processing...';
+            
+            try {
+                const response = await fetch('/api/auth/signup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: document.getElementById('email').value,
+                        password: document.getElementById('password').value,
+                        fullName: document.getElementById('fullName').value,
+                        plan: selectedPlan
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showSuccess('Account created successfully! Redirecting...');
+                    setTimeout(() => {
+                        window.location.href = '/tools';
+                    }, 2000);
+                } else {
+                    showError(data.error || 'Signup failed. Please try again.');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Complete Signup';
+                }
+            } catch (error) {
+                showError('Network error. Please try again.');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Complete Signup';
+            }
+        });
+
+        // Card number formatting
+        document.getElementById('cardNumber')?.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\s/g, '');
+            let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+            e.target.value = formattedValue;
+        });
+
+        // Expiry date formatting
+        document.getElementById('expiry')?.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length >= 2) {
+                value = value.slice(0, 2) + '/' + value.slice(2, 4);
+            }
+            e.target.value = value;
+        });
+    </script>
+</body>
+</html>
