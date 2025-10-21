@@ -613,57 +613,7 @@ def get_stripe_config():
     """Send publishable key to frontend"""
     return jsonify({'publishableKey': STRIPE_PUBLISHABLE_KEY})
 
-# NEW AUTHENTICATION ROUTES (simple, no Firebase required for now)
-@app.route('/api/auth/login', methods=['POST'])
-def api_login():
-    try:
-        data = request.get_json()
-        email = data.get('email')
-        password = data.get('password')
-        
-        # Simple demo authentication - accepts any email/password for now
-        if email and password and len(password) >= 3:
-            session['user_email'] = email
-            return jsonify({
-                'session_id': 'demo_session',
-                'user': {
-                    'email': email,
-                    'subscription_type': 'Free Plan',
-                    'usage': {'summary': 0, 'analysis': 0, 'question': 0},
-                    'limits': {'summary': 10, 'analysis': 5, 'question': 20}
-                }
-            })
-        else:
-            return jsonify({'error': 'Invalid credentials'}), 401
-            
-    except Exception as e:
-        logger.error(f"Login error: {str(e)}")
-        return jsonify({'error': 'Login failed'}), 500
 
-
-
-@app.route('/api/auth/validate', methods=['POST'])
-def api_validate():
-    try:
-        data = request.get_json()
-        session_id = data.get('session_id')
-        
-        # Simple validation - if they have an email in session, they're valid
-        if 'user_email' in session:
-            return jsonify({
-                'user': {
-                    'email': session['user_email'],
-                    'subscription_type': 'Free Plan',
-                    'usage': {'summary': 0, 'analysis': 0, 'question': 0},
-                    'limits': {'summary': 10, 'analysis': 5, 'question': 20}
-                }
-            })
-        else:
-            return jsonify({'error': 'Invalid session'}), 401
-            
-    except Exception as e:
-        logger.error(f"Validation error: {str(e)}")
-        return jsonify({'error': 'Validation failed'}), 500
 
 @app.route('/api/auth/logout', methods=['POST'])
 def api_logout():
