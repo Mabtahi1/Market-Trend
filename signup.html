@@ -683,7 +683,7 @@
                 if (response.ok) {
                     showSuccess('Account created successfully! Redirecting...');
                     setTimeout(() => {
-                        window.location.href = '/tools';
+                        window.location.href = '/dashboard';
                     }, 2000);
                 } else {
                     showError(data.error || 'Signup failed. Please try again.');
