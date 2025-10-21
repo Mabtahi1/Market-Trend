@@ -640,31 +640,7 @@ def api_login():
         logger.error(f"Login error: {str(e)}")
         return jsonify({'error': 'Login failed'}), 500
 
-@app.route('/api/auth/signup', methods=['POST'])
-def api_signup():
-    try:
-        data = request.get_json()
-        email = data.get('email')
-        password = data.get('password')
-        
-        # Simple demo signup - accepts any email/password
-        if email and password and len(password) >= 3:
-            session['user_email'] = email
-            return jsonify({
-                'session_id': 'demo_session',
-                'user': {
-                    'email': email,
-                    'subscription_type': 'Free Plan',
-                    'usage': {'summary': 0, 'analysis': 0, 'question': 0},
-                    'limits': {'summary': 10, 'analysis': 5, 'question': 20}
-                }
-            })
-        else:
-            return jsonify({'error': 'Invalid email or password'}), 400
-            
-    except Exception as e:
-        logger.error(f"Signup error: {str(e)}")
-        return jsonify({'error': 'Signup failed'}), 500
+
 
 @app.route('/api/auth/validate', methods=['POST'])
 def api_validate():
