@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Prolexis Analytics</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .user-info {
+            color: #666;
+            margin-top: 10px;
+        }
+
+        .plan-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-left: 15px;
+        }
+
+        .plan-basic {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .plan-unlimited {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .stat-title {
+            color: #666;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="header">
+            <h1>Welcome to Your Dashboard! 👋</h1>
+            <div class="user-info">
+                <span id="userEmail">Loading...</span>
+                <span class="plan-badge" id="planBadge">Loading...</span>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-title">📊 Market Summaries</div>
+                <div class="stat-value" id="summaryUsage">0 / 5</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-title">🔍 Analyses</div>
+                <div class="stat-value" id="analysisUsage">0 / 3</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-title">💬 AI Questions</div>
+                <div class="stat-value" id="questionUsage">0 / 15</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-title">📱 Social Scans</div>
+                <div class="stat-value" id="socialUsage">0 / 2</div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <h2 style="margin-bottom: 20px; color: #333;">Quick Actions</h2>
+            <div class="action-buttons">
+                <a href="/tools" class="btn btn-primary">Start Analysis</a>
+                <a href="/TrendSummarizer" class="btn btn-primary">Trend Summarizer</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadUserData() {
+            try {
+                const response = await fetch('/api/user/info', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (!response.ok) {
+                    window.location.href = '/signin';
+                    return;
+                }
+
+                const data = await response.json();
+                const user = data.user;
+
+                document.getElementById('userEmail').textContent = user.email;
+                const planBadge = document.getElementById('planBadge');
+                planBadge.textContent = user.subscription_type;
+                planBadge.className = 'plan-badge plan-' + user.plan_id;
+
+                // Update usage
+                const limits = user.limits;
+                const usage = user.usage;
+
+                document.getElementById('summaryUsage').textContent = 
+                    limits.summary === Infinity ? `${usage.summary} (Unlimited)` : `${usage.summary} / ${limits.summary}`;
+                
+                document.getElementById('analysisUsage').textContent = 
+                    limits.analysis === Infinity ? `${usage.analysis} (Unlimited)` : `${usage.analysis} / ${limits.analysis}`;
+                
+                document.getElementById('questionUsage').textContent = 
+                    limits.question === Infinity ? `${usage.question} (Unlimited)` : `${usage.question} / ${limits.question}`;
+                
+                document.getElementById('socialUsage').textContent = 
+                    limits.social === Infinity ? `${usage.social} (Unlimited)` : `${usage.social} / ${limits.social}`;
+
+            } catch (error) {
+                console.error('Error loading user data:', error);
+            }
+        }
+
+        loadUserData();
+    </script>
+</body>
+</html>
