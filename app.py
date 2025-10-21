@@ -5,6 +5,8 @@ from flask_cors import CORS
 import os
 import logging
 import tempfile
+import stripe
+from dotenv import load_dotenv
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, Table, TableStyle, KeepTogether
 from PIL import Image
 try:
@@ -62,10 +64,11 @@ try:
 except ImportError:
     ANALYSIS_TOOLS_AVAILABLE = False
 
+load_dotenv()
 
 STRIPE_PRICE_IDS = {
-    'basic': 'prod_THFAA343ObWRXO',  # Your actual Basic plan Price ID
-    'unlimited': 'prod_THFCQKJbQQjMYQ'  # Your actual Unlimited plan Price ID
+    'basic': 'prod_THGktqtPOf7lIj',  # Your actual Basic plan Price ID
+    'unlimited': 'prod_THGmxnFGbnm2qJ'  # Your actual Unlimited plan Price ID
 }
 
 
