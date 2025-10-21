@@ -67,8 +67,8 @@ except ImportError:
 load_dotenv()
 
 STRIPE_PRICE_IDS = {
-    'basic': 'prod_THGktqtPOf7lIj',  # Your actual Basic plan Price ID
-    'unlimited': 'prod_THGmxnFGbnm2qJ'  # Your actual Unlimited plan Price ID
+    'basic': 'price_1SKiClEQXwDOB8xDoVg8tv5k',  # Your actual Basic plan Price ID
+    'unlimited': 'price_1SKiETEQXwDOB8xDQEamudQ2'  # Your actual Unlimited plan Price ID
 }
 
 
