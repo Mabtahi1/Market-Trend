@@ -62,6 +62,31 @@ try:
 except ImportError:
     ANALYSIS_TOOLS_AVAILABLE = False
 
+# Subscription plans configuration
+SUBSCRIPTION_PLANS = {
+    'basic': {
+        'name': 'Basic Plan',
+        'price': 10,
+        'limits': {
+            'summary': 5,
+            'analysis': 3,
+            'question': 15,
+            'social': 2
+        }
+    },
+    'unlimited': {
+        'name': 'Unlimited Plan',
+        'price': 49,
+        'limits': {
+            'summary': float('inf'),
+            'analysis': float('inf'),
+            'question': float('inf'),
+            'social': float('inf')
+        }
+    }
+}
+
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
