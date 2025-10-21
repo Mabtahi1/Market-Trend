@@ -62,6 +62,13 @@ try:
 except ImportError:
     ANALYSIS_TOOLS_AVAILABLE = False
 
+
+STRIPE_PRICE_IDS = {
+    'basic': 'prod_THFAA343ObWRXO',  # Your actual Basic plan Price ID
+    'unlimited': 'prod_THFCQKJbQQjMYQ'  # Your actual Unlimited plan Price ID
+}
+
+
 # Subscription plans configuration
 SUBSCRIPTION_PLANS = {
     'basic': {
@@ -510,6 +517,88 @@ def health():
 @app.route('/tools')
 def tools():
     return render_template('tools.html')
+
+@app.route('/api/create-checkout-session', methods=['POST'])
+def create_checkout_session():
+    try:
+        data = request.get_json()
+        plan = data.get('plan', 'basic')
+        email = data.get('email')
+        password = data.get('password')
+        full_name = data.get('fullName', '')
+        
+        if plan not in SUBSCRIPTION_PLANS:
+            return jsonify({'error': 'Invalid plan'}), 400
+        
+        if plan not in STRIPE_PRICE_IDS:
+            return jsonify({'error': 'Stripe price ID not configured'}), 500
+        
+        # Create Stripe Checkout Session
+        checkout_session = stripe.checkout.Session.create(
+            customer_email=email,
+            payment_method_types=['card'],
+            line_items=[{
+                'price': STRIPE_PRICE_IDS[plan],
+                'quantity': 1,
+            }],
+            mode='subscription',
+            success_url=request.host_url + 'payment-success?session_id={CHECKOUT_SESSION_ID}',
+            cancel_url=request.host_url + 'signup',
+            metadata={
+                'plan': plan,
+                'email': email,
+                'full_name': full_name,
+                'password': password  # Note: In production, hash this!
+            }
+        )
+        
+        return jsonify({'sessionId': checkout_session.id, 'url': checkout_session.url})
+        
+    except Exception as e:
+        logger.error(f"Stripe checkout error: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/payment-success')
+def payment_success():
+    """Handle successful payment redirect"""
+    session_id = request.args.get('session_id')
+    
+    if not session_id:
+        return redirect('/signup')
+    
+    try:
+        # Retrieve the session from Stripe
+        checkout_session = stripe.checkout.Session.retrieve(session_id)
+        
+        # Get user info from metadata
+        email = checkout_session.metadata.get('email')
+        plan = checkout_session.metadata.get('plan')
+        full_name = checkout_session.metadata.get('full_name')
+        password = checkout_session.metadata.get('password')
+        
+        # Create user session
+        session['user_email'] = email
+        session['user_plan'] = plan
+        session['user_name'] = full_name
+        session['stripe_customer_id'] = checkout_session.customer
+        session['stripe_subscription_id'] = checkout_session.subscription
+        
+        # Initialize usage counters
+        session['usage_summary'] = 0
+        session['usage_analysis'] = 0
+        session['usage_question'] = 0
+        session['usage_social'] = 0
+        
+        return redirect('/dashboard')
+        
+    except Exception as e:
+        logger.error(f"Payment success error: {str(e)}")
+        return redirect('/signup')
+
+@app.route('/api/stripe/config', methods=['GET'])
+def get_stripe_config():
+    """Send publishable key to frontend"""
+    return jsonify({'publishableKey': STRIPE_PUBLISHABLE_KEY})
 
 # NEW AUTHENTICATION ROUTES (simple, no Firebase required for now)
 @app.route('/api/auth/login', methods=['POST'])
