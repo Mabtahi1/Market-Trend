@@ -596,6 +596,11 @@ def api_logout():
         logger.error(f"Logout error: {str(e)}")
         return jsonify({'error': 'Logout failed'}), 500
 
+@app.route('/dashboard')
+def dashboard():
+    """Renders the user dashboard page."""
+    return render_template('dashboard.html')
+
 # NEW ANALYSIS ROUTES
 @app.route('/api/analyze/comprehensive', methods=['POST'])
 def api_comprehensive_analysis():
