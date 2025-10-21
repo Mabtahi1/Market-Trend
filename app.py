@@ -1,5 +1,5 @@
 # Your Original Flask App with Added Analysis Features
-from datetime import datetime
+from datetime import datetime, timedelta  # ADD timedelta here
 from flask import Flask, render_template, request, jsonify, session, redirect
 from flask_cors import CORS
 import os
@@ -9,6 +9,7 @@ import stripe
 from dotenv import load_dotenv
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, Table, TableStyle, KeepTogether
 from PIL import Image
+
 try:
     import praw
     REDDIT_AVAILABLE = True
@@ -20,7 +21,6 @@ try:
     TRENDS_AVAILABLE = True
 except ImportError:
     TRENDS_AVAILABLE = False
-
 
 # Import your app2.py functions
 try:
@@ -64,13 +64,27 @@ try:
 except ImportError:
     ANALYSIS_TOOLS_AVAILABLE = False
 
+# IMPORTANT: Load .env FIRST before using environment variables
 load_dotenv()
 
-STRIPE_PRICE_IDS = {
-    'basic': 'price_1SKiClEQXwDOB8xDoVg8tv5k',  # Your actual Basic plan Price ID
-    'unlimited': 'price_1SKiETEQXwDOB8xDQEamudQ2'  # Your actual Unlimited plan Price ID
-}
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
+# Initialize Flask app
+app = Flask(__name__, template_folder='.')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
+CORS(app)
+
+# Stripe configuration - AFTER load_dotenv()
+stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
+STRIPE_PUBLISHABLE_KEY = os.environ.get('STRIPE_PUBLISHABLE_KEY')
+
+# Stripe Price IDs
+STRIPE_PRICE_IDS = {
+    'basic': 'price_1SKiClEQXwDOB8xDoVg8tv5k',
+    'unlimited': 'price_1SKiETEQXwDOB8xDQEamudQ2'
+}
 
 # Subscription plans configuration
 SUBSCRIPTION_PLANS = {
@@ -96,27 +110,11 @@ SUBSCRIPTION_PLANS = {
     }
 }
 
-
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-# Initialize Flask app (your original configuration)
-app = Flask(__name__, template_folder='.')
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
-CORS(app)
-
-# Stripe configuration
-stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
-STRIPE_PUBLISHABLE_KEY = os.environ.get('STRIPE_PUBLISHABLE_KEY')
-
-# Validate critical keys are present
+# Validate critical keys are present (optional - can comment out if causing issues)
 if not stripe.api_key:
-    logger.error("❌ STRIPE_SECRET_KEY not found in .env file!")
+    logger.warning("⚠️ STRIPE_SECRET_KEY not found in .env file! Stripe payments will not work.")
 if not STRIPE_PUBLISHABLE_KEY:
-    logger.error("❌ STRIPE_PUBLISHABLE_KEY not found in .env file!")
-if app.config['SECRET_KEY'] == 'dev-key-only-for-testing':
-    logger.warning("⚠️ Using default SECRET_KEY! Set SECRET_KEY in .env file for production!")
+    logger.warning("⚠️ STRIPE_PUBLISHABLE_KEY not found in .env file! Stripe payments will not work.")
 
 # Simple analysis functions for the new features
 def analyze_sentiment(text):
