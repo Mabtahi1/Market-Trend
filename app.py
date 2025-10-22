@@ -490,7 +490,7 @@ def generate_content_based_recommendations(text, hashtags, sentiment_analysis):
 @app.route('/index')
 def hello():
     """Renders the home page."""
-    return render_template('index.html')
+    return render_template('/signup')
 
 @app.route('/contact')
 def contact():
@@ -519,8 +519,8 @@ def signin():
 
 @app.route('/signup')
 def signup():
-    """Renders the signup page."""
-    return render_template('signup.html')
+    """Redirect to signup for now - implement login later."""
+    return redirect('/signup')
 
 @app.route('/health')
 def health():
