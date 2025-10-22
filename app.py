@@ -676,7 +676,7 @@ def payment_success():
             'email': email,
             'password': password,
             'full_name': full_name,
-            'subscription': plan,  # 'basic' or 'unlimited'
+            'subscription': plan,
             'stripe_customer_id': checkout_session.customer,
             'stripe_subscription_id': checkout_session.subscription,
             'created_at': datetime.now().isoformat(),
@@ -702,7 +702,7 @@ def payment_success():
         
         logger.info(f"✅ User created and logged in: {email} with {plan} plan")
         
-        return redirect('/dashboard')
+        return redirect('/index')  # ✅ Changed from /dashboard to /index
         
     except Exception as e:
         logger.error(f"❌ Payment success error: {str(e)}")
@@ -719,8 +719,8 @@ def get_stripe_config():
 
 @app.route('/dashboard')
 def dashboard():
-    """Renders the user dashboard page."""
-    return render_template('dashboard.html')
+    """Redirect dashboard to index page"""
+    return redirect('/index')
 
 # NEW ANALYSIS ROUTES
 @app.route('/api/analyze/comprehensive', methods=['POST'])
