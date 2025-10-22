@@ -512,7 +512,52 @@ def health():
 @app.route('/tools')
 def tools():
     return render_template('tools.html')
-    
+
+@app.route('/api/auth/login', methods=['POST'])
+def api_login():
+    """Handle user login via API"""
+    try:
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+        
+        email = data.get('email', '').strip().lower()
+        password = data.get('password', '')
+        
+        if not email or not password:
+            return jsonify({'error': 'Email and password are required'}), 400
+        
+        # Get user from database
+        user = USERS_DB.get(email)
+        
+        if not user or user.get('password') != password:
+            return jsonify({'error': 'Invalid email or password'}), 401
+        
+        # Create session
+        session['user_id'] = email
+        session['email'] = email
+        session['subscription'] = user.get('subscription', 'free')
+        session['logged_in'] = True
+        session['usage'] = {'summary': 0, 'analysis': 0, 'question': 0, 'social': 0}
+        session['usage_reset'] = datetime.now().isoformat()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Login successful',
+            'user': {'email': email, 'subscription': user.get('subscription', 'free')}
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"Login error: {str(e)}")
+        return jsonify({'error': 'An error occurred during login'}), 500
+
+@app.route('/api/auth/logout', methods=['POST'])
+def api_logout():
+    """Handle user logout"""
+    session.clear()
+    return jsonify({'success': True, 'message': 'Logged out successfully'}), 200
+
 @app.route('/api/create-checkout-session', methods=['POST'])
 def create_checkout_session():
     try:
