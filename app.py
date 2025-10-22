@@ -489,8 +489,8 @@ def generate_content_based_recommendations(text, hashtags, sentiment_analysis):
 @app.route('/')
 @app.route('/index')
 def hello():
-    """Renders the home page."""
-    return render_template('/signup')
+    """Redirect to signup page."""
+    return redirect('/signup') 
 
 @app.route('/contact')
 def contact():
