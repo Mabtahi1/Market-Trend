@@ -553,7 +553,12 @@ def api_login():
         if not user or user.get('password') != password:
             return jsonify({'error': 'Invalid email or password'}), 401
         
+        # Generate session ID
+        import uuid
+        session_id = str(uuid.uuid4())
+        
         # Create session with proper limits based on subscription
+        session['session_id'] = session_id  # ✅ Add this
         session['user_id'] = email
         session['email'] = email
         session['subscription'] = user.get('subscription', 'free')
@@ -571,15 +576,23 @@ def api_login():
         session['usage'] = user.get('usage', {'summary': 0, 'analysis': 0, 'question': 0, 'social': 0})
         session['usage_reset'] = user.get('usage_reset', datetime.now().isoformat())
         
+        # Get subscription limits
+        plan_limits = SUBSCRIPTION_PLANS.get(user.get('subscription', 'free'), {}).get('limits', {
+            'summary': 0, 'analysis': 0, 'question': 0, 'social': 0
+        })
+        
         logger.info(f"✅ User logged in: {email} with {user.get('subscription')} plan")
         
         return jsonify({
             'success': True,
             'message': 'Login successful',
+            'session_id': session_id,  # ✅ Frontend needs this
             'user': {
                 'email': email,
                 'subscription': user.get('subscription', 'free'),
-                'full_name': user.get('full_name', '')
+                'full_name': user.get('full_name', ''),
+                'usage': session['usage'],
+                'limits': plan_limits  # ✅ Frontend needs this too
             }
         }), 200
         
