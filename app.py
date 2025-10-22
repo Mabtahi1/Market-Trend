@@ -501,7 +501,23 @@ def index_route():
 
 # Add this at the top of app.py after line 80
 USERS_DB = {}
-
+# Add your admin account
+USERS_DB['abtahimehdi8@gmail.com'] = {
+    'email': 'abtahimehdi8@gmail.com',
+    'password': 'demo123',
+    'full_name': 'Admin User',
+    'subscription': 'unlimited',  # Give yourself unlimited access
+    'stripe_customer_id': None,
+    'stripe_subscription_id': None,
+    'created_at': datetime.now().isoformat(),
+    'usage': {
+        'summary': 0,
+        'analysis': 0,
+        'question': 0,
+        'social': 0
+    },
+    'usage_reset': datetime.now().isoformat()
+}
 @app.route('/signup', methods=['GET'])
 def signup():
     """Renders the signup page."""
