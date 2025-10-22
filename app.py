@@ -557,42 +557,32 @@ def api_login():
         import uuid
         session_id = str(uuid.uuid4())
         
-        # Create session with proper limits based on subscription
-        session['session_id'] = session_id  # ✅ Add this
+        # Create session
+        session['session_id'] = session_id
         session['user_id'] = email
         session['email'] = email
         session['subscription'] = user.get('subscription', 'free')
         session['logged_in'] = True
-        session['full_name'] = user.get('full_name', '')
-        session['stripe_customer_id'] = user.get('stripe_customer_id')
-        session['stripe_subscription_id'] = user.get('stripe_subscription_id')
-        
-        # Load existing usage or reset if expired
-        usage_reset = datetime.fromisoformat(user.get('usage_reset', datetime.now().isoformat()))
-        if datetime.now() - usage_reset > timedelta(days=30):
-            user['usage'] = {'summary': 0, 'analysis': 0, 'question': 0, 'social': 0}
-            user['usage_reset'] = datetime.now().isoformat()
-        
-        session['usage'] = user.get('usage', {'summary': 0, 'analysis': 0, 'question': 0, 'social': 0})
-        session['usage_reset'] = user.get('usage_reset', datetime.now().isoformat())
         
         # Get subscription limits
-        plan_limits = SUBSCRIPTION_PLANS.get(user.get('subscription', 'free'), {}).get('limits', {
-            'summary': 0, 'analysis': 0, 'question': 0, 'social': 0
-        })
+        subscription = user.get('subscription', 'free')
+        limits = SUBSCRIPTION_PLANS.get(subscription, SUBSCRIPTION_PLANS['basic']).get('limits', {})
         
-        logger.info(f"✅ User logged in: {email} with {user.get('subscription')} plan")
+        # Load or initialize usage
+        usage = user.get('usage', {'summary': 0, 'analysis': 0, 'question': 0, 'social': 0})
+        session['usage'] = usage
         
+        logger.info(f"✅ User logged in: {email} with {subscription} plan")
+        
+        # Return in the format frontend expects
         return jsonify({
-            'success': True,
-            'message': 'Login successful',
-            'session_id': session_id,  # ✅ Frontend needs this
+            'session_id': session_id,
             'user': {
                 'email': email,
-                'subscription': user.get('subscription', 'free'),
-                'full_name': user.get('full_name', ''),
-                'usage': session['usage'],
-                'limits': plan_limits  # ✅ Frontend needs this too
+                'name': user.get('full_name', ''),
+                'plan': subscription,
+                'usage': usage,
+                'limits': limits
             }
         }), 200
         
