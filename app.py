@@ -499,10 +499,13 @@ def index_route():
     """Serve the main index.html for all pages (SPA)."""
     return render_template('index.html')
 
-@app.route('/signup')
+# Add this at the top of app.py after line 80
+USERS_DB = {}
+
+@app.route('/signup', methods=['GET'])
 def signup():
     """Renders the signup page."""
-    return render_template('signup.html')  # ✅ Fixed - now renders template
+    return render_template('signup.html')
 
 @app.route('/health')
 def health():
@@ -534,18 +537,34 @@ def api_login():
         if not user or user.get('password') != password:
             return jsonify({'error': 'Invalid email or password'}), 401
         
-        # Create session
+        # Create session with proper limits based on subscription
         session['user_id'] = email
         session['email'] = email
         session['subscription'] = user.get('subscription', 'free')
         session['logged_in'] = True
-        session['usage'] = {'summary': 0, 'analysis': 0, 'question': 0, 'social': 0}
-        session['usage_reset'] = datetime.now().isoformat()
+        session['full_name'] = user.get('full_name', '')
+        session['stripe_customer_id'] = user.get('stripe_customer_id')
+        session['stripe_subscription_id'] = user.get('stripe_subscription_id')
+        
+        # Load existing usage or reset if expired
+        usage_reset = datetime.fromisoformat(user.get('usage_reset', datetime.now().isoformat()))
+        if datetime.now() - usage_reset > timedelta(days=30):
+            user['usage'] = {'summary': 0, 'analysis': 0, 'question': 0, 'social': 0}
+            user['usage_reset'] = datetime.now().isoformat()
+        
+        session['usage'] = user.get('usage', {'summary': 0, 'analysis': 0, 'question': 0, 'social': 0})
+        session['usage_reset'] = user.get('usage_reset', datetime.now().isoformat())
+        
+        logger.info(f"✅ User logged in: {email} with {user.get('subscription')} plan")
         
         return jsonify({
             'success': True,
             'message': 'Login successful',
-            'user': {'email': email, 'subscription': user.get('subscription', 'free')}
+            'user': {
+                'email': email,
+                'subscription': user.get('subscription', 'free'),
+                'full_name': user.get('full_name', '')
+            }
         }), 200
         
     except Exception as e:
@@ -555,15 +574,21 @@ def api_login():
 @app.route('/api/auth/logout', methods=['POST'])
 def api_logout():
     """Handle user logout"""
+    # Save usage before logout
+    email = session.get('email')
+    if email and email in USERS_DB:
+        USERS_DB[email]['usage'] = session.get('usage', {'summary': 0, 'analysis': 0, 'question': 0, 'social': 0})
+    
     session.clear()
     return jsonify({'success': True, 'message': 'Logged out successfully'}), 200
 
 @app.route('/api/create-checkout-session', methods=['POST'])
 def create_checkout_session():
+    """Create Stripe checkout session for paid plans"""
     try:
         data = request.get_json()
         plan = data.get('plan', 'basic')
-        email = data.get('email')
+        email = data.get('email', '').strip().lower()
         password = data.get('password')
         full_name = data.get('fullName', '')
         
@@ -572,6 +597,13 @@ def create_checkout_session():
         
         if plan not in STRIPE_PRICE_IDS:
             return jsonify({'error': 'Stripe price ID not configured'}), 500
+        
+        if not email or not password:
+            return jsonify({'error': 'Email and password required'}), 400
+        
+        # Check if user already exists
+        if email in USERS_DB:
+            return jsonify({'error': 'Email already registered. Please login instead.'}), 400
         
         # Create Stripe Checkout Session
         checkout_session = stripe.checkout.Session.create(
@@ -588,9 +620,11 @@ def create_checkout_session():
                 'plan': plan,
                 'email': email,
                 'full_name': full_name,
-                'password': password  # Note: In production, hash this!
+                'password': password
             }
         )
+        
+        logger.info(f"✅ Stripe checkout created for {email} - {plan} plan")
         
         return jsonify({'sessionId': checkout_session.id, 'url': checkout_session.url})
         
@@ -600,10 +634,11 @@ def create_checkout_session():
 
 @app.route('/payment-success')
 def payment_success():
-    """Handle successful payment redirect"""
+    """Handle successful payment redirect - saves paid user to database"""
     session_id = request.args.get('session_id')
     
     if not session_id:
+        logger.warning("⚠️ Payment success called without session_id")
         return redirect('/signup')
     
     try:
@@ -611,28 +646,50 @@ def payment_success():
         checkout_session = stripe.checkout.Session.retrieve(session_id)
         
         # Get user info from metadata
-        email = checkout_session.metadata.get('email')
-        plan = checkout_session.metadata.get('plan')
-        full_name = checkout_session.metadata.get('full_name')
+        email = checkout_session.metadata.get('email', '').strip().lower()
+        plan = checkout_session.metadata.get('plan', 'basic')
+        full_name = checkout_session.metadata.get('full_name', '')
         password = checkout_session.metadata.get('password')
         
+        if not email or not password:
+            logger.error("❌ Missing email or password in Stripe metadata")
+            return redirect('/signup')
+        
+        # Save user to database with paid subscription
+        USERS_DB[email] = {
+            'email': email,
+            'password': password,
+            'full_name': full_name,
+            'subscription': plan,  # 'basic' or 'unlimited'
+            'stripe_customer_id': checkout_session.customer,
+            'stripe_subscription_id': checkout_session.subscription,
+            'created_at': datetime.now().isoformat(),
+            'usage': {
+                'summary': 0,
+                'analysis': 0,
+                'question': 0,
+                'social': 0
+            },
+            'usage_reset': datetime.now().isoformat()
+        }
+        
         # Create user session
-        session['user_email'] = email
-        session['user_plan'] = plan
-        session['user_name'] = full_name
+        session['user_id'] = email
+        session['email'] = email
+        session['full_name'] = full_name
+        session['subscription'] = plan
         session['stripe_customer_id'] = checkout_session.customer
         session['stripe_subscription_id'] = checkout_session.subscription
+        session['logged_in'] = True
+        session['usage'] = {'summary': 0, 'analysis': 0, 'question': 0, 'social': 0}
+        session['usage_reset'] = datetime.now().isoformat()
         
-        # Initialize usage counters
-        session['usage_summary'] = 0
-        session['usage_analysis'] = 0
-        session['usage_question'] = 0
-        session['usage_social'] = 0
+        logger.info(f"✅ User created and logged in: {email} with {plan} plan")
         
         return redirect('/dashboard')
         
     except Exception as e:
-        logger.error(f"Payment success error: {str(e)}")
+        logger.error(f"❌ Payment success error: {str(e)}")
         return redirect('/signup')
 
 @app.route('/api/stripe/config', methods=['GET'])
