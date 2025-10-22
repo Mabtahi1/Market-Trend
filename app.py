@@ -487,36 +487,22 @@ def generate_content_based_recommendations(text, hashtags, sentiment_analysis):
 
 # YOUR ORIGINAL ROUTES (exactly as they were)
 # YOUR FIXED ROUTES
+# CORRECTED ROUTES
 @app.route('/')
 @app.route('/index')
-def hello():
-    """Redirect to signup page."""
-    return redirect('/signup') 
-
 @app.route('/contact')
-def contact():
-    """Renders the contact page."""
-    return render_template('contact.html')
-
 @app.route('/about')
-def about():
-    """Renders the about page."""
-    return render_template('about.html')
-
 @app.route('/TrendSummarizer')
-def TrendSummarizer():
-    """Renders the trend summarizer page."""
-    return render_template('TrendSummarizer.html')
-
 @app.route('/DataHelp')
-def DataHelp():
-    """Renders the data help page."""
-    return render_template('DataHelp.html')
-
 @app.route('/signin')
-def signin():
-    """Renders the signin page."""
-    return render_template('signin.html')
+def index_route():
+    """Serve the main index.html for all pages (SPA)."""
+    return render_template('index.html')
+
+@app.route('/signup')
+def signup():
+    """Renders the signup page."""
+    return render_template('signup.html')
 
 @app.route('/signup')
 def signup():
