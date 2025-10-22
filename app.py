@@ -486,6 +486,7 @@ def generate_content_based_recommendations(text, hashtags, sentiment_analysis):
 
 
 # YOUR ORIGINAL ROUTES (exactly as they were)
+# YOUR FIXED ROUTES
 @app.route('/')
 @app.route('/index')
 def hello():
@@ -519,8 +520,8 @@ def signin():
 
 @app.route('/signup')
 def signup():
-    """Redirect to signup for now - implement login later."""
-    return redirect('/signup')
+    """Renders the signup page."""
+    return render_template('signup.html')  # ✅ Fixed - now renders template
 
 @app.route('/health')
 def health():
@@ -530,7 +531,7 @@ def health():
 @app.route('/tools')
 def tools():
     return render_template('tools.html')
-
+    
 @app.route('/api/create-checkout-session', methods=['POST'])
 def create_checkout_session():
     try:
