@@ -502,11 +502,6 @@ def index_route():
 @app.route('/signup')
 def signup():
     """Renders the signup page."""
-    return render_template('signup.html')
-
-@app.route('/signup')
-def signup():
-    """Renders the signup page."""
     return render_template('signup.html')  # ✅ Fixed - now renders template
 
 @app.route('/health')
