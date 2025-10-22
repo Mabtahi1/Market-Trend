@@ -642,14 +642,7 @@ def get_stripe_config():
 
 
 
-@app.route('/api/auth/logout', methods=['POST'])
-def api_logout():
-    try:
-        session.clear()
-        return jsonify({'message': 'Logged out successfully'})
-    except Exception as e:
-        logger.error(f"Logout error: {str(e)}")
-        return jsonify({'error': 'Logout failed'}), 500
+
 
 @app.route('/dashboard')
 def dashboard():
