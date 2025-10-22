@@ -532,63 +532,42 @@ def health():
 def tools():
     return render_template('tools.html')
 
-@app.route('/api/auth/login', methods=['POST'])
-def api_login():
-    """Handle user login via API"""
-    try:
-        data = request.get_json()
+async login() {
+    this.loading = true;
+    this.message = '';
+    
+    console.log('Sending credentials:', this.credentials);  // ✅ ADD THIS
+    console.log('API Base:', this.apiBase);  // ✅ ADD THIS
+    
+    try {
+        const response = await fetch(`${this.apiBase}/api/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(this.credentials)
+        });
         
-        if not data:
-            return jsonify({'error': 'No data provided'}), 400
+        console.log('Response status:', response.status);  // ✅ ADD THIS
         
-        email = data.get('email', '').strip().lower()
-        password = data.get('password', '')
+        const data = await response.json();
         
-        if not email or not password:
-            return jsonify({'error': 'Email and password are required'}), 400
+        console.log('Login response data:', data);  // ✅ ADD THIS
         
-        # Get user from database
-        user = USERS_DB.get(email)
-        
-        if not user or user.get('password') != password:
-            return jsonify({'error': 'Invalid email or password'}), 401
-        
-        # Generate session ID
-        import uuid
-        session_id = str(uuid.uuid4())
-        
-        # Create session
-        session['session_id'] = session_id
-        session['user_id'] = email
-        session['email'] = email
-        session['subscription'] = user.get('subscription', 'free')
-        session['logged_in'] = True
-        
-        # Get subscription limits
-        subscription = user.get('subscription', 'free')
-        limits = SUBSCRIPTION_PLANS.get(subscription, SUBSCRIPTION_PLANS['basic']).get('limits', {})
-        
-        # Load or initialize usage
-        usage = user.get('usage', {'summary': 0, 'analysis': 0, 'question': 0, 'social': 0})
-        session['usage'] = usage
-        
-        logger.info(f"✅ User logged in: {email} with {subscription} plan")
-        
-        # Return in the format frontend expects
-        return jsonify({
-            'session_id': session_id,
-            'user': {
-                'email': email,
-                'name': user.get('full_name', ''),
-                'plan': subscription,
-                'usage': usage,
-                'limits': limits
-            }
-        }), 200
-        
-    except Exception as e:
-        logger.error(f"Login error: {str(e)}")
-        return jsonify({'error': 'An error occurred during login'}), 500
+        if (response.ok) {
+            this.sessionId = data.session_id;
+            this.user = data.user;
+            this.isAuthenticated = true;
+            localStorage.setItem('sessionId', this.sessionId);
+            this.showMessage('Welcome! Login successful.', 'success');
+            this.resetCredentials();
+        } else {
+            this.showMessage(data.error || 'Login failed', 'error');
+        }
+    } catch (error) {
+        console.error('Login error details:', error);  // ✅ ADD THIS
+        this.showMessage('Network error. Please try again.', 'error');
+    }
+    this.loading = false;
+},
 
 @app.route('/api/auth/logout', methods=['POST'])
 def api_logout():
