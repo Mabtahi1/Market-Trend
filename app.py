@@ -536,8 +536,8 @@ async login() {
     this.loading = true;
     this.message = '';
     
-    console.log('Sending credentials:', this.credentials);  // ✅ ADD THIS
-    console.log('API Base:', this.apiBase);  // ✅ ADD THIS
+    console.log('Sending credentials:', this.credentials);  
+    console.log('API Base:', this.apiBase);  
     
     try {
         const response = await fetch(`${this.apiBase}/api/auth/login`, {
@@ -546,11 +546,11 @@ async login() {
             body: JSON.stringify(this.credentials)
         });
         
-        console.log('Response status:', response.status);  // ✅ ADD THIS
+        console.log('Response status:', response.status);  
         
         const data = await response.json();
         
-        console.log('Login response data:', data);  // ✅ ADD THIS
+        console.log('Login response data:', data); 
         
         if (response.ok) {
             this.sessionId = data.session_id;
@@ -563,7 +563,7 @@ async login() {
             this.showMessage(data.error || 'Login failed', 'error');
         }
     } catch (error) {
-        console.error('Login error details:', error);  // ✅ ADD THIS
+        console.error('Login error details:', error);  
         this.showMessage('Network error. Please try again.', 'error');
     }
     this.loading = false;
