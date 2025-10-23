@@ -1333,6 +1333,7 @@
                         const response = await fetch(`${this.apiBase}/api/auth/signup`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
+                            credentials: 'include',
                             body: JSON.stringify(this.credentials)
                         });
 
