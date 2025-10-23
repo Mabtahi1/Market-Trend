@@ -518,10 +518,40 @@ USERS_DB['abtahimehdi8@gmail.com'] = {
     },
     'usage_reset': datetime.now().isoformat()
 }
-@app.route('/signup', methods=['GET'])
-def signup():
-    """Renders the signup page."""
-    return render_template('signup.html')
+@app.route('/api/signup', methods=['POST'])
+def api_signup():
+    """Handle free plan signup"""
+    try:
+        data = request.get_json()
+        
+        email = data.get('email', '').strip().lower()
+        password = data.get('password')
+        full_name = data.get('fullName', '')
+        plan = data.get('plan', 'free')
+        
+        if not email or not password:
+            return jsonify({'error': 'Email and password required'}), 400
+        
+        if email in USERS_DB:
+            return jsonify({'error': 'Email already registered'}), 400
+        
+        # Create free account
+        USERS_DB[email] = {
+            'email': email,
+            'password': password,
+            'full_name': full_name,
+            'subscription': plan,
+            'created_at': datetime.now().isoformat(),
+            'usage': {'summary': 0, 'analysis': 0, 'question': 0, 'social': 0}
+        }
+        
+        logger.info(f"✅ New user registered: {email} with {plan} plan")
+        
+        return jsonify({'success': True, 'message': 'Account created successfully'}), 200
+        
+    except Exception as e:
+        logger.error(f"❌ Signup error: {str(e)}")
+        return jsonify({'error': 'Signup failed'}), 500
 
 @app.route('/health')
 def health():
