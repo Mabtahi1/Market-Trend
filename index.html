@@ -38,6 +38,26 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
+
+        .auth-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .auth-tabs button {
+            flex: 1;
+            padding: 10px;
+            background: #f0f0f0;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        
+        .auth-tabs button.active {
+            background: #007bff;
+            color: white;
+        }
         .logo {
             display: flex;
             align-items: center;
@@ -816,6 +836,17 @@
         </div>
 
         <div x-show="!isAuthenticated" class="auth-container">
+            <!-- Tab Navigation -->
+            <div class="auth-tabs">
+                <button @click="authMode = 'login'" :class="{'active': authMode === 'login'}">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </button>
+                <button @click="authMode = 'signup'" :class="{'active': authMode === 'signup'}">
+                    <i class="fas fa-user-plus"></i> Sign Up
+                </button>
+            </div>
+        
+            <!-- Login Form -->
             <div x-show="authMode === 'login'">
                 <div class="auth-header">
                     <h2><i class="fas fa-sign-in-alt"></i> Welcome Back</h2>
@@ -835,31 +866,47 @@
                         <span x-text="loading ? 'Signing In...' : 'Sign In'"></span>
                     </button>
                 </form>
-                <p style="text-align: center; margin-top: 25px;">
-                    Don't have an account? 
-                    <a href="/signup" style="color: #8a2be2; text-decoration: none;">Create Account</a>
-                </p>
             </div>
-
+        
+            <!-- Signup Form -->
             <div x-show="authMode === 'signup'">
                 <div class="auth-header">
                     <h2><i class="fas fa-user-plus"></i> Create Account</h2>
                     <p>Choose your plan and start analyzing market trends</p>
                 </div>
                 
-                <div style="text-align: center; padding: 20px;">
-                    <p style="margin-bottom: 20px; color: #666;">Select from our flexible subscription plans</p>
-                    <a href="/signup" class="btn btn-primary" style="display: inline-block; padding: 15px 40px; width: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 10px; text-decoration: none; font-weight: 600; border: none;">
-                        <i class="fas fa-arrow-right"></i> Choose Your Plan
-                    </a>
-                </div>
-                
-                <p style="text-align: center; margin-top: 25px;">
-                    Already have an account? 
-                    <a href="#" @click="authMode = 'login'" style="color: #8a2be2; text-decoration: none;">Sign In</a>
-                </p>
+                <form @submit.prevent="signup()">
+                    <div class="form-group">
+                        <label for="signup-name">Full Name</label>
+                        <input type="text" id="signup-name" class="form-control" x-model="signupData.fullName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-email">Email Address</label>
+                        <input type="email" id="signup-email" class="form-control" x-model="signupData.email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-password">Password</label>
+                        <input type="password" id="signup-password" class="form-control" x-model="signupData.password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-plan">Select Plan</label>
+                        <select id="signup-plan" class="form-control" x-model="signupData.plan" required>
+                            <option value="">Choose a plan...</option>
+                            <option value="free">Free Plan (Limited features)</option>
+                            <option value="basic">Basic - $9.99/month</option>
+                            <option value="pro">Pro - $29.99/month</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;" :disabled="loading">
+                        <i class="fas fa-user-plus"></i>
+                        <span x-text="loading ? 'Creating Account...' : 'Create Account'"></span>
+                    </button>
+                </form>
             </div>
+        
+            <!-- Messages -->
             <div x-show="message" :class="'message ' + messageType" x-text="message"></div>
+        </div>
 
         <div x-show="isAuthenticated" class="main-app">
             <div class="user-dashboard">
