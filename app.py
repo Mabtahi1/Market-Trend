@@ -532,7 +532,7 @@ def health():
 def tools():
     return render_template('tools.html')
 
-@app.route('/api/auth/login', methods=['POST'])
+@app.route('/api/login', methods=['POST'])
 def api_login():
     """Handle user login via API"""
     try:
