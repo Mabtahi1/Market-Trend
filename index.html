@@ -835,7 +835,7 @@
             </div>
         </div>
 
-        <div class="auth-container">
+        <div x-show="isAuthenticated" class="auth-container">
             <!-- Tab Navigation -->
             <div class="auth-tabs">
                 <button @click="authMode = 'login'" :class="{'active': authMode === 'login'}">
