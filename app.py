@@ -616,7 +616,6 @@ def api_login():
         password = data.get('password', '')
         
         logger.info(f"🔍 Login attempt for: {email}")
-        logger.info(f"📧 Credentials received - Email: {email}, Password length: {len(password)}")
         
         if not email or not password:
             return jsonify({'error': 'Email and password are required'}), 400
@@ -624,7 +623,6 @@ def api_login():
         # Check if user exists
         if email not in USERS_DB:
             logger.warning(f"❌ User not found: {email}")
-            logger.info(f"📋 Available users: {list(USERS_DB.keys())}")
             return jsonify({'error': 'Invalid email or password'}), 401
         
         user = USERS_DB[email]
@@ -632,20 +630,16 @@ def api_login():
         # Verify password
         if user.get('password') != password:
             logger.warning(f"❌ Wrong password for: {email}")
-            logger.info(f"🔑 Expected: {user.get('password')}, Got: {password}")
             return jsonify({'error': 'Invalid email or password'}), 401
         
         # Generate session
         session_id = str(__import__('uuid').uuid4())
         subscription = user.get('subscription', 'free')
         
-        # Get limits based on subscription
+        # Get limits
         limits = SUBSCRIPTION_PLANS.get(subscription, {}).get('limits', {
             'summary': 5, 'analysis': 3, 'question': 10, 'social': 2
         })
-        
-        # Get or initialize usage
-        usage = user.get('usage', {'summary': 0, 'analysis': 0, 'question': 0, 'social': 0})
         
         # Store in Flask session
         session['session_id'] = session_id
@@ -657,17 +651,19 @@ def api_login():
         
         logger.info(f"✅ Login successful: {email} with {subscription} plan")
         
-        # Return response in format your frontend expects
-        return jsonify({
+        # IMPORTANT: Return JSON with proper content-type
+        response = jsonify({
             'session_id': session_id,
             'user': {
                 'email': email,
                 'name': user.get('full_name', ''),
                 'plan': subscription,
-                'usage': usage,
+                'usage': user.get('usage', {}),
                 'limits': limits
             }
-        }), 200
+        })
+        response.headers['Content-Type'] = 'application/json'
+        return response, 200
         
     except Exception as e:
         logger.error(f"❌ Login error: {str(e)}")
