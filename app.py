@@ -110,10 +110,10 @@ SUBSCRIPTION_PLANS = {
         'name': 'Unlimited Plan',
         'price': 49,
         'limits': {
-            'summary': float('inf'),
-            'analysis': float('inf'),
-            'question': float('inf'),
-            'social': float('inf')
+            'summary': 999999,
+            'analysis': 999999,
+            'question': 999999,
+            'social': 999999
         }
     }
 }
