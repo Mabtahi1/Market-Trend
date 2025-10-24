@@ -838,21 +838,21 @@
         <div x-show="!isAuthenticated" class="auth-container">
             <!-- Tab Navigation -->
             <div class="auth-tabs">
-                <button @click="authMode = 'login'" :class="{'active': authMode === 'login'}">
-                    <i class="fas fa-sign-in-alt"></i> Login
+                <button @click="authMode = ''" :class="{'active': authMode === ''}">
+                    <i class="fas fa-sign-in-alt"></i> 
                 </button>
                 <button @click="authMode = 'signup'" :class="{'active': authMode === 'signup'}">
                     <i class="fas fa-user-plus"></i> Sign Up
                 </button>
             </div>
         
-            <!-- Login Form -->
-            <div x-show="authMode === 'login'">
+            <!--  Form -->
+            <div x-show="authMode === ''">
                 <div class="auth-header">
                     <h2><i class="fas fa-sign-in-alt"></i> Welcome Back</h2>
                     <p>Sign in to access your market trend analysis dashboard</p>
                 </div>
-                <form @submit.prevent="login()">
+                <form @submit.prevent="()">
                     <div class="form-group">
                         <label for="email">Email Address</label>
                         <input type="email" id="email" class="form-control" x-model="credentials.email" required>
@@ -1284,7 +1284,13 @@
                 loading: false,
                 message: '',
                 messageType: '',
-                results: null,
+                results: {
+                    summary: '',
+                    analysis: '',
+                    hashtags: [],
+                    questions: [],
+                    social: ''
+                },
                 forms: {
                     comprehensive: { text: '', url: '', brands: '' },
                     social: { query: '', platforms: ['reddit'] },
