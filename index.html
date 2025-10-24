@@ -835,10 +835,10 @@
             </div>
         </div>
 
-        <div x-show="!isAuthenticated" class="auth-container">
+        <div class="auth-container">
             <!-- Tab Navigation -->
             <div class="auth-tabs">
-                <button @click="authMode = ''" :class="{'active': authMode === ''}">
+                <button @click="authMode = 'login'" :class="{'active': authMode === 'login'}">
                     <i class="fas fa-sign-in-alt"></i> 
                 </button>
                 <button @click="authMode = 'signup'" :class="{'active': authMode === 'signup'}">
@@ -847,12 +847,12 @@
             </div>
         
             <!--  Form -->
-            <div x-show="authMode === ''">
+            <div x-show="authMode === 'login'">
                 <div class="auth-header">
                     <h2><i class="fas fa-sign-in-alt"></i> Welcome Back</h2>
                     <p>Sign in to access your market trend analysis dashboard</p>
                 </div>
-                <form @submit.prevent="()">
+                <form @submit.prevent="login()">
                     <div class="form-group">
                         <label for="email">Email Address</label>
                         <input type="email" id="email" class="form-control" x-model="credentials.email" required>
@@ -1301,21 +1301,22 @@
                 apiBase: window.location.origin,
 
                 init() {
-                    console.log('App initializing...');
-                    // Force show login form initially - don't auto-validate
-                    this.isAuthenticated = false;
-                    
-                    // Only try to validate if we explicitly want to restore session
-                    // Comment out the auto-validation for now:
-                    /*
-                    const savedSessionId = localStorage.getItem('sessionId');
-                    console.log('Saved session ID:', savedSessionId);
-                    
-                    if (savedSessionId) {
-                        this.sessionId = savedSessionId;
-                        this.validateSession();
+                    // Only check session if we're NOT on the signin page
+                    if (window.location.pathname !== '/signin') {
+                        const savedSession = localStorage.getItem('sessionId');
+                        if (savedSession) {
+                            this.sessionId = savedSession;
+                            const savedUser = localStorage.getItem('user');
+                            if (savedUser) {
+                                this.user = JSON.parse(savedUser);
+                                this.isAuthenticated = true;
+                            }
+                        }
+                    } else {
+                        // On signin page, always show forms and clear auth state
+                        this.isAuthenticated = false;
+                        this.sessionId = null;
                     }
-                    */
                 },
 
                 async validateSession() {
