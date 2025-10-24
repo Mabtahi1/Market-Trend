@@ -1352,30 +1352,53 @@
                 async login() {
                     this.loading = true;
                     this.message = '';
-
+                    console.log('Login attempt with:', this.credentials.email);
+                
                     try {
                         const response = await fetch(`${this.apiBase}/api/login`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(this.credentials)
+                            body: JSON.stringify({
+                                email: this.credentials.email,
+                                password: this.credentials.password
+                            })
                         });
-
+                
+                        console.log('Response status:', response.status);
+                        console.log('Response ok:', response.ok);
+                
+                        // Check if response is JSON
+                        const contentType = response.headers.get('content-type');
+                        console.log('Content-Type:', contentType);
+                
+                        if (!contentType || !contentType.includes('application/json')) {
+                            throw new Error('Server returned non-JSON response');
+                        }
+                
                         const data = await response.json();
-
-                        if (response.ok) {
+                        console.log('Response data:', data);
+                
+                        if (response.ok && data.session_id) {
                             this.sessionId = data.session_id;
                             this.user = data.user;
                             this.isAuthenticated = true;
                             localStorage.setItem('sessionId', this.sessionId);
+                            localStorage.setItem('user', JSON.stringify(data.user));
                             this.showMessage('Welcome! Login successful.', 'success');
                             this.resetCredentials();
+                            
+                            // Optional: redirect to tools page
+                            setTimeout(() => {
+                                window.location.href = '/tools';
+                            }, 1000);
                         } else {
                             this.showMessage(data.error || 'Login failed', 'error');
                         }
                     } catch (error) {
-                        this.showMessage('Network error. Please try again.', 'error');
+                        console.error('Login error details:', error);
+                        this.showMessage('Network error: ' + error.message, 'error');
                     }
-
+                
                     this.loading = false;
                 },
 
