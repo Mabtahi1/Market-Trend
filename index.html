@@ -838,442 +838,442 @@
                 </div>
             </div>
         </div>
-        <template x-if="!isAuthenticated">
-            <div class="auth-container">
-                <!-- Tab Navigation -->
-                <div class="auth-tabs">
-                    <button @click="authMode = 'login'" :class="{'active': authMode === 'login'}">
-                        <i class="fas fa-sign-in-alt"></i> 
-                    </button>
-                    <button @click="authMode = 'signup'" :class="{'active': authMode === 'signup'}">
-                        <i class="fas fa-user-plus"></i> Sign Up
-                    </button>
-                </div>
-            
-                <!--  Form -->
-                <div x-show="authMode === 'login'">
-                    <div class="auth-header">
-                        <h2><i class="fas fa-sign-in-alt"></i> Welcome Back</h2>
-                        <p>Sign in to access your market trend analysis dashboard</p>
-                    </div>
-                    <form @submit.prevent="login()">
-                        <div class="form-group">
-                            <label for="email">Email Address</label>
-                            <input type="email" id="email" class="form-control" x-model="credentials.email" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="password">Password</label>
-                            <input type="password" id="password" class="form-control" x-model="credentials.password" required>
-                        </div>
-                        <button type="submit" class="btn btn-primary" style="width: 100%;" :disabled="loading">
-                            <i class="fas fa-sign-in-alt"></i>
-                            <span x-text="loading ? 'Signing In...' : 'Sign In'"></span>
-                        </button>
-                    </form>
-                </div>
-            
-                <!-- Signup Form -->
-                <div x-show="authMode === 'signup'">
-                    <div class="auth-header">
-                        <h2><i class="fas fa-user-plus"></i> Create Account</h2>
-                        <p>Choose your plan and start analyzing market trends</p>
-                    </div>
-                    
-                    <form @submit.prevent="signup()">
-                        <div class="form-group">
-                            <label for="signup-name">Full Name</label>
-                            <input type="text" id="signup-name" class="form-control" x-model="credentials.fullName" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="signup-email">Email Address</label>
-                            <input type="email" id="signup-email" class="form-control" x-model="credentials.email" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="signup-password">Password</label>
-                            <input type="password" id="signup-password" class="form-control" x-model="credentials.password" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="signup-plan">Select Plan</label>
-                            <select id="signup-plan" class="form-control" x-model="credentials.plan" required>
-                                <option value="">Choose a plan...</option>
-                                <option value="free">Free Plan (Limited features)</option>
-                                <option value="basic">Basic - $9.99/month</option>
-                                <option value="pro">Pro - $29.99/month</option>
-                            </select>
-                        </div>
-                        <button type="submit" class="btn btn-primary" style="width: 100%;" :disabled="loading">
-                            <i class="fas fa-user-plus"></i>
-                            <span x-text="loading ? 'Creating Account...' : 'Create Account'"></span>
-                        </button>
-                    </form>
-                </div>
-            
-                <!-- Messages -->
-                <div x-show="message" :class="'message ' + messageType" x-text="message"></div>
+    <template x-if="!isAuthenticated">
+        <div class="auth-container">
+            <!-- Tab Navigation -->
+            <div class="auth-tabs">
+                <button @click="authMode = 'login'" :class="{'active': authMode === 'login'}">
+                    <i class="fas fa-sign-in-alt"></i> 
+                </button>
+                <button @click="authMode = 'signup'" :class="{'active': authMode === 'signup'}">
+                    <i class="fas fa-user-plus"></i> Sign Up
+                </button>
             </div>
-        <template x-if="isAuthenticated">
-            class="main-app">
-                <div class="user-dashboard">
-                    <div class="user-info">
-                        <div>
-                            <h3><i class="fas fa-user-circle"></i> Welcome back!</h3>
-                            <p x-text="user?.email"></p>
-                        </div>
-                        <div class="user-badge" x-text="user?.subscription_type || 'Free Plan'"></div>
-                    </div>
+        
+            <!--  Form -->
+            <div x-show="authMode === 'login'">
+                <div class="auth-header">
+                    <h2><i class="fas fa-sign-in-alt"></i> Welcome Back</h2>
+                    <p>Sign in to access your market trend analysis dashboard</p>
                 </div>
-    
-                <div class="usage-stats">
-                    <div class="stat-card">
-                        <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
-                        <h4>Trend Analysis</h4>
-                        <div class="stat-value" x-text="`${user?.usage?.summary || 0}/${user?.limits?.summary || 10}`"></div>
+                <form @submit.prevent="login()">
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" class="form-control" x-model="credentials.email" required>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-icon"><i class="fas fa-share-alt"></i></div>
-                        <h4>Social Scans</h4>
-                        <div class="stat-value" x-text="`${user?.usage?.analysis || 0}/${user?.limits?.analysis || 5}`"></div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" class="form-control" x-model="credentials.password" required>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-icon"><i class="fas fa-heart"></i></div>
-                        <h4>Sentiment Reports</h4>
-                        <div class="stat-value" x-text="`${user?.usage?.question || 0}/${user?.limits?.question || 20}`"></div>
-                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;" :disabled="loading">
+                        <i class="fas fa-sign-in-alt"></i>
+                        <span x-text="loading ? 'Signing In...' : 'Sign In'"></span>
+                    </button>
+                </form>
+            </div>
+        
+            <!-- Signup Form -->
+            <div x-show="authMode === 'signup'">
+                <div class="auth-header">
+                    <h2><i class="fas fa-user-plus"></i> Create Account</h2>
+                    <p>Choose your plan and start analyzing market trends</p>
                 </div>
-    
-                <div class="analysis-section">
-                    <div class="section-header">
-                        <h2>Choose Your Analysis Type</h2>
-                        <p>Select the type of market trend analysis you want to perform</p>
+                
+                <form @submit.prevent="signup()">
+                    <div class="form-group">
+                        <label for="signup-name">Full Name</label>
+                        <input type="text" id="signup-name" class="form-control" x-model="credentials.fullName" required>
                     </div>
-    
-                    <div class="analysis-tabs">
-                        <div class="tab-card" :class="{ active: activeTab === 'comprehensive' }" @click="activeTab = 'comprehensive'">
-                            <div class="tab-icon"><i class="fas fa-brain"></i></div>
-                            <div class="tab-title">Comprehensive Analysis</div>
-                            <div class="tab-description">Full market analysis with sentiment, mentions, and hashtag suggestions.</div>
-                        </div>
-                        <div class="tab-card" :class="{ active: activeTab === 'social' }" @click="activeTab = 'social'">
-                            <div class="tab-icon"><i class="fas fa-share-alt"></i></div>
-                            <div class="tab-title">Social Media Scan</div>
-                            <div class="tab-description">Scan Reddit, YouTube, and Twitter for trending topics.</div>
-                        </div>
-                        <div class="tab-card" :class="{ active: activeTab === 'text' }" @click="activeTab = 'text'">
-                            <div class="tab-icon"><i class="fas fa-file-text"></i></div>
-                            <div class="tab-title">Text Analysis</div>
-                            <div class="tab-description">Analyze text content for trends and sentiment.</div>
-                        </div>
-                        <div class="tab-card" :class="{ active: activeTab === 'url' }" @click="activeTab = 'url'">
-                            <div class="tab-icon"><i class="fas fa-globe"></i></div>
-                            <div class="tab-title">URL Analysis</div>
-                            <div class="tab-description">Extract and analyze content from websites.</div>
-                        </div>
-                        <div class="tab-card" :class="{ active: activeTab === 'file' }" @click="activeTab = 'file'">
-                            <div class="tab-icon"><i class="fas fa-cloud-upload-alt"></i></div>
-                            <div class="tab-title">Document Analysis</div>
-                            <div class="tab-description">Upload and analyze documents and files.</div>
-                        </div>
+                    <div class="form-group">
+                        <label for="signup-email">Email Address</label>
+                        <input type="email" id="signup-email" class="form-control" x-model="credentials.email" required>
                     </div>
-    
-                    <div x-show="activeTab === 'comprehensive'" class="tab-content">
-                        <div class="chat-interface">
-                            <div class="chat-header">
-                                <div class="chat-header-icon">
-                                    <i class="fas fa-brain"></i>
-                                </div>
-                                <div>
-                                    <h3>AI Market Trend Analyzer</h3>
-                                    <p>Get comprehensive market insights with sentiment analysis</p>
-                                </div>
-                            </div>
-                            <div class="chat-body">
-                                <form @submit.prevent="analyzeComprehensive()">
-                                    <div style="position: relative; margin-bottom: 30px;">
-                                        <div class="chat-textarea-label">What market trend would you like to analyze?</div>
-                                        <textarea class="chat-textarea" x-model="forms.comprehensive.text" 
-                                                placeholder="Paste article content, social media posts, or enter your market research query here..."
-                                                required></textarea>
-                                    </div>
-                                    
-                                    <div class="chat-suggestions">
-                                        <div class="suggestion-chip" @click="forms.comprehensive.text = 'AI and machine learning trends in 2024'">AI trends</div>
-                                        <div class="suggestion-chip" @click="forms.comprehensive.text = 'Sustainable energy market analysis'">Renewable energy</div>
-                                        <div class="suggestion-chip" @click="forms.comprehensive.text = 'E-commerce growth and consumer behavior'">E-commerce</div>
-                                    </div>
-    
-                                    <div class="chat-input-row">
-                                        <input type="text" x-model="forms.comprehensive.url" placeholder="URL to analyze (optional)">
-                                        <input type="text" x-model="forms.comprehensive.brands" placeholder="Brand names to track">
-                                    </div>
-    
-                                    <div class="chat-submit-container">
-                                        <div class="chat-features">
-                                            <div class="chat-feature">
-                                                <i class="fas fa-heart"></i>
-                                                <span>Sentiment Analysis</span>
-                                            </div>
-                                            <div class="chat-feature">
-                                                <i class="fas fa-hashtag"></i>
-                                                <span>Hashtag Generation</span>
-                                            </div>
-                                        </div>
-                                        <button type="submit" class="chat-submit-btn" :disabled="loading">
-                                            <i class="fas fa-search"></i>
-                                            <span x-text="loading ? 'Analyzing...' : 'Get Market Insights'"></span>
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
+                    <div class="form-group">
+                        <label for="signup-password">Password</label>
+                        <input type="password" id="signup-password" class="form-control" x-model="credentials.password" required>
                     </div>
-    
-                    <div x-show="activeTab === 'social'" class="tab-content">
-                        <div class="chat-interface">
-                            <div class="chat-header">
-                                <div class="chat-header-icon">
-                                    <i class="fas fa-share-alt"></i>
-                                </div>
-                                <div>
-                                    <h3>Social Media Scanner</h3>
-                                    <p>Scan Reddit, YouTube, and Twitter for trends</p>
-                                </div>
-                            </div>
-                            <div class="chat-body">
-                                <form @submit.prevent="analyzeSocial()">
-                                    <div style="position: relative; margin-bottom: 30px;">
-                                        <div class="chat-textarea-label">What topic should we scan for?</div>
-                                        <input type="text" class="chat-textarea" style="min-height: auto; padding: 20px;" 
-                                               x-model="forms.social.query" 
-                                               placeholder="e.g., Tesla Model 3, iPhone 15, climate change" required>
-                                    </div>
-                                    
-                                    <div class="form-group">
-                                        <label>Select Platforms</label>
-                                        <div class="platform-selector">
-                                            <div class="platform-chip" :class="{ selected: forms.social.platforms.includes('reddit') }" 
-                                                 @click="togglePlatform('reddit')">Reddit</div>
-                                            <div class="platform-chip" :class="{ selected: forms.social.platforms.includes('youtube') }" 
-                                                 @click="togglePlatform('youtube')">YouTube</div>
-                                            <div class="platform-chip" :class="{ selected: forms.social.platforms.includes('twitter') }" 
-                                                 @click="togglePlatform('twitter')">Twitter</div>
-                                        </div>
-                                    </div>
-    
-                                    <div class="chat-submit-container">
-                                        <div class="chat-features">
-                                            <div class="chat-feature">
-                                                <i class="fas fa-search"></i>
-                                                <span>Multi-Platform Scan</span>
-                                            </div>
-                                        </div>
-                                        <button type="submit" class="chat-submit-btn" :disabled="loading">
-                                            <i class="fas fa-search"></i>
-                                            <span x-text="loading ? 'Scanning...' : 'Scan Social Media'"></span>
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
+                    <div class="form-group">
+                        <label for="signup-plan">Select Plan</label>
+                        <select id="signup-plan" class="form-control" x-model="credentials.plan" required>
+                            <option value="">Choose a plan...</option>
+                            <option value="free">Free Plan (Limited features)</option>
+                            <option value="basic">Basic - $9.99/month</option>
+                            <option value="pro">Pro - $29.99/month</option>
+                        </select>
                     </div>
-    
-                    <div x-show="activeTab === 'text'" class="tab-content">
-                        <div class="chat-interface">
-                            <div class="chat-header">
-                                <div class="chat-header-icon">
-                                    <i class="fas fa-file-text"></i>
-                                </div>
-                                <div>
-                                    <h3>Text Analyzer</h3>
-                                    <p>Analyze text content for trends and sentiment</p>
-                                </div>
-                            </div>
-                            <div class="chat-body">
-                                <form @submit.prevent="analyzeText()">
-                                    <div style="position: relative; margin-bottom: 30px;">
-                                        <div class="chat-textarea-label">Paste your text content here</div>
-                                        <textarea class="chat-textarea" x-model="forms.text.text" 
-                                                placeholder="Paste your text content here for analysis..." required></textarea>
-                                    </div>
-                                    
-                                    <div class="chat-input-row">
-                                        <input type="text" x-model="forms.text.question" 
-                                               placeholder="Analysis focus (optional)">
-                                    </div>
-    
-                                    <div class="chat-submit-container">
-                                        <div class="chat-features">
-                                            <div class="chat-feature">
-                                                <i class="fas fa-heart"></i>
-                                                <span>Sentiment Analysis</span>
-                                            </div>
-                                        </div>
-                                        <button type="submit" class="chat-submit-btn" :disabled="loading">
-                                            <i class="fas fa-search"></i>
-                                            <span x-text="loading ? 'Analyzing...' : 'Analyze Text'"></span>
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;" :disabled="loading">
+                        <i class="fas fa-user-plus"></i>
+                        <span x-text="loading ? 'Creating Account...' : 'Create Account'"></span>
+                    </button>
+                </form>
+            </div>
+        
+            <!-- Messages -->
+            <div x-show="message" :class="'message ' + messageType" x-text="message"></div>
+        </div>
+    <template x-if="isAuthenticated">
+        class="main-app">
+            <div class="user-dashboard">
+                <div class="user-info">
+                    <div>
+                        <h3><i class="fas fa-user-circle"></i> Welcome back!</h3>
+                        <p x-text="user?.email"></p>
                     </div>
-    
-                    <div x-show="activeTab === 'url'" class="tab-content">
-                        <div class="chat-interface">
-                            <div class="chat-header">
-                                <div class="chat-header-icon">
-                                    <i class="fas fa-globe"></i>
-                                </div>
-                                <div>
-                                    <h3>URL Analyzer</h3>
-                                    <p>Extract and analyze content from websites</p>
-                                </div>
-                            </div>
-                            <div class="chat-body">
-                                <form @submit.prevent="analyzeUrl()">
-                                    <div style="position: relative; margin-bottom: 30px;">
-                                        <div class="chat-textarea-label">Enter website URL</div>
-                                        <input type="url" class="chat-textarea" style="min-height: auto; padding: 20px;" 
-                                               x-model="forms.url.url" placeholder="https://example.com" required>
-                                    </div>
-                                    
-                                    <div class="chat-input-row">
-                                        <input type="text" x-model="forms.url.question" 
-                                               placeholder="Analysis focus (optional)">
-                                    </div>
-    
-                                    <div class="chat-submit-container">
-                                        <div class="chat-features">
-                                            <div class="chat-feature">
-                                                <i class="fas fa-link"></i>
-                                                <span>Content Extraction</span>
-                                            </div>
-                                        </div>
-                                        <button type="submit" class="chat-submit-btn" :disabled="loading">
-                                            <i class="fas fa-search"></i>
-                                            <span x-text="loading ? 'Analyzing...' : 'Analyze URL'"></span>
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-    
-                    <div x-show="activeTab === 'file'" class="tab-content">
-                        <div class="chat-interface">
-                            <div class="chat-header">
-                                <div class="chat-header-icon">
-                                    <i class="fas fa-cloud-upload-alt"></i>
-                                </div>
-                                <div>
-                                    <h3>Document Analyzer</h3>
-                                    <p>Upload and analyze documents and files</p>
-                                </div>
-                            </div>
-                            <div class="chat-body">
-                                <form @submit.prevent="analyzeFile()">
-                                    <div class="form-group">
-                                        <div class="file-upload-area" @click="$refs.fileInput.click()" 
-                                             @drop.prevent="handleFileDrop" @dragover.prevent="handleDragOver"
-                                             @dragleave.prevent="handleDragLeave">
-                                            <div class="file-upload-icon">
-                                                <i class="fas fa-cloud-upload-alt"></i>
-                                            </div>
-                                            <p x-show="!forms.file.file">
-                                                <strong>Click to upload</strong> or drag and drop<br>
-                                                <small>PDF, DOCX, TXT, PNG, JPG (max 16MB)</small>
-                                            </p>
-                                            <p x-show="forms.file.file" style="color: #8a2be2;">
-                                                <i class="fas fa-check-circle"></i>
-                                                <span x-text="forms.file.file?.name"></span>
-                                            </p>
-                                            <input type="file" x-ref="fileInput" @change="handleFileSelect" 
-                                                   accept=".pdf,.docx,.txt,.png,.jpg,.jpeg" style="display: none;">
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="chat-input-row">
-                                        <input type="text" x-model="forms.file.question" 
-                                               placeholder="Analysis question (optional)">
-                                    </div>
-    
-                                    <div class="chat-submit-container">
-                                        <div class="chat-features">
-                                            <div class="chat-feature">
-                                                <i class="fas fa-file-upload"></i>
-                                                <span>Document Processing</span>
-                                            </div>
-                                        </div>
-                                        <button type="submit" class="chat-submit-btn" :disabled="loading || !forms.file.file">
-                                            <i class="fas fa-search"></i>
-                                            <span x-text="loading ? 'Analyzing...' : 'Analyze Document'"></span>
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-    
-                <div x-show="loading" class="loading">
-                    <div class="spinner"></div>
-                    <h3>Processing Your Analysis</h3>
-                    <p>Our AI is analyzing trends, detecting sentiment, and extracting insights...</p>
-                </div>
-    
-                <div x-show="message" :class="'message ' + messageType">
-                    <i class="fas" :class="messageType === 'error' ? 'fa-exclamation-triangle' : 'fa-check-circle'"></i>
-                    <span x-text="message"></span>
-                </div>
-    
-                <div x-show="results && !loading" class="results-container">
-                    <div class="results-header" style="display: flex; justify-content: space-between; align-items: center;">
-                        <div style="display: flex; align-items: center; gap: 15px;">
-                            <i class="fas fa-chart-bar"></i>
-                            <h3>Analysis Results</h3>
-                        </div>
-                        <button @click="exportToPDF()" class="btn btn-primary" style="font-size: 14px; padding: 12px 20px;">
-                            <i class="fas fa-file-pdf"></i>
-                            Export to PDF
-                        </button>
-                    </div>
-                   
-                    
-                    <template x-if="results.summary">
-                        <div class="insight-card">
-                            <h4><i class="fas fa-file-alt"></i> Summary</h4>
-                            <p x-text="results.summary"></p>
-                        </div>
-                    </template>
-    
-                    <template x-if="results.key_insights">
-                        <div class="insight-card">
-                            <h4><i class="fas fa-lightbulb"></i> Key Insights</h4>
-                            <div x-html="formatInsights(results.key_insights)"></div>
-                        </div>
-                    </template>
-    
-                    <template x-if="results.recommendations">
-                        <div class="insight-card">
-                            <h4><i class="fas fa-tasks"></i> Recommendations</h4>
-                            <div x-html="formatInsights(results.recommendations)"></div>
-                        </div>
-                    </template>
-    
-                    <template x-if="results.sentiment">
-                        <div class="insight-card">
-                            <h4><i class="fas fa-heart"></i> Sentiment Analysis</h4>
-                            <p x-text="results.sentiment"></p>
-                        </div>
-                    </template>
-    
-                    <template x-if="results.hashtags">
-                        <div class="insight-card">
-                            <h4><i class="fas fa-hashtag"></i> Suggested Hashtags</h4>
-                            <div x-html="formatHashtags(results.hashtags)"></div>
-                        </div>
-                    </template>
+                    <div class="user-badge" x-text="user?.subscription_type || 'Free Plan'"></div>
                 </div>
             </div>
+
+            <div class="usage-stats">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+                    <h4>Trend Analysis</h4>
+                    <div class="stat-value" x-text="`${user?.usage?.summary || 0}/${user?.limits?.summary || 10}`"></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-share-alt"></i></div>
+                    <h4>Social Scans</h4>
+                    <div class="stat-value" x-text="`${user?.usage?.analysis || 0}/${user?.limits?.analysis || 5}`"></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-heart"></i></div>
+                    <h4>Sentiment Reports</h4>
+                    <div class="stat-value" x-text="`${user?.usage?.question || 0}/${user?.limits?.question || 20}`"></div>
+                </div>
+            </div>
+
+            <div class="analysis-section">
+                <div class="section-header">
+                    <h2>Choose Your Analysis Type</h2>
+                    <p>Select the type of market trend analysis you want to perform</p>
+                </div>
+
+                <div class="analysis-tabs">
+                    <div class="tab-card" :class="{ active: activeTab === 'comprehensive' }" @click="activeTab = 'comprehensive'">
+                        <div class="tab-icon"><i class="fas fa-brain"></i></div>
+                        <div class="tab-title">Comprehensive Analysis</div>
+                        <div class="tab-description">Full market analysis with sentiment, mentions, and hashtag suggestions.</div>
+                    </div>
+                    <div class="tab-card" :class="{ active: activeTab === 'social' }" @click="activeTab = 'social'">
+                        <div class="tab-icon"><i class="fas fa-share-alt"></i></div>
+                        <div class="tab-title">Social Media Scan</div>
+                        <div class="tab-description">Scan Reddit, YouTube, and Twitter for trending topics.</div>
+                    </div>
+                    <div class="tab-card" :class="{ active: activeTab === 'text' }" @click="activeTab = 'text'">
+                        <div class="tab-icon"><i class="fas fa-file-text"></i></div>
+                        <div class="tab-title">Text Analysis</div>
+                        <div class="tab-description">Analyze text content for trends and sentiment.</div>
+                    </div>
+                    <div class="tab-card" :class="{ active: activeTab === 'url' }" @click="activeTab = 'url'">
+                        <div class="tab-icon"><i class="fas fa-globe"></i></div>
+                        <div class="tab-title">URL Analysis</div>
+                        <div class="tab-description">Extract and analyze content from websites.</div>
+                    </div>
+                    <div class="tab-card" :class="{ active: activeTab === 'file' }" @click="activeTab = 'file'">
+                        <div class="tab-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                        <div class="tab-title">Document Analysis</div>
+                        <div class="tab-description">Upload and analyze documents and files.</div>
+                    </div>
+                </div>
+
+                <div x-show="activeTab === 'comprehensive'" class="tab-content">
+                    <div class="chat-interface">
+                        <div class="chat-header">
+                            <div class="chat-header-icon">
+                                <i class="fas fa-brain"></i>
+                            </div>
+                            <div>
+                                <h3>AI Market Trend Analyzer</h3>
+                                <p>Get comprehensive market insights with sentiment analysis</p>
+                            </div>
+                        </div>
+                        <div class="chat-body">
+                            <form @submit.prevent="analyzeComprehensive()">
+                                <div style="position: relative; margin-bottom: 30px;">
+                                    <div class="chat-textarea-label">What market trend would you like to analyze?</div>
+                                    <textarea class="chat-textarea" x-model="forms.comprehensive.text" 
+                                            placeholder="Paste article content, social media posts, or enter your market research query here..."
+                                            required></textarea>
+                                </div>
+                                
+                                <div class="chat-suggestions">
+                                    <div class="suggestion-chip" @click="forms.comprehensive.text = 'AI and machine learning trends in 2024'">AI trends</div>
+                                    <div class="suggestion-chip" @click="forms.comprehensive.text = 'Sustainable energy market analysis'">Renewable energy</div>
+                                    <div class="suggestion-chip" @click="forms.comprehensive.text = 'E-commerce growth and consumer behavior'">E-commerce</div>
+                                </div>
+
+                                <div class="chat-input-row">
+                                    <input type="text" x-model="forms.comprehensive.url" placeholder="URL to analyze (optional)">
+                                    <input type="text" x-model="forms.comprehensive.brands" placeholder="Brand names to track">
+                                </div>
+
+                                <div class="chat-submit-container">
+                                    <div class="chat-features">
+                                        <div class="chat-feature">
+                                            <i class="fas fa-heart"></i>
+                                            <span>Sentiment Analysis</span>
+                                        </div>
+                                        <div class="chat-feature">
+                                            <i class="fas fa-hashtag"></i>
+                                            <span>Hashtag Generation</span>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="chat-submit-btn" :disabled="loading">
+                                        <i class="fas fa-search"></i>
+                                        <span x-text="loading ? 'Analyzing...' : 'Get Market Insights'"></span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div x-show="activeTab === 'social'" class="tab-content">
+                    <div class="chat-interface">
+                        <div class="chat-header">
+                            <div class="chat-header-icon">
+                                <i class="fas fa-share-alt"></i>
+                            </div>
+                            <div>
+                                <h3>Social Media Scanner</h3>
+                                <p>Scan Reddit, YouTube, and Twitter for trends</p>
+                            </div>
+                        </div>
+                        <div class="chat-body">
+                            <form @submit.prevent="analyzeSocial()">
+                                <div style="position: relative; margin-bottom: 30px;">
+                                    <div class="chat-textarea-label">What topic should we scan for?</div>
+                                    <input type="text" class="chat-textarea" style="min-height: auto; padding: 20px;" 
+                                           x-model="forms.social.query" 
+                                           placeholder="e.g., Tesla Model 3, iPhone 15, climate change" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>Select Platforms</label>
+                                    <div class="platform-selector">
+                                        <div class="platform-chip" :class="{ selected: forms.social.platforms.includes('reddit') }" 
+                                             @click="togglePlatform('reddit')">Reddit</div>
+                                        <div class="platform-chip" :class="{ selected: forms.social.platforms.includes('youtube') }" 
+                                             @click="togglePlatform('youtube')">YouTube</div>
+                                        <div class="platform-chip" :class="{ selected: forms.social.platforms.includes('twitter') }" 
+                                             @click="togglePlatform('twitter')">Twitter</div>
+                                    </div>
+                                </div>
+
+                                <div class="chat-submit-container">
+                                    <div class="chat-features">
+                                        <div class="chat-feature">
+                                            <i class="fas fa-search"></i>
+                                            <span>Multi-Platform Scan</span>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="chat-submit-btn" :disabled="loading">
+                                        <i class="fas fa-search"></i>
+                                        <span x-text="loading ? 'Scanning...' : 'Scan Social Media'"></span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div x-show="activeTab === 'text'" class="tab-content">
+                    <div class="chat-interface">
+                        <div class="chat-header">
+                            <div class="chat-header-icon">
+                                <i class="fas fa-file-text"></i>
+                            </div>
+                            <div>
+                                <h3>Text Analyzer</h3>
+                                <p>Analyze text content for trends and sentiment</p>
+                            </div>
+                        </div>
+                        <div class="chat-body">
+                            <form @submit.prevent="analyzeText()">
+                                <div style="position: relative; margin-bottom: 30px;">
+                                    <div class="chat-textarea-label">Paste your text content here</div>
+                                    <textarea class="chat-textarea" x-model="forms.text.text" 
+                                            placeholder="Paste your text content here for analysis..." required></textarea>
+                                </div>
+                                
+                                <div class="chat-input-row">
+                                    <input type="text" x-model="forms.text.question" 
+                                           placeholder="Analysis focus (optional)">
+                                </div>
+
+                                <div class="chat-submit-container">
+                                    <div class="chat-features">
+                                        <div class="chat-feature">
+                                            <i class="fas fa-heart"></i>
+                                            <span>Sentiment Analysis</span>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="chat-submit-btn" :disabled="loading">
+                                        <i class="fas fa-search"></i>
+                                        <span x-text="loading ? 'Analyzing...' : 'Analyze Text'"></span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div x-show="activeTab === 'url'" class="tab-content">
+                    <div class="chat-interface">
+                        <div class="chat-header">
+                            <div class="chat-header-icon">
+                                <i class="fas fa-globe"></i>
+                            </div>
+                            <div>
+                                <h3>URL Analyzer</h3>
+                                <p>Extract and analyze content from websites</p>
+                            </div>
+                        </div>
+                        <div class="chat-body">
+                            <form @submit.prevent="analyzeUrl()">
+                                <div style="position: relative; margin-bottom: 30px;">
+                                    <div class="chat-textarea-label">Enter website URL</div>
+                                    <input type="url" class="chat-textarea" style="min-height: auto; padding: 20px;" 
+                                           x-model="forms.url.url" placeholder="https://example.com" required>
+                                </div>
+                                
+                                <div class="chat-input-row">
+                                    <input type="text" x-model="forms.url.question" 
+                                           placeholder="Analysis focus (optional)">
+                                </div>
+
+                                <div class="chat-submit-container">
+                                    <div class="chat-features">
+                                        <div class="chat-feature">
+                                            <i class="fas fa-link"></i>
+                                            <span>Content Extraction</span>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="chat-submit-btn" :disabled="loading">
+                                        <i class="fas fa-search"></i>
+                                        <span x-text="loading ? 'Analyzing...' : 'Analyze URL'"></span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div x-show="activeTab === 'file'" class="tab-content">
+                    <div class="chat-interface">
+                        <div class="chat-header">
+                            <div class="chat-header-icon">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                            </div>
+                            <div>
+                                <h3>Document Analyzer</h3>
+                                <p>Upload and analyze documents and files</p>
+                            </div>
+                        </div>
+                        <div class="chat-body">
+                            <form @submit.prevent="analyzeFile()">
+                                <div class="form-group">
+                                    <div class="file-upload-area" @click="$refs.fileInput.click()" 
+                                         @drop.prevent="handleFileDrop" @dragover.prevent="handleDragOver"
+                                         @dragleave.prevent="handleDragLeave">
+                                        <div class="file-upload-icon">
+                                            <i class="fas fa-cloud-upload-alt"></i>
+                                        </div>
+                                        <p x-show="!forms.file.file">
+                                            <strong>Click to upload</strong> or drag and drop<br>
+                                            <small>PDF, DOCX, TXT, PNG, JPG (max 16MB)</small>
+                                        </p>
+                                        <p x-show="forms.file.file" style="color: #8a2be2;">
+                                            <i class="fas fa-check-circle"></i>
+                                            <span x-text="forms.file.file?.name"></span>
+                                        </p>
+                                        <input type="file" x-ref="fileInput" @change="handleFileSelect" 
+                                               accept=".pdf,.docx,.txt,.png,.jpg,.jpeg" style="display: none;">
+                                    </div>
+                                </div>
+                                
+                                <div class="chat-input-row">
+                                    <input type="text" x-model="forms.file.question" 
+                                           placeholder="Analysis question (optional)">
+                                </div>
+
+                                <div class="chat-submit-container">
+                                    <div class="chat-features">
+                                        <div class="chat-feature">
+                                            <i class="fas fa-file-upload"></i>
+                                            <span>Document Processing</span>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="chat-submit-btn" :disabled="loading || !forms.file.file">
+                                        <i class="fas fa-search"></i>
+                                        <span x-text="loading ? 'Analyzing...' : 'Analyze Document'"></span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div x-show="loading" class="loading">
+                <div class="spinner"></div>
+                <h3>Processing Your Analysis</h3>
+                <p>Our AI is analyzing trends, detecting sentiment, and extracting insights...</p>
+            </div>
+
+            <div x-show="message" :class="'message ' + messageType">
+                <i class="fas" :class="messageType === 'error' ? 'fa-exclamation-triangle' : 'fa-check-circle'"></i>
+                <span x-text="message"></span>
+            </div>
+
+            <div x-show="results && !loading" class="results-container">
+                <div class="results-header" style="display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <i class="fas fa-chart-bar"></i>
+                        <h3>Analysis Results</h3>
+                    </div>
+                    <button @click="exportToPDF()" class="btn btn-primary" style="font-size: 14px; padding: 12px 20px;">
+                        <i class="fas fa-file-pdf"></i>
+                        Export to PDF
+                    </button>
+                </div>
+               
+                
+                <template x-if="results.summary">
+                    <div class="insight-card">
+                        <h4><i class="fas fa-file-alt"></i> Summary</h4>
+                        <p x-text="results.summary"></p>
+                    </div>
+                </template>
+
+                <template x-if="results.key_insights">
+                    <div class="insight-card">
+                        <h4><i class="fas fa-lightbulb"></i> Key Insights</h4>
+                        <div x-html="formatInsights(results.key_insights)"></div>
+                    </div>
+                </template>
+
+                <template x-if="results.recommendations">
+                    <div class="insight-card">
+                        <h4><i class="fas fa-tasks"></i> Recommendations</h4>
+                        <div x-html="formatInsights(results.recommendations)"></div>
+                    </div>
+                </template>
+
+                <template x-if="results.sentiment">
+                    <div class="insight-card">
+                        <h4><i class="fas fa-heart"></i> Sentiment Analysis</h4>
+                        <p x-text="results.sentiment"></p>
+                    </div>
+                </template>
+
+                <template x-if="results.hashtags">
+                    <div class="insight-card">
+                        <h4><i class="fas fa-hashtag"></i> Suggested Hashtags</h4>
+                        <div x-html="formatHashtags(results.hashtags)"></div>
+                    </div>
+                </template>
+            </div>
+        </div>
     </div>
 
     <script>
