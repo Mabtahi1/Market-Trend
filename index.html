@@ -838,8 +838,8 @@
                 </div>
             </div>
         </div>
-    <template x-if="!isAuthenticated">
-        <div class="auth-container">
+    
+        <div x-show="!isAuthenticated" class="auth-container">
             <!-- Tab Navigation -->
             <div class="auth-tabs">
                 <button @click="authMode = 'login'" :class="{'active': authMode === 'login'}">
@@ -911,8 +911,8 @@
             <!-- Messages -->
             <div x-show="message" :class="'message ' + messageType" x-text="message"></div>
         </div>
-    <template x-if="isAuthenticated">
-        class="main-app">
+    
+        <div x-show="isAuthenticated" class="main-app">
             <div class="user-dashboard">
                 <div class="user-info">
                     <div>
