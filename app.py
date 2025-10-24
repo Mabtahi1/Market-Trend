@@ -8,6 +8,9 @@ import tempfile
 import stripe
 from dotenv import load_dotenv
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, Table, TableStyle, KeepTogether
+import uuid
+
+
 from PIL import Image
 
 try:
@@ -75,6 +78,11 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__, template_folder='.')
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
 CORS(app)
+
+# Add after your app initialization
+app.config['SECRET_KEY'] = 'your-super-secret-key-change-this-in-production'
+app.config['SESSION_TYPE'] = 'filesystem'
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
 
 # Stripe configuration - AFTER load_dotenv()
 stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
