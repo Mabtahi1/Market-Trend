@@ -569,51 +569,53 @@ def api_login():
         data = request.get_json()
         
         if not data:
+            logger.error("❌ No data provided")
             return jsonify({'error': 'No data provided'}), 400
         
         email = data.get('email', '').strip().lower()
         password = data.get('password', '')
         
+        logger.info(f"🔍 Login attempt for: {email}")
+        
         if not email or not password:
             return jsonify({'error': 'Email and password are required'}), 400
         
-        # Get user from database
-        user = USERS_DB.get(email)
-        
-        if not user or user.get('password') != password:
+        # Check if user exists
+        if email not in USERS_DB:
+            logger.warning(f"❌ User not found: {email}")
             return jsonify({'error': 'Invalid email or password'}), 401
         
-        # Generate session ID
+        user = USERS_DB[email]
+        
+        # Verify password
+        if user.get('password') != password:
+            logger.warning(f"❌ Wrong password for: {email}")
+            return jsonify({'error': 'Invalid email or password'}), 401
+        
+        # Generate session
         session_id = str(__import__('uuid').uuid4())
-        
-        # Get subscription and limits
         subscription = user.get('subscription', 'free')
-        limits = SUBSCRIPTION_PLANS.get(subscription, {}).get('limits', {
-            'summary': 0, 'analysis': 0, 'question': 0, 'social': 0
-        })
         
-        # Get or initialize usage
-        usage = user.get('usage', {'summary': 0, 'analysis': 0, 'question': 0, 'social': 0})
-        
-        # Store in session
+        # Store in Flask session
         session['session_id'] = session_id
         session['user_id'] = email
         session['email'] = email
         session['subscription'] = subscription
         session['logged_in'] = True
-        session['usage'] = usage
+        session.permanent = True
         
-        logger.info(f"✅ User logged in: {email} with {subscription} plan")
+        logger.info(f"✅ Login successful: {email} with {subscription} plan")
         
-        # Return data in format frontend expects
+        # Return success response
         return jsonify({
+            'success': True,
             'session_id': session_id,
             'user': {
                 'email': email,
                 'name': user.get('full_name', ''),
                 'plan': subscription,
-                'usage': usage,
-                'limits': limits
+                'usage': user.get('usage', {}),
+                'limits': SUBSCRIPTION_PLANS.get(subscription, {}).get('limits', {})
             }
         }), 200
         
