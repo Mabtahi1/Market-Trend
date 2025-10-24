@@ -529,28 +529,60 @@ def api_signup():
         full_name = data.get('fullName', '')
         plan = data.get('plan', 'free')
         
+        logger.info(f"🔍 Signup attempt for: {email} with plan: {plan}")
+        
         if not email or not password:
             return jsonify({'error': 'Email and password required'}), 400
         
         if email in USERS_DB:
+            logger.warning(f"❌ Email already exists: {email}")
             return jsonify({'error': 'Email already registered'}), 400
         
-        # Create free account
+        # Create user account
         USERS_DB[email] = {
             'email': email,
             'password': password,
             'full_name': full_name,
             'subscription': plan,
             'created_at': datetime.now().isoformat(),
-            'usage': {'summary': 0, 'analysis': 0, 'question': 0, 'social': 0}
+            'usage': {'summary': 0, 'analysis': 0, 'question': 0, 'social': 0},
+            'usage_reset': datetime.now().isoformat()
         }
         
-        logger.info(f"✅ New user registered: {email} with {plan} plan")
+        # Generate session
+        session_id = str(__import__('uuid').uuid4())
         
-        return jsonify({'success': True, 'message': 'Account created successfully'}), 200
+        # Get limits based on subscription
+        limits = SUBSCRIPTION_PLANS.get(plan, {}).get('limits', {
+            'summary': 5, 'analysis': 3, 'question': 10, 'social': 2
+        })
+        
+        # Store in Flask session
+        session['session_id'] = session_id
+        session['user_id'] = email
+        session['email'] = email
+        session['subscription'] = plan
+        session['logged_in'] = True
+        session.permanent = True
+        
+        logger.info(f"✅ New user registered and logged in: {email} with {plan} plan")
+        
+        # Return response in format your frontend expects
+        return jsonify({
+            'session_id': session_id,
+            'user': {
+                'email': email,
+                'name': full_name,
+                'plan': plan,
+                'usage': {'summary': 0, 'analysis': 0, 'question': 0, 'social': 0},
+                'limits': limits
+            }
+        }), 200
         
     except Exception as e:
         logger.error(f"❌ Signup error: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'error': 'Signup failed'}), 500
 
 @app.route('/health')
@@ -576,6 +608,7 @@ def api_login():
         password = data.get('password', '')
         
         logger.info(f"🔍 Login attempt for: {email}")
+        logger.info(f"📧 Credentials received - Email: {email}, Password length: {len(password)}")
         
         if not email or not password:
             return jsonify({'error': 'Email and password are required'}), 400
@@ -583,6 +616,7 @@ def api_login():
         # Check if user exists
         if email not in USERS_DB:
             logger.warning(f"❌ User not found: {email}")
+            logger.info(f"📋 Available users: {list(USERS_DB.keys())}")
             return jsonify({'error': 'Invalid email or password'}), 401
         
         user = USERS_DB[email]
@@ -590,11 +624,20 @@ def api_login():
         # Verify password
         if user.get('password') != password:
             logger.warning(f"❌ Wrong password for: {email}")
+            logger.info(f"🔑 Expected: {user.get('password')}, Got: {password}")
             return jsonify({'error': 'Invalid email or password'}), 401
         
         # Generate session
         session_id = str(__import__('uuid').uuid4())
         subscription = user.get('subscription', 'free')
+        
+        # Get limits based on subscription
+        limits = SUBSCRIPTION_PLANS.get(subscription, {}).get('limits', {
+            'summary': 5, 'analysis': 3, 'question': 10, 'social': 2
+        })
+        
+        # Get or initialize usage
+        usage = user.get('usage', {'summary': 0, 'analysis': 0, 'question': 0, 'social': 0})
         
         # Store in Flask session
         session['session_id'] = session_id
@@ -606,16 +649,15 @@ def api_login():
         
         logger.info(f"✅ Login successful: {email} with {subscription} plan")
         
-        # Return success response
+        # Return response in format your frontend expects
         return jsonify({
-            'success': True,
             'session_id': session_id,
             'user': {
                 'email': email,
                 'name': user.get('full_name', ''),
                 'plan': subscription,
-                'usage': user.get('usage', {}),
-                'limits': SUBSCRIPTION_PLANS.get(subscription, {}).get('limits', {})
+                'usage': usage,
+                'limits': limits
             }
         }), 200
         
