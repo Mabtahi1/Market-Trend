@@ -1387,10 +1387,7 @@
                             this.showMessage('Welcome! Login successful.', 'success');
                             this.resetCredentials();
                             
-                            // Optional: redirect to tools page
-                            setTimeout(() => {
-                                window.location.href = '/tools';
-                            }, 1000);
+                            
                         } else {
                             this.showMessage(data.error || 'Login failed', 'error');
                         }
